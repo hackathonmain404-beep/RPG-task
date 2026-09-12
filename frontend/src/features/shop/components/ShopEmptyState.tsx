@@ -12,7 +12,7 @@ export const ShopEmptyState: React.FC<ShopEmptyStateProps> = ({
 }) => {
   return (
     <div
-      className="rpg-card"
+      className="rpg-card armory-card-anim"
       style={{
         padding: '3.5rem 1.5rem',
         textAlign: 'center',

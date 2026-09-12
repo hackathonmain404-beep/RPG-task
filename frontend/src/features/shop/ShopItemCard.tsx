@@ -56,7 +56,6 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({});
-  const [isHovered, setIsHovered] = useState(false);
 
   const typeKey = (item.itemType || '').toLowerCase();
   const Icon = TYPE_ICONS[typeKey] || Sparkles;
@@ -76,39 +75,34 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // Max 3.5 degrees tilt
-    const rotateX = ((centerY - y) / centerY) * 3.5;
-    const rotateY = ((x - centerX) / centerX) * 3.5;
+    // Gentle 2.2 degrees max tilt for refined physical feel
+    const rotateX = ((centerY - y) / centerY) * 2.2;
+    const rotateY = ((x - centerX) / centerX) * 2.2;
 
     setTiltStyle({
-      transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-8px) scale(1.015)`,
+      transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px) scale(1.012)`,
       ['--mouse-x' as any]: `${x}px`,
       ['--mouse-y' as any]: `${y}px`,
     });
   }, []);
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
   const handleMouseLeave = () => {
-    setIsHovered(false);
+    // Clearing transform allows CSS transition to smoothly glide card back to resting position
     setTiltStyle({
-      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)',
       ['--mouse-x' as any]: '50%',
       ['--mouse-y' as any]: '50%',
     });
   };
 
   const animationDelayStyle = {
-    animationDelay: `${Math.min(index * 50, 400)}ms`,
+    animationDelay: `${Math.min(index * 35, 280)}ms`,
+    ['--stagger-index' as any]: index,
   };
 
   return (
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={`armory-card armory-card-anim rarity-${rarityKey} ${isJustAcquired ? 'purchase-success-active' : ''}`}
       style={{
@@ -146,7 +140,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
             </span>
           </div>
 
-          {/* Procedural Visual Preview Graphic */}
+          {/* Real Item Image Presentation */}
           <ItemVisualPreview item={item} />
         </div>
 
@@ -163,16 +157,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                   e.stopPropagation();
                   onInspect(item);
                 }}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: isHovered ? '#38bdf8' : 'var(--text-tertiary, #64748b)',
-                  cursor: 'pointer',
-                  padding: '0.2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  transition: 'color 0.2s ease',
-                }}
+                className="armory-btn-inspect-icon"
                 title="View item lore & specifications"
                 aria-label={`Inspect ${item.name}`}
               >

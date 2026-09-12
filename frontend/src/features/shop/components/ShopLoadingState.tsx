@@ -6,7 +6,7 @@ export const ShopLoadingState: React.FC = () => {
       {[1, 2, 3, 4, 5, 6].map(idx => (
         <div
           key={idx}
-          className="rpg-card"
+          className="rpg-card armory-card-anim"
           style={{
             height: '280px',
             borderRadius: '14px',
@@ -16,6 +16,7 @@ export const ShopLoadingState: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
+            animationDelay: `${idx * 40}ms`,
           }}
         >
           {/* Skeleton Visual Box */}
