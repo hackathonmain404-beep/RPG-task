@@ -20,7 +20,11 @@ import {
   Code2,
   Terminal,
   ArrowUp,
-  Radio
+  Radio,
+  Calendar,
+  Crown,
+  Target,
+  CheckCircle2
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -48,8 +52,8 @@ export const LandingPage: React.FC = () => {
       if (prefersReducedMotion) {
         // Instant reveal without transform animation for users preferring reduced motion
         gsap.set(
-          '.cinematic-layer, .hero-progression-hud-wrapper, .gameplay-card-wrapper, .discipline-card-wrapper, .persistence-glow-card, .faq-item-reveal, .cta-box-reveal',
-          { opacity: 1, y: 0, x: 0, scale: 1, clearProps: 'all' }
+          '.cinematic-layer, .hero-progression-hud-wrapper, .gameplay-card-wrapper, .discipline-card-wrapper, .persistence-glow-card, .faq-item-reveal, .cta-box-reveal, .hero-badge-el, .headline-row-1, .headline-row-2, .hero-desc-el, .hero-cta-btn, .hud-stagger-node',
+          { opacity: 1, y: 0, x: 0, scale: 1, filter: 'none', clearProps: 'all' }
         );
         gsap.set('.discipline-progress-bar', {
           scaleX: 1,
@@ -61,10 +65,65 @@ export const LandingPage: React.FC = () => {
         return;
       }
 
-      // Initial Entrance for Hero HUD Progress Bar
-      gsap.fromTo('.hero-hud-progress-fill',
+      // Master Entrance Sequence for Hero Elements
+      const entranceTl = gsap.timeline({ delay: 0.1 });
+
+      entranceTl.fromTo('.hero-badge-el',
+        { opacity: 0, y: -8, filter: 'blur(4px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.45, ease: 'power2.out' }
+      );
+
+      entranceTl.fromTo('.headline-row-1',
+        { opacity: 0, y: 14, filter: 'blur(5px)', scale: 0.97 },
+        { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1, duration: 0.5, ease: 'power2.out' },
+        '-=0.15'
+      );
+
+      entranceTl.fromTo('.headline-row-2',
+        { opacity: 0, y: 14, filter: 'blur(5px)', scale: 0.97 },
+        { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1, duration: 0.55, ease: 'power2.out' },
+        '-=0.2'
+      );
+
+      entranceTl.fromTo('.hero-desc-el',
+        { opacity: 0, y: 10, filter: 'blur(3px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.45, ease: 'power2.out' },
+        '-=0.15'
+      );
+
+      entranceTl.fromTo('.hero-cta-btn',
+        { opacity: 0, y: 10, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'back.out(1.2)' },
+        '-=0.15'
+      );
+
+      entranceTl.fromTo('.hero-hud-energy-connector',
+        { opacity: 0, scaleY: 0, transformOrigin: 'top center' },
+        { opacity: 1, scaleY: 1, duration: 0.25, ease: 'power2.out' }
+      );
+
+      entranceTl.fromTo('.hero-progression-hud-card',
+        { opacity: 0, y: 14, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power2.out' },
+        '-=0.08'
+      );
+
+      entranceTl.fromTo('.hud-stagger-node',
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.35, stagger: 0.08, ease: 'power2.out' },
+        '-=0.2'
+      );
+
+      entranceTl.fromTo('.hero-hud-progress-fill',
         { scaleX: 0 },
-        { scaleX: 0.68, duration: 1.1, delay: 0.4, ease: 'power2.out' }
+        { scaleX: 0.68, duration: 0.85, ease: 'power2.out' },
+        '-=0.1'
+      );
+
+      entranceTl.fromTo('.hero-scroll-indicator',
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' },
+        '-=0.15'
       );
 
       // 0. SCROLL STATE TRACKERS (Native to GSAP, zero unthrottled reflow loops)
@@ -379,6 +438,31 @@ export const LandingPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (isMobile || prefersReducedMotion) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    gsap.to('.hero-hud-parallax-inner', {
+      x: x * 14,
+      y: y * 10,
+      duration: 0.35,
+      ease: 'power1.out',
+      overwrite: 'auto',
+    });
+  };
+
+  const handleHeroMouseLeave = () => {
+    if (isMobile || prefersReducedMotion) return;
+    gsap.to('.hero-hud-parallax-inner', {
+      x: 0,
+      y: 0,
+      duration: 0.6,
+      ease: 'power2.out',
+      overwrite: 'auto',
+    });
+  };
+
   return (
     <div 
       ref={mainContainerRef}
@@ -576,6 +660,8 @@ export const LandingPage: React.FC = () => {
         <section
           id="hero"
           className="hero-fullscreen"
+          onMouseMove={handleHeroMouseMove}
+          onMouseLeave={handleHeroMouseLeave}
           style={{
             position: 'relative',
             overflow: 'hidden',
@@ -669,6 +755,7 @@ export const LandingPage: React.FC = () => {
             >
               {/* Eyebrow Tag */}
               <div
+                className="hero-badge-el"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -701,10 +788,21 @@ export const LandingPage: React.FC = () => {
                   letterSpacing: '-0.03em',
                 }}
               >
-                Your Life is the Game.{' '}
                 <span
+                  className="headline-row-1"
                   style={{
                     display: 'block',
+                    color: '#f8fafc',
+                    marginBottom: '0.1em',
+                  }}
+                >
+                  Your Life is the Game.
+                </span>
+                <span
+                  className="headline-row-2 xp-sweep-active"
+                  style={{
+                    display: 'inline-block',
+                    position: 'relative',
                     background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -712,11 +810,14 @@ export const LandingPage: React.FC = () => {
                   }}
                 >
                   Start Gaining XP.
+                  <span className="xp-spark" style={{ top: '-4px', right: '-8px' }} />
+                  <span className="xp-spark" style={{ bottom: '2px', right: '-12px', animationDelay: '2.05s' }} />
                 </span>
               </h1>
 
               {/* Subtitle */}
               <p
+                className="hero-desc-el"
                 style={{
                   fontSize: '1.15rem',
                   color: 'var(--text-secondary)',
@@ -733,7 +834,7 @@ export const LandingPage: React.FC = () => {
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '0.4rem' }}>
                 <Link 
                   to="/login" 
-                  className="rpg-btn rpg-btn-primary" 
+                  className="hero-cta-btn rpg-btn rpg-btn-primary" 
                   style={{ 
                     padding: '0.85rem 1.85rem', 
                     fontSize: '1.05rem',
@@ -758,199 +859,271 @@ export const LandingPage: React.FC = () => {
                   marginBottom: '0.2rem',
                 }}
               >
-                <div
-                  className="hero-progression-hud-card"
-                  onMouseLeave={() => {
-                    setQuestHovered(false);
-                    setXpHovered(false);
-                    setAttrHovered(false);
-                  }}
-                  role="region"
-                  aria-label="Live Quest and Progression Demonstration HUD"
-                >
-                  {/* Top Status Row */}
+                {/* Desktop Mouse Parallax Inner Container */}
+                <div className="hero-hud-parallax-inner">
                   <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '0.55rem',
-                      fontSize: '0.68rem',
-                      fontFamily: 'var(--font-mono)',
+                    className="hero-progression-hud-card"
+                    onMouseLeave={() => {
+                      setQuestHovered(false);
+                      setXpHovered(false);
+                      setAttrHovered(false);
                     }}
+                    role="region"
+                    aria-label="Live Quest and Progression Demonstration HUD"
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                      <Radio size={12} color="#38bdf8" />
-                      <span style={{ fontWeight: 800, letterSpacing: '0.12em', color: '#38bdf8', textTransform: 'uppercase' }}>
-                        LIVE PROGRESSION HUD
-                      </span>
-                    </div>
+                    {/* Cyber Corner Brackets */}
+                    <div className="hud-corner hud-corner-tl" />
+                    <div className="hud-corner hud-corner-tr" />
+                    <div className="hud-corner hud-corner-bl" />
+                    <div className="hud-corner hud-corner-br" />
 
+                    {/* Top Status Bar: LIVE PROGRESSION | [ACTIVE QUEST] ... TODAY 🗓️ */}
                     <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        padding: '0.15rem 0.55rem',
-                        borderRadius: '9999px',
-                        backgroundColor: 'rgba(16, 185, 129, 0.12)',
-                        border: '1px solid rgba(16, 185, 129, 0.35)',
-                        color: '#34d399',
-                        fontWeight: 700,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: '5px',
-                          height: '5px',
-                          borderRadius: '50%',
-                          backgroundColor: '#10b981',
-                          boxShadow: '0 0 6px #10b981',
-                        }}
-                      />
-                      <span>ACTIVE QUEST</span>
-                    </div>
-                  </div>
-
-                  {/* Middle Quest Showcase Row */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '0.6rem',
-                      padding: '0.45rem 0.75rem',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.025)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)',
-                      marginBottom: '0.55rem',
-                    }}
-                  >
-                    <div 
-                      className="hero-hud-quest-pill"
-                      onMouseEnter={() => setQuestHovered(true)}
-                      onMouseLeave={() => setQuestHovered(false)}
+                      className="hud-stagger-node"
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.5rem',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        color: '#f8fafc',
+                        justifyContent: 'space-between',
+                        marginBottom: '0.65rem',
+                        fontSize: '0.68rem',
+                        fontFamily: 'var(--font-mono)',
                       }}
                     >
-                      <span>45-MIN DEEP CODING SESSION</span>
-                      {questHovered && (
-                        <span
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
+                        <span style={{ fontWeight: 800, letterSpacing: '0.12em', color: '#38bdf8', textTransform: 'uppercase' }}>
+                          LIVE PROGRESSION
+                        </span>
+                        <span style={{ color: 'rgba(56, 189, 248, 0.35)', margin: '0 0.15rem' }}>|</span>
+                        <div
                           style={{
-                            fontSize: '0.62rem',
-                            fontFamily: 'var(--font-mono)',
-                            color: '#38bdf8',
-                            backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                            padding: '0.1rem 0.4rem',
-                            borderRadius: '4px',
-                            border: '1px solid rgba(56, 189, 248, 0.3)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            padding: '0.12rem 0.5rem',
+                            borderRadius: '9999px',
+                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                            border: '1px solid rgba(16, 185, 129, 0.35)',
+                            color: '#34d399',
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
                           }}
                         >
-                          COMPLETE QUEST
-                        </span>
-                      )}
+                          <span
+                            style={{
+                              width: '4px',
+                              height: '4px',
+                              borderRadius: '50%',
+                              backgroundColor: '#10b981',
+                              boxShadow: '0 0 6px #10b981',
+                            }}
+                          />
+                          <span>ACTIVE QUEST</span>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          color: 'var(--text-tertiary)',
+                          fontSize: '0.62rem',
+                          fontWeight: 700,
+                          letterSpacing: '0.08em',
+                        }}
+                      >
+                        <span>TODAY</span>
+                        <Calendar size={12} color="#38bdf8" />
+                      </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span
+                    {/* Middle Four-Node Connected Row */}
+                    <div
+                      className="hud-main-grid hud-stagger-node"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.5rem',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '8px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid rgba(56, 189, 248, 0.12)',
+                      }}
+                    >
+                      {/* Node 1: Quest Node */}
+                      <div
+                        className="hero-hud-quest-pill"
+                        onMouseEnter={() => setQuestHovered(true)}
+                        onMouseLeave={() => setQuestHovered(false)}
                         style={{
-                          fontSize: '0.68rem',
-                          fontFamily: 'var(--font-mono)',
-                          fontWeight: 700,
-                          color: '#38bdf8',
-                          backgroundColor: 'rgba(56, 189, 248, 0.12)',
-                          padding: '0.18rem 0.5rem',
-                          borderRadius: '4px',
-                          border: '1px solid rgba(56, 189, 248, 0.3)',
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          gap: '0.3rem',
+                          gap: '0.65rem',
+                          flex: '1 1 auto',
+                          minWidth: '180px',
+                          cursor: 'pointer',
                         }}
                       >
-                        <Brain size={11} color="#38bdf8" /> INTELLECT
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '0.68rem',
-                          fontFamily: 'var(--font-mono)',
-                          color: 'var(--text-tertiary)',
-                        }}
-                      >
-                        MEDIUM
-                      </span>
-                      <span
-                        className="hero-hud-xp-badge"
+                        {/* Hexagon icon */}
+                        <div className="hud-hex-node">
+                          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+                            <polygon
+                              points="19,2 34,10.5 34,27.5 19,36 4,27.5 4,10.5"
+                              fill="rgba(56, 189, 248, 0.1)"
+                              stroke="#38bdf8"
+                              strokeWidth="1.5"
+                            />
+                            {/* Inner task icon */}
+                            <path
+                              d="M14 15h10M14 19h7M14 23h5"
+                              stroke="#38bdf8"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        </div>
+                        {/* Text info */}
+                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', gap: '0.2rem', position: 'relative' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+                              45-MIN DEEP CODING SESSION
+                            </span>
+                            {questHovered && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  bottom: 'calc(100% + 4px)',
+                                  left: 0,
+                                  fontSize: '0.58rem',
+                                  fontFamily: 'var(--font-mono)',
+                                  color: '#38bdf8',
+                                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                  padding: '0.12rem 0.45rem',
+                                  borderRadius: '4px',
+                                  border: '1px solid rgba(56, 189, 248, 0.45)',
+                                  boxShadow: '0 4px 15px rgba(0,0,0,0.7)',
+                                  fontWeight: 700,
+                                  whiteSpace: 'nowrap',
+                                  zIndex: 30,
+                                  pointerEvents: 'none',
+                                }}
+                              >
+                                COMPLETE QUEST
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.62rem', fontFamily: 'var(--font-mono)' }}>
+                            <span style={{ color: 'var(--text-tertiary)' }}>INTELLECT • MEDIUM</span>
+                            <span
+                              style={{
+                                color: '#fbbf24',
+                                backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                                padding: '0.08rem 0.4rem',
+                                borderRadius: '9999px',
+                                border: '1px solid rgba(245, 158, 11, 0.35)',
+                                fontWeight: 800,
+                              }}
+                            >
+                              +65 XP
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Vector Arrow 1 */}
+                      <div className="hud-arrow-connector">→</div>
+
+                      {/* Node 2: XP Node */}
+                      <div
+                        className="hud-hex-node-group"
                         onMouseEnter={() => setXpHovered(true)}
                         onMouseLeave={() => setXpHovered(false)}
                         style={{
-                          fontSize: '0.72rem',
-                          fontFamily: 'var(--font-mono)',
-                          fontWeight: 800,
-                          color: '#fbbf24',
-                          backgroundColor: xpHovered ? 'rgba(245, 158, 11, 0.22)' : 'rgba(245, 158, 11, 0.12)',
-                          padding: '0.18rem 0.55rem',
-                          borderRadius: '4px',
-                          border: xpHovered ? '1px solid rgba(245, 158, 11, 0.65)' : '1px solid rgba(245, 158, 11, 0.35)',
-                          boxShadow: xpHovered ? '0 0 12px rgba(245, 158, 11, 0.35)' : 'none',
-                          transform: xpHovered ? 'scale(1.04)' : 'scale(1)',
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          gap: '0.3rem',
-                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                          gap: '0.5rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          transform: xpHovered ? 'scale(1.05)' : 'scale(1)',
                         }}
                       >
-                        <Sparkles size={11} color="#fbbf24" /> +65 XP
-                      </span>
-                    </div>
-                  </div>
+                        <div className="hud-hex-node">
+                          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+                            <polygon
+                              points="19,2 34,10.5 34,27.5 19,36 4,27.5 4,10.5"
+                              fill={xpHovered ? 'rgba(16, 185, 129, 0.25)' : 'rgba(16, 185, 129, 0.12)'}
+                              stroke="#34d399"
+                              strokeWidth="1.5"
+                            />
+                            <text
+                              x="19"
+                              y="23"
+                              textAnchor="middle"
+                              fill="#34d399"
+                              fontSize="11"
+                              fontWeight="800"
+                              fontFamily="var(--font-mono)"
+                            >
+                              XP
+                            </text>
+                          </svg>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#34d399', fontFamily: 'var(--font-mono)' }}>
+                            +65 XP
+                          </span>
+                          <span style={{ fontSize: '0.58rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>
+                            Quest Completed
+                          </span>
+                        </div>
+                      </div>
 
-                  {/* Bottom Visual Progression Path */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '0.5rem',
-                      fontSize: '0.72rem',
-                      fontFamily: 'var(--font-mono)',
-                    }}
-                  >
-                    {/* Visual Vector Sequence: Quest -> XP -> Attribute */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-tertiary)' }}>
-                      <span style={{ color: '#94a3b8' }}>QUEST</span>
-                      <span style={{ color: '#38bdf8' }}>→</span>
-                      <span style={{ color: '#fbbf24' }}>+65 XP</span>
-                      <span style={{ color: '#38bdf8' }}>→</span>
+                      {/* Vector Arrow 2 */}
+                      <div className="hud-arrow-connector">→</div>
+
+                      {/* Node 3: Attribute Node */}
                       <div
                         className="hero-hud-attr-pill"
                         onMouseEnter={() => setAttrHovered(true)}
                         onMouseLeave={() => setAttrHovered(false)}
                         style={{
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          gap: '0.25rem',
-                          color: '#60a5fa',
-                          backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                          padding: '0.12rem 0.45rem',
-                          borderRadius: '4px',
-                          border: '1px solid rgba(59, 130, 246, 0.3)',
-                          fontWeight: 700,
+                          gap: '0.5rem',
+                          cursor: 'pointer',
+                          position: 'relative',
                         }}
                       >
-                        <span>INTELLECT +2</span>
+                        <div className="hud-hex-node">
+                          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+                            <polygon
+                              points="19,2 34,10.5 34,27.5 19,36 4,27.5 4,10.5"
+                              fill={attrHovered ? 'rgba(168, 85, 247, 0.25)' : 'rgba(168, 85, 247, 0.12)'}
+                              stroke="#c084fc"
+                              strokeWidth="1.5"
+                            />
+                          </svg>
+                          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                            <Brain size={16} color="#c084fc" />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#f8fafc', fontFamily: 'var(--font-mono)' }}>
+                            INTELLECT
+                          </span>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#c084fc', fontFamily: 'var(--font-mono)' }}>
+                            +2
+                          </span>
+                        </div>
+
+                        {/* Tooltip */}
                         {attrHovered && (
                           <div
                             style={{
                               position: 'absolute',
-                              bottom: 'calc(100% + 6px)',
+                              bottom: 'calc(100% + 8px)',
                               left: '50%',
                               transform: 'translateX(-50%)',
                               whiteSpace: 'nowrap',
@@ -958,44 +1131,85 @@ export const LandingPage: React.FC = () => {
                               backgroundColor: '#0f172a',
                               border: '1px solid rgba(56, 189, 248, 0.4)',
                               borderRadius: '4px',
-                              fontSize: '0.65rem',
+                              fontSize: '0.62rem',
                               color: '#38bdf8',
                               boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
                               zIndex: 30,
                               pointerEvents: 'none',
+                              fontFamily: 'var(--font-mono)',
                             }}
                           >
                             Real-world action → Attribute progression
                           </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Integrated Level Progress Bar */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: '160px' }}>
-                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.68rem' }}>340 / 500 XP</span>
+                      {/* Node 4: Next Level Progress */}
                       <div
                         style={{
-                          flex: 1,
-                          height: '5px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                          borderRadius: '9999px',
-                          overflow: 'hidden',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          textAlign: 'left',
+                          minWidth: '130px',
+                          gap: '0.3rem',
                         }}
                       >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.58rem', fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)', letterSpacing: '0.08em', fontWeight: 700 }}>
+                            NEXT LEVEL
+                          </span>
+                          <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 800 }}>
+                            LVL 1
+                          </span>
+                        </div>
                         <div
-                          className="hero-hud-progress-fill"
                           style={{
                             width: '100%',
-                            height: '100%',
-                            transformOrigin: 'left center',
-                            transform: prefersReducedMotion ? 'scaleX(0.68)' : 'scaleX(0)',
-                            background: 'linear-gradient(90deg, #38bdf8, #a855f7)',
-                            boxShadow: '0 0 8px rgba(56, 189, 248, 0.5)',
+                            height: '5px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                            borderRadius: '9999px',
+                            overflow: 'hidden',
                           }}
-                        />
+                        >
+                          <div
+                            className="hero-hud-progress-fill"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              transformOrigin: 'left center',
+                              transform: prefersReducedMotion ? 'scaleX(0.68)' : 'scaleX(0)',
+                              background: 'linear-gradient(90deg, #38bdf8, #a855f7)',
+                              boxShadow: '0 0 8px rgba(56, 189, 248, 0.5)',
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                          340 / 500 XP
+                        </span>
                       </div>
-                      <span style={{ color: '#a855f7', fontWeight: 800, fontSize: '0.68rem' }}>LVL 1</span>
+                    </div>
+
+                    {/* Bottom Pipeline Track: QUEST -> XP -> ATTRIBUTE -> LEVEL UP */}
+                    <div className="hud-pipeline-track hud-stagger-node">
+                      <div className="hud-pipeline-step" style={{ color: '#38bdf8' }}>
+                        <CheckCircle2 size={12} color="#38bdf8" />
+                        <span>QUEST</span>
+                      </div>
+                      <span style={{ color: 'rgba(56, 189, 248, 0.4)' }}>→</span>
+                      <div className="hud-pipeline-step" style={{ color: '#34d399' }}>
+                        <Target size={12} color="#34d399" />
+                        <span>XP</span>
+                      </div>
+                      <span style={{ color: 'rgba(56, 189, 248, 0.4)' }}>→</span>
+                      <div className="hud-pipeline-step" style={{ color: '#c084fc' }}>
+                        <Brain size={12} color="#c084fc" />
+                        <span>ATTRIBUTE</span>
+                      </div>
+                      <span style={{ color: 'rgba(56, 189, 248, 0.4)' }}>→</span>
+                      <div className="hud-pipeline-step" style={{ color: '#fbbf24' }}>
+                        <Crown size={12} color="#fbbf24" />
+                        <span style={{ color: '#fbbf24' }}>LEVEL UP</span>
+                      </div>
                     </div>
                   </div>
                 </div>
