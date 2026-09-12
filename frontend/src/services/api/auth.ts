@@ -1,10 +1,10 @@
-import type { AuthMeResponse, LoginRequest, RegisterRequest } from '../../types/contract';
+import type { AuthMeResponse, SyncRequest } from '../../types/contract';
 import { request } from './client';
 
 export const authApi = {
   /**
    * Retrieves the currently authenticated user session and authoritative character data.
-   * Dispatches GET /api/auth/me
+   * Dispatches GET /api/auth/me — Supabase access token is auto-attached by client.ts
    */
   async getMe(): Promise<AuthMeResponse> {
     return request<AuthMeResponse>('/auth/me', {
@@ -13,35 +13,14 @@ export const authApi = {
   },
 
   /**
-   * Creates a new user account and initializes player character.
-   * Dispatches POST /api/auth/register
+   * Syncs a Supabase-authenticated user into our Prisma database.
+   * Creates User + Character if they don't exist.
+   * Dispatches POST /api/auth/sync
    */
-  async register(data: RegisterRequest): Promise<AuthMeResponse> {
-    return request<AuthMeResponse>('/auth/register', {
+  async sync(data?: SyncRequest): Promise<AuthMeResponse> {
+    return request<AuthMeResponse>('/auth/sync', {
       method: 'POST',
-      data,
-    });
-  },
-
-  /**
-   * Authenticates user credentials and establishes server session.
-   * Dispatches POST /api/auth/login
-   */
-  async login(data: LoginRequest): Promise<AuthMeResponse> {
-    return request<AuthMeResponse>('/auth/login', {
-      method: 'POST',
-      data,
-    });
-  },
-
-  /**
-   * 1-Click GitHub authentication or username verification.
-   * Dispatches POST /api/auth/github
-   */
-  async loginWithGithub(data: { githubUsername: string; email?: string; displayName?: string; avatarUrl?: string }): Promise<AuthMeResponse> {
-    return request<AuthMeResponse>('/auth/github', {
-      method: 'POST',
-      data,
+      data: data || {},
     });
   },
 

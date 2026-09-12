@@ -196,7 +196,7 @@ export async function purchaseItem(userId: string, itemId: string) {
           itemId: inventoryItem.shopItemId,
         },
       };
-    });
+    }, { maxWait: 15000, timeout: 25000 });
 
     return result;
   } catch (err) {

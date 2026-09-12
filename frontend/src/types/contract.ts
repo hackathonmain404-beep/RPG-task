@@ -33,14 +33,20 @@ export interface AuthMeResponse {
 
 export interface RegisterRequest {
   email: string;
-  password: string;
   displayName: string;
   starterDiscipline?: string;
 }
 
 export interface LoginRequest {
   email: string;
-  password: string;
+}
+
+/**
+ * Sent after Supabase OAuth/email auth to sync the user into our Prisma database.
+ */
+export interface SyncRequest {
+  displayName?: string;
+  starterDiscipline?: string;
 }
 
 /* ==========================================================================

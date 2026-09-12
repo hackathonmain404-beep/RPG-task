@@ -1,9 +1,10 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
-import { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
 import { getJwtSecret } from '../utils/jwt.js';
+import type { SyncInput, RegisterInput, LoginInput, GithubAuthInput } from '../schemas/auth.schema.js';
 
 const JWT_EXPIRES_IN = '7d';
 
@@ -21,40 +22,212 @@ export interface CharacterSummary {
   streakBest: number;
 }
 
+export interface SyncResult {
+  user: AuthSessionUser;
+  character: CharacterSummary;
+}
+
 export interface AuthResult {
   user: AuthSessionUser;
   character: CharacterSummary;
   token: string;
 }
 
+export const TEST_USER = {
+  id: 'test-user-id',
+  email: 'hero@citadel.realm',
+  displayName: 'Grand Champion',
+  character: {
+    level: 3,
+    totalXp: 450,
+    gold: 240,
+    streakCurrent: 4,
+    streakBest: 7,
+  },
+};
+
+/**
+ * Syncs a Supabase-authenticated user into our Prisma database.
+ * - If user exists: returns their data.
+ * - If new user: creates User + Character with starter attributes.
+ * 
+ * The user ID comes from Supabase Auth (UUID), which is used as the
+ * primary key in our User table.
+ */
+export async function syncUser(
+  supabaseUserId: string,
+  email: string,
+  input?: SyncInput,
+  userMetadata?: { full_name?: string; user_name?: string; avatar_url?: string; name?: string }
+): Promise<SyncResult> {
+  try {
+    // Check if user already exists
+    const user = (await prisma.user.findUnique({
+      where: { id: supabaseUserId },
+      include: { character: true } as any,
+    })) as any;
+
+    if (user) {
+      // Existing user — update last active
+      await prisma.user.update({
+        where: { id: supabaseUserId },
+        data: {
+          lastActiveAt: new Date(),
+          ...(userMetadata?.user_name && !user.githubUsername
+            ? { githubUsername: userMetadata.user_name }
+            : {}),
+          ...(userMetadata?.avatar_url && !user.avatarUrl
+            ? { avatarUrl: userMetadata.avatar_url }
+            : {}),
+        } as any,
+      });
+
+      // Ensure character exists
+      let character = user.character;
+      if (!character) {
+        character = await prisma.character.create({
+          data: {
+            userId: user.id,
+            level: 1,
+            totalXp: 0,
+            gold: 50,
+            streakCurrent: 0,
+            streakBest: 0,
+            attributes: {
+              create: [
+                { key: 'intellect', displayName: 'Intellect', value: 10 },
+                { key: 'strength', displayName: 'Strength', value: 10 },
+                { key: 'wisdom', displayName: 'Wisdom', value: 10 },
+                { key: 'charisma', displayName: 'Charisma', value: 10 },
+                { key: 'vitality', displayName: 'Vitality', value: 10 },
+              ],
+            },
+          },
+        });
+      }
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        },
+        character: {
+          level: character.level,
+          totalXp: character.totalXp,
+          gold: character.gold,
+          streakCurrent: character.streakCurrent,
+          streakBest: character.streakBest,
+        },
+      };
+    }
+
+    // Check if an existing record has this email (e.g. from local tests)
+    const existingByEmail = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+    if (existingByEmail) {
+      await prisma.user.delete({
+        where: { id: existingByEmail.id },
+      });
+    }
+
+    // New user — create User + Character
+    const displayName = input?.displayName
+      || userMetadata?.full_name
+      || userMetadata?.name
+      || userMetadata?.user_name
+      || email.split('@')[0];
+
+    const result = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          id: supabaseUserId, // Use Supabase UUID as our user ID
+          email: email.toLowerCase().trim(),
+          displayName: displayName.trim(),
+          githubUsername: userMetadata?.user_name || null,
+          avatarUrl: userMetadata?.avatar_url || null,
+          lastActiveAt: new Date(),
+        } as any,
+      });
+
+      // Determine starter boost based on discipline
+      const starterKey = input?.starterDiscipline || 'intellect';
+      const baseAttrs = [
+        { key: 'intellect', displayName: 'Intellect', value: 10 },
+        { key: 'strength', displayName: 'Strength', value: 10 },
+        { key: 'wisdom', displayName: 'Wisdom', value: 10 },
+        { key: 'charisma', displayName: 'Charisma', value: 10 },
+        { key: 'vitality', displayName: 'Vitality', value: 10 },
+      ].map(a => ({
+        ...a,
+        value: a.key === starterKey ? 15 : 10, // +5 bonus to chosen discipline
+      }));
+
+      const newChar = await tx.character.create({
+        data: {
+          userId: newUser.id,
+          level: 1,
+          totalXp: 0,
+          gold: 50,
+          streakCurrent: 0,
+          streakBest: 0,
+          attributes: {
+            create: baseAttrs,
+          },
+        },
+      });
+
+      return { user: newUser, character: newChar };
+    }, { maxWait: 15000, timeout: 25000 });
+
+    return {
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        displayName: result.user.displayName,
+      },
+      character: {
+        level: result.character.level,
+        totalXp: result.character.totalXp,
+        gold: result.character.gold,
+        streakCurrent: result.character.streakCurrent,
+        streakBest: result.character.streakBest,
+      },
+    };
+  } catch (err: unknown) {
+    if (err instanceof AppError) throw err;
+    console.error('User sync error:', err);
+    throw new AppError(500, 'SYNC_FAILED', 'Failed to sync user with Citadel database.');
+  }
+}
+
+/**
+ * Registers user with password (used by automated tests and test suites)
+ */
 export async function registerUser(input: RegisterInput): Promise<AuthResult> {
   const email = input.email.toLowerCase().trim();
-  const githubUsername = input.githubUsername?.trim() || null;
-
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { email },
-        ...(githubUsername ? [{ githubUsername: { equals: githubUsername, mode: 'insensitive' as const } }] : []),
-      ],
-    },
+  const existing = await prisma.user.findUnique({
+    where: { email },
   });
 
-  if (existingUser) {
-    throw new AppError(409, 'CONFLICT', 'An adventurer with this email or GitHub username already exists.');
+  if (existing) {
+    throw new AppError(409, 'CONFLICT', 'An adventurer with this email already exists.');
   }
 
-  const passwordHash = await bcrypt.hash(input.password, 12);
+  const passwordHash = await bcrypt.hash(input.password, 10);
+  const userId = crypto.randomUUID();
 
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
+        id: userId,
         email,
         passwordHash,
         displayName: input.displayName.trim(),
-        githubUsername,
+        githubUsername: input.githubUsername?.trim() || null,
         lastActiveAt: new Date(),
-      },
+      } as any,
     });
 
     const character = await tx.character.create({
@@ -78,7 +251,7 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
     });
 
     return { user, character };
-  });
+  }, { maxWait: 15000, timeout: 25000 });
 
   const token = jwt.sign(
     { userId: result.user.id, email: result.user.email },
@@ -103,25 +276,13 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
   };
 }
 
-export const TEST_USER = {
-  id: 'test-adventurer-id',
-  email: 'adventurer@liferpg.app',
-  password: 'password123',
-  displayName: 'Hero of the Citadel',
-  character: {
-    level: 3,
-    totalXp: 350,
-    gold: 250,
-    streakCurrent: 4,
-    streakBest: 7,
-  },
-};
-
+/**
+ * Authenticates user with email/password (used by automated tests and test suites)
+ */
 export async function loginUser(input: LoginInput): Promise<AuthResult> {
   const identifier = input.email.trim();
   const isTestAccount = (identifier === 'adventurer@liferpg.app' || identifier === 'test@liferpg.app') && input.password === 'password123';
 
-  // 1. Instant response for test account
   if (isTestAccount) {
     const token = jwt.sign(
       { userId: TEST_USER.id, email: TEST_USER.email },
@@ -140,29 +301,29 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
     };
   }
 
-  // 2. Database authentication: checks email OR GitHub username
   try {
-    const user = await prisma.user.findFirst({
+    const user = (await prisma.user.findFirst({
       where: {
         OR: [
           { email: { equals: identifier.toLowerCase() } },
           { githubUsername: { equals: identifier, mode: 'insensitive' } },
           { displayName: { equals: identifier, mode: 'insensitive' } },
         ],
-      },
-      include: { character: true },
-    });
+      } as any,
+      include: { character: true } as any,
+    })) as any;
 
     if (user) {
       if (user.passwordHash) {
         const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
-        if (!passwordMatch && !isTestAccount) {
+        if (!passwordMatch) {
           throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid password.');
         }
       }
 
-      if (!user.character) {
-        user.character = await prisma.character.create({
+      let character = user.character;
+      if (!character) {
+        character = await prisma.character.create({
           data: {
             userId: user.id,
             level: 1,
@@ -192,11 +353,11 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
           displayName: user.displayName,
         },
         character: {
-          level: user.character.level,
-          totalXp: user.character.totalXp,
-          gold: user.character.gold,
-          streakCurrent: user.character.streakCurrent,
-          streakBest: user.character.streakBest,
+          level: character.level,
+          totalXp: character.totalXp,
+          gold: character.gold,
+          streakCurrent: character.streakCurrent,
+          streakBest: character.streakBest,
         },
         token,
       };
@@ -212,51 +373,46 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
 /**
  * 1-Click GitHub Authentication (Login or Register)
  */
-export async function loginOrRegisterWithGithub(profile: {
-  githubUsername: string;
-  email?: string;
-  displayName?: string;
-  avatarUrl?: string;
-  githubId?: string;
-}): Promise<AuthResult> {
+export async function loginOrRegisterWithGithub(profile: GithubAuthInput): Promise<AuthResult> {
   const username = profile.githubUsername.trim();
   const email = profile.email ? profile.email.toLowerCase().trim() : `${username.toLowerCase()}@github.liferpg.app`;
 
   try {
-    let user = await prisma.user.findFirst({
+    const existingUser = (await prisma.user.findFirst({
       where: {
         OR: [
           { githubUsername: { equals: username, mode: 'insensitive' } },
           { email: { equals: email } },
-          ...(profile.githubId ? [{ githubId: profile.githubId }] : []),
         ],
-      },
-      include: { character: true },
-    });
+      } as any,
+      include: { character: true } as any,
+    })) as any;
 
-    if (user) {
-      // Update metadata on login
-      user = await prisma.user.update({
-        where: { id: user.id },
+    let targetUser: any;
+    let targetCharacter: any;
+
+    if (existingUser) {
+      targetUser = await prisma.user.update({
+        where: { id: existingUser.id },
         data: {
           githubUsername: username,
-          avatarUrl: profile.avatarUrl || user.avatarUrl,
+          avatarUrl: profile.avatarUrl || existingUser.avatarUrl,
           lastActiveAt: new Date(),
-        },
-        include: { character: true },
+        } as any,
+        include: { character: true } as any,
       });
+      targetCharacter = targetUser.character;
     } else {
-      // Auto-register new adventurer via GitHub
-      user = await prisma.$transaction(async (tx) => {
+      const created = await prisma.$transaction(async (tx) => {
         const newUser = await tx.user.create({
           data: {
+            id: crypto.randomUUID(),
             email,
             displayName: profile.displayName?.trim() || username,
             githubUsername: username,
-            githubId: profile.githubId || null,
             avatarUrl: profile.avatarUrl || null,
             lastActiveAt: new Date(),
-          },
+          } as any,
         });
 
         const newChar = await tx.character.create({
@@ -279,28 +435,31 @@ export async function loginOrRegisterWithGithub(profile: {
           },
         });
 
-        return { ...newUser, character: newChar };
-      });
+        return { user: newUser, character: newChar };
+      }, { maxWait: 15000, timeout: 25000 });
+
+      targetUser = created.user;
+      targetCharacter = created.character;
     }
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: targetUser.id, email: targetUser.email },
       getJwtSecret(),
       { expiresIn: JWT_EXPIRES_IN }
     );
 
     return {
       user: {
-        id: user.id,
-        email: user.email,
-        displayName: user.displayName,
+        id: targetUser.id,
+        email: targetUser.email,
+        displayName: targetUser.displayName,
       },
       character: {
-        level: user.character?.level ?? 1,
-        totalXp: user.character?.totalXp ?? 0,
-        gold: user.character?.gold ?? 50,
-        streakCurrent: user.character?.streakCurrent ?? 0,
-        streakBest: user.character?.streakBest ?? 0,
+        level: targetCharacter?.level ?? 1,
+        totalXp: targetCharacter?.totalXp ?? 0,
+        gold: targetCharacter?.gold ?? 50,
+        streakCurrent: targetCharacter?.streakCurrent ?? 0,
+        streakBest: targetCharacter?.streakBest ?? 0,
       },
       token,
     };
@@ -311,7 +470,10 @@ export async function loginOrRegisterWithGithub(profile: {
   }
 }
 
-export async function getAuthMe(userId: string): Promise<{ user: AuthSessionUser; character: CharacterSummary }> {
+/**
+ * Retrieves authenticated user's data from Prisma.
+ */
+export async function getAuthMe(userId: string): Promise<SyncResult> {
   if (userId === TEST_USER.id) {
     return {
       user: {
@@ -346,7 +508,6 @@ export async function getAuthMe(userId: string): Promise<{ user: AuthSessionUser
       };
     }
   } catch {
-    // Database offline fallback
     if (userId.startsWith('test-')) {
       return {
         user: {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
@@ -15,8 +15,8 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   xpProgress: null,
   recentActivity: [],
   lastAttributeChange: null,
-  login: vi.fn(),
-  register: vi.fn(),
+  signInWithGoogle: vi.fn(),
+  signInWithGithub: vi.fn(),
   logout: vi.fn(),
   refreshSession: vi.fn(),
   refreshCharacter: vi.fn(),
@@ -27,7 +27,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
 });
 
 describe('LoginPage', () => {
-  it('renders email and password inputs with accessible labels', () => {
+  it('renders Google and GitHub sign-in buttons', () => {
     const mockAuth = createMockAuthContext();
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -37,12 +37,11 @@ describe('LoginPage', () => {
       </AuthContext.Provider>
     );
 
-    expect(screen.getByLabelText(/Adventurer Email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Master Key \(Password\)/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Enter Citadel/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with GitHub/i })).toBeInTheDocument();
   });
 
-  it('shows error message when submitted with empty fields', async () => {
+  it('renders the Enter the Citadel heading', () => {
     const mockAuth = createMockAuthContext();
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -52,17 +51,25 @@ describe('LoginPage', () => {
       </AuthContext.Provider>
     );
 
-    const submitBtn = screen.getByRole('button', { name: /Enter Citadel/i });
-    fireEvent.click(submitBtn);
+    expect(screen.getByRole('heading', { name: /Enter the Citadel/i })).toBeInTheDocument();
+  });
 
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/Please provide both your email address and password/i);
-    });
+  it('does not render a password field', () => {
+    const mockAuth = createMockAuthContext();
+    render(
+      <AuthContext.Provider value={mockAuth}>
+        <BrowserRouter>
+          <LoginPage />
+        </BrowserRouter>
+      </AuthContext.Provider>
+    );
+
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
   });
 });
 
 describe('RegisterPage', () => {
-  it('renders display name, email, password, and starter archetypes', () => {
+  it('renders starter archetypes and sign-in buttons', () => {
     const mockAuth = createMockAuthContext();
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -72,17 +79,16 @@ describe('RegisterPage', () => {
       </AuthContext.Provider>
     );
 
-    expect(screen.getByLabelText(/Adventurer Title \/ Name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Citadel Email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Master Key \(Password\)/i)).toBeInTheDocument();
     expect(screen.getByText('Scholar')).toBeInTheDocument();
     expect(screen.getByText('Warrior')).toBeInTheDocument();
     expect(screen.getByText('Sage')).toBeInTheDocument();
     expect(screen.getByText('Diplomat')).toBeInTheDocument();
     expect(screen.getByText('Guardian')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with GitHub/i })).toBeInTheDocument();
   });
 
-  it('shows validation error when password is too short', async () => {
+  it('does not render a password field', () => {
     const mockAuth = createMockAuthContext();
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -92,15 +98,6 @@ describe('RegisterPage', () => {
       </AuthContext.Provider>
     );
 
-    fireEvent.change(screen.getByLabelText(/Adventurer Title \/ Name/i), { target: { value: 'CodeKnight' } });
-    fireEvent.change(screen.getByLabelText(/Citadel Email/i), { target: { value: 'knight@example.com' } });
-    fireEvent.change(screen.getByLabelText(/Master Key \(Password\)/i), { target: { value: '123' } });
-
-    const submitBtn = screen.getByRole('button', { name: /Forge Character & Embark/i });
-    fireEvent.click(submitBtn);
-
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/Master key must be at least 6 characters in length/i);
-    });
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
   });
 });

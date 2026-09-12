@@ -2,8 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import type { 
   User, 
   Character, 
-  LoginRequest, 
-  RegisterRequest, 
   CompleteTaskResponse, 
   Attribute 
 } from '../types/contract';
@@ -12,7 +10,7 @@ import type {
   ProgressionActivityItem, 
   AttributeChangeNotice 
 } from './authContextDef';
-import { ApiError } from '../types/contract';
+import { supabase } from '../lib/supabase';
 import { authApi } from '../services/api/auth';
 import { characterApi } from '../services/api/character';
 import { AuthContext } from './authContextDef';
@@ -43,6 +41,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [recentActivity, setRecentActivity] = useState<ProgressionActivityItem[]>([]);
   const [lastAttributeChange, setLastAttributeChange] = useState<AttributeChangeNotice | null>(null);
 
+  // Synchronize the Supabase-authenticated user with our Prisma backend
+  const syncWithBackend = useCallback(async () => {
+    try {
+      const data = await authApi.sync();
+      setUser(data.user);
+      
+      // Fetch full attributes from /api/character if available
+      let attrs = data.character.attributes;
+      try {
+        const fullChar = await characterApi.getCharacter();
+        if (fullChar.attributes) {
+          attrs = fullChar.attributes;
+        }
+      } catch {
+        // Fallback to sync response
+      }
+
+      setCharacter({
+        ...data.character,
+        attributes: normalizeAttributes(attrs),
+      });
+      setServerReachable(true);
+
+      // Try to load history
+      try {
+        const historyData = await characterApi.getHistory();
+        if (Array.isArray(historyData) && historyData.length > 0) {
+          setRecentActivity(
+            historyData.map((item, idx) => ({
+              id: item.id || `hist_${idx}`,
+              type: (item.type as ProgressionActivityItem['type']) || 'quest_completed',
+              title: item.title,
+              timestamp: item.timestamp,
+              xpGained: item.xpGained,
+              goldGained: item.goldGained,
+              attributeGained: item.attributeGained,
+              levelBefore: item.levelBefore,
+              levelAfter: item.levelAfter,
+              streakCurrent: item.streakCurrent,
+            }))
+          );
+        }
+      } catch {
+        // GET /api/character/history may not be implemented yet
+      }
+    } catch {
+      // Backend sync failed — user is authenticated with Supabase but backend is down
+      setServerReachable(false);
+    }
+  }, []);
+
   // Synchronizes full character sheet with attributes from GET /api/character
   const refreshCharacter = useCallback(async () => {
     try {
@@ -71,74 +120,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Authenticate session from backend on initial mount
+  // Refresh session by checking Supabase auth + syncing with backend
   const refreshSession = useCallback(async () => {
-    try {
-      const data = await authApi.getMe();
-      setUser(data.user);
-      
-      // Fetch full attributes from /api/character if available
-      let attrs = data.character.attributes;
-      try {
-        const fullChar = await characterApi.getCharacter();
-        if (fullChar.attributes) {
-          attrs = fullChar.attributes;
-        }
-      } catch {
-        // Fallback to data.character
-      }
-
-      setCharacter({
-        ...data.character,
-        attributes: normalizeAttributes(attrs),
-      });
-      setServerReachable(true);
-
-      // Attempt to load server history if available
-      try {
-        const historyData = await characterApi.getHistory();
-        if (Array.isArray(historyData) && historyData.length > 0) {
-          setRecentActivity(
-            historyData.map((item, idx) => ({
-              id: item.id || `hist_${idx}`,
-              type: (item.type as any) || 'quest_completed',
-              title: item.title,
-              timestamp: item.timestamp,
-              xpGained: item.xpGained,
-              goldGained: item.goldGained,
-              attributeGained: item.attributeGained,
-              levelBefore: item.levelBefore,
-              levelAfter: item.levelAfter,
-              streakCurrent: item.streakCurrent,
-            }))
-          );
-        }
-      } catch {
-        // GET /api/character/history may not be implemented yet in backend
-      }
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 401) {
-          setUser(null);
-          setCharacter(null);
-          setServerReachable(true);
-        } else if (err.code === 'NETWORK_ERROR' || err.status === 0) {
-          setUser(null);
-          setCharacter(null);
-          setServerReachable(false);
-        } else {
-          setUser(null);
-          setCharacter(null);
-        }
-      } else {
-        setUser(null);
-        setCharacter(null);
-        setServerReachable(false);
-      }
-    } finally {
-      setIsLoading(false);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await syncWithBackend();
+    } else {
+      setUser(null);
+      setCharacter(null);
     }
-  }, []);
+  }, [syncWithBackend]);
 
   // Reconciles authoritative rewards and progression returned by completion endpoint
   const reconcileCompletion = useCallback((res: CompleteTaskResponse, taskTitle?: string) => {
@@ -230,66 +221,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
+  // Listen for Supabase auth state changes
   useEffect(() => {
     let isMounted = true;
+
+    // Initial session check
     const initAuth = async () => {
       try {
-        const data = await authApi.getMe();
+        const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
 
-        setUser(data.user);
-        
-        let attrs = data.character.attributes;
-        try {
-          const fullChar = await characterApi.getCharacter();
-          if (fullChar.attributes) {
-            attrs = fullChar.attributes;
-          }
-        } catch {
-          // Fallback to data.character
-        }
-
-        if (isMounted) {
-          setCharacter({
-            ...data.character,
-            attributes: normalizeAttributes(attrs),
-          });
+        if (session) {
+          // User is signed in with Supabase — sync with our backend
+          await syncWithBackend();
+        } else {
+          setUser(null);
+          setCharacter(null);
           setServerReachable(true);
         }
-
-        // Try to load history
-        try {
-          const historyData = await characterApi.getHistory();
-          if (isMounted && Array.isArray(historyData) && historyData.length > 0) {
-            setRecentActivity(
-              historyData.map((item, idx) => ({
-                id: item.id || `hist_${idx}`,
-                type: (item.type as any) || 'quest_completed',
-                title: item.title,
-                timestamp: item.timestamp,
-                xpGained: item.xpGained,
-                goldGained: item.goldGained,
-                attributeGained: item.attributeGained,
-                levelBefore: item.levelBefore,
-                levelAfter: item.levelAfter,
-                streakCurrent: item.streakCurrent,
-              }))
-            );
-          }
-        } catch {
-          // Endpoint might not exist yet
-        }
-      } catch (err) {
+      } catch {
         if (isMounted) {
-          if (err instanceof ApiError && err.status === 401) {
-            setUser(null);
-            setCharacter(null);
-            setServerReachable(true);
-          } else {
-            setUser(null);
-            setCharacter(null);
-            setServerReachable(false);
-          }
+          setUser(null);
+          setCharacter(null);
+          setServerReachable(false);
         }
       } finally {
         if (isMounted) {
@@ -297,75 +251,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     };
+
     void initAuth();
+
+    // Listen for auth state changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted) return;
+
+        if (event === 'SIGNED_IN' && session) {
+          setIsLoading(true);
+          await syncWithBackend();
+          setIsLoading(false);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setCharacter(null);
+          setXpProgress(null);
+          setRecentActivity([]);
+          setLastAttributeChange(null);
+        } else if (event === 'TOKEN_REFRESHED' && session) {
+          // Token refreshed silently, no action needed
+        }
+      }
+    );
+
     return () => {
       isMounted = false;
+      subscription.unsubscribe();
     };
+  }, [syncWithBackend]);
+
+  // OAuth sign-in: Google
+  const signInWithGoogle = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/app/dashboard`,
+      },
+    });
+    if (error) throw error;
   }, []);
 
-  const login = async (credentials: LoginRequest) => {
-    const data = await authApi.login(credentials);
-    setUser(data.user);
-    
-    let attrs = data.character.attributes;
-    try {
-      const fullChar = await characterApi.getCharacter();
-      if (fullChar.attributes) {
-        attrs = fullChar.attributes;
-      }
-    } catch {
-      // Fallback
-    }
-
-    setCharacter({
-      ...data.character,
-      attributes: normalizeAttributes(attrs),
+  // OAuth sign-in: GitHub
+  const signInWithGithub = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/app/dashboard`,
+      },
     });
-    setServerReachable(true);
-  };
+    if (error) throw error;
+  }, []);
 
-  const loginWithGithub = async (profile: { githubUsername: string; email?: string; displayName?: string; avatarUrl?: string }) => {
-    const data = await authApi.loginWithGithub(profile);
-    setUser(data.user);
-    
-    let attrs = data.character.attributes;
-    try {
-      const fullChar = await characterApi.getCharacter();
-      if (fullChar.attributes) {
-        attrs = fullChar.attributes;
-      }
-    } catch {
-      // Fallback
-    }
-
-    setCharacter({
-      ...data.character,
-      attributes: normalizeAttributes(attrs),
-    });
-    setServerReachable(true);
-  };
-
-  const register = async (data: RegisterRequest) => {
-    const res = await authApi.register(data);
-    setUser(res.user);
-    setCharacter({
-      ...res.character,
-      attributes: normalizeAttributes(res.character.attributes),
-    });
-    setServerReachable(true);
-  };
-
-  const logout = async () => {
+  // Sign out
+  const logout = useCallback(async () => {
     try {
       await authApi.logout();
-    } finally {
-      setUser(null);
-      setCharacter(null);
-      setXpProgress(null);
-      setRecentActivity([]);
-      setLastAttributeChange(null);
+    } catch {
+      // Backend logout may fail if server is down, that's ok
     }
-  };
+    await supabase.auth.signOut();
+    setUser(null);
+    setCharacter(null);
+    setXpProgress(null);
+    setRecentActivity([]);
+    setLastAttributeChange(null);
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -377,9 +328,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         xpProgress,
         recentActivity,
         lastAttributeChange,
-        login,
-        loginWithGithub,
-        register,
+        signInWithGoogle,
+        signInWithGithub,
         logout,
         refreshSession,
         refreshCharacter,
@@ -392,4 +342,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
-

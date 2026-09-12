@@ -5,8 +5,11 @@ import { authRateLimiter } from '../middleware/rateLimit.middleware.js';
 
 export const authRouter = Router();
 
+// Test suite / legacy endpoints
 authRouter.post('/register', authRateLimiter, authController.register);
 authRouter.post('/login', authRateLimiter, authController.login);
-authRouter.post('/github', authRateLimiter, authController.githubAuth);
+
+// Supabase-native auth endpoints
+authRouter.post('/sync', authRateLimiter, requireAuth, authController.sync);
 authRouter.post('/logout', authController.logout);
 authRouter.get('/me', requireAuth, authController.getMe);

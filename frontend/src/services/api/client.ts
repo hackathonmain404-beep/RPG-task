@@ -1,4 +1,5 @@
 import { ApiError, type ApiErrorResponse } from '../../types/contract';
+import { supabase } from '../../lib/supabase';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -20,6 +21,16 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
 
   if (data !== undefined) {
     defaultHeaders['Content-Type'] = 'application/json';
+  }
+
+  // Attach Supabase access token as Bearer token for backend auth
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session?.access_token) {
+      defaultHeaders['Authorization'] = `Bearer ${sessionData.session.access_token}`;
+    }
+  } catch {
+    // No session available, proceed without token
   }
 
   const fetchOptions: RequestInit = {

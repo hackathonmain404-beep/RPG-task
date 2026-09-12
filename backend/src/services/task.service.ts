@@ -394,7 +394,7 @@ export async function completeTask(userId: string, taskId: string) {
           best: streak.best,
         },
       };
-    });
+    }, { maxWait: 15000, timeout: 25000 });
 
     return result;
   } catch (err) {

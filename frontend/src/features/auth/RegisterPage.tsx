@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
-import { ApiError } from '../../types/contract';
-import { Shield, Lock, Mail, User, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { Shield, AlertCircle, Sparkles } from 'lucide-react';
 
 const ARCHETYPES = [
   { key: 'intellect', label: 'Scholar', discipline: 'Intellect Focus', icon: '🧠', color: 'var(--attr-intellect)' },
@@ -19,55 +18,32 @@ export const RegisterPage: React.FC = () => {
     noindex: false,
   });
 
-  const { register, loginWithGithub, serverReachable } = useAuth();
-  const navigate = useNavigate();
+  const { signInWithGoogle, signInWithGithub, serverReachable } = useAuth();
 
-  const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [starterDiscipline, setStarterDiscipline] = useState('intellect');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSignIn = async () => {
     setErrorMsg(null);
-
-    if (!displayName.trim()) {
-      setErrorMsg('Please choose an adventurer display name.');
-      return;
-    }
-    if (!email.trim()) {
-      setErrorMsg('Please enter a valid email address.');
-      return;
-    }
-    if (password.length < 6) {
-      setErrorMsg('Master key must be at least 6 characters in length.');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      await register({
-        displayName: displayName.trim(),
-        email: email.trim(),
-        password,
-        starterDiscipline,
-      });
-      navigate('/app/dashboard', { replace: true });
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.code === 'EMAIL_ALREADY_EXISTS' || err.status === 409) {
-          setErrorMsg('An adventurer with this email already exists in the Citadel.');
-        } else if (err.code === 'NETWORK_ERROR' || err.status === 0) {
-          setErrorMsg('Unable to connect to Citadel server. Please ensure the backend server is running.');
-        } else {
-          setErrorMsg(err.message || 'Registration failed.');
-        }
-      } else {
-        setErrorMsg('An unexpected error occurred during character creation.');
-      }
-    } finally {
+      await signInWithGoogle();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to sign in with Google.';
+      setErrorMsg(message);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    setErrorMsg(null);
+    setIsSubmitting(true);
+    try {
+      await signInWithGithub();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to sign in with GitHub.';
+      setErrorMsg(message);
       setIsSubmitting(false);
     }
   };
@@ -147,7 +123,7 @@ export const RegisterPage: React.FC = () => {
           </div>
           <h1 style={{ fontSize: '1.75rem', marginBottom: '0.35rem' }}>Create Your Adventurer</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Initialize your permanent progression in the PostgreSQL Citadel.
+            Choose your starter discipline, then sign in to forge your character.
           </p>
         </div>
 
@@ -170,7 +146,7 @@ export const RegisterPage: React.FC = () => {
           >
             <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
-              <strong>Citadel Backend Offline:</strong> The backend API at <code>http://localhost:3000</code> is currently not detected.
+              <strong>Citadel Backend Offline:</strong> The backend API is currently not detected.
             </div>
           </div>
         )}
@@ -198,31 +174,108 @@ export const RegisterPage: React.FC = () => {
           </div>
         )}
 
-        {/* 1-Click GitHub Registration */}
+        {/* Starter Archetype Selector */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <span className="rpg-label">Starter Focus Discipline</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.5rem' }}>
+            {ARCHETYPES.map(arch => {
+              const isSelected = starterDiscipline === arch.key;
+              return (
+                <button
+                  type="button"
+                  key={arch.key}
+                  onClick={() => setStarterDiscipline(arch.key)}
+                  style={{
+                    padding: '0.6rem 0.5rem',
+                    borderRadius: '8px',
+                    backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'var(--bg-surface-sunken)',
+                    border: isSelected ? '1px solid var(--border-focus)' : '1px solid var(--border-subtle)',
+                    color: isSelected ? '#ffffff' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    transition: 'all var(--duration-fast) ease',
+                  }}
+                  aria-pressed={isSelected}
+                >
+                  <span style={{ fontSize: '1.25rem' }}>{arch.icon}</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{arch.label}</span>
+                  <span style={{ fontSize: '0.65rem', color: isSelected ? '#38bdf8' : 'var(--text-tertiary)' }}>
+                    {arch.discipline}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            marginBottom: '1.25rem',
+            color: 'var(--text-tertiary)',
+            fontSize: '0.8rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+          <span>sign in to forge character</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
+        </div>
+
+        {/* Google Sign In */}
         <button
           type="button"
           disabled={isSubmitting}
-          onClick={async () => {
-            const ghUsername = prompt('Enter your GitHub username to create and embark:');
-            if (!ghUsername || !ghUsername.trim()) return;
-            setIsSubmitting(true);
-            setErrorMsg(null);
-            try {
-              if (loginWithGithub) {
-                await loginWithGithub({ githubUsername: ghUsername.trim() });
-                navigate('/app/dashboard', { replace: true });
-              }
-            } catch (err: any) {
-              setErrorMsg(err?.message || 'Failed to authenticate with GitHub.');
-            } finally {
-              setIsSubmitting(false);
-            }
-          }}
+          onClick={handleGoogleSignIn}
           className="rpg-btn"
+          id="register-google"
           style={{
             width: '100%',
             padding: '0.85rem',
-            marginBottom: '1.25rem',
+            marginBottom: '0.75rem',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            color: '#f0f6fc',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.65rem',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <svg height="20" width="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        {/* GitHub Sign In */}
+        <button
+          type="button"
+          disabled={isSubmitting}
+          onClick={handleGithubSignIn}
+          className="rpg-btn"
+          id="register-github"
+          style={{
+            width: '100%',
+            padding: '0.85rem',
+            marginBottom: '0',
             fontSize: '0.95rem',
             fontWeight: 600,
             backgroundColor: '#161b22',
@@ -243,152 +296,6 @@ export const RegisterPage: React.FC = () => {
           </svg>
           <span>Continue with GitHub</span>
         </button>
-
-        {/* Divider */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            marginBottom: '1.25rem',
-            color: 'var(--text-tertiary)',
-            fontSize: '0.8rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}
-        >
-          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
-          <span>or forge character below</span>
-          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
-        </div>
-
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Display Name */}
-          <div style={{ marginBottom: '1.15rem' }}>
-            <label htmlFor="reg-name" className="rpg-label">
-              Adventurer Title / Name
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                id="reg-name"
-                type="text"
-                required
-                autoFocus
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-                className="rpg-input"
-                placeholder="e.g. Valkyrie, CodeScribe"
-                disabled={isSubmitting}
-                style={{ paddingLeft: '2.5rem' }}
-              />
-              <User
-                size={18}
-                color="var(--text-tertiary)"
-                style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }}
-              />
-            </div>
-          </div>
-
-          {/* Email */}
-          <div style={{ marginBottom: '1.15rem' }}>
-            <label htmlFor="reg-email" className="rpg-label">
-              Citadel Email
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                id="reg-email"
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="rpg-input"
-                placeholder="adventurer@example.com"
-                disabled={isSubmitting}
-                style={{ paddingLeft: '2.5rem' }}
-              />
-              <Mail
-                size={18}
-                color="var(--text-tertiary)"
-                style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }}
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label htmlFor="reg-pass" className="rpg-label">
-              Master Key (Password)
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                id="reg-pass"
-                type="password"
-                required
-                autoComplete="new-password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="rpg-input"
-                placeholder="Min 6 characters"
-                disabled={isSubmitting}
-                style={{ paddingLeft: '2.5rem' }}
-              />
-              <Lock
-                size={18}
-                color="var(--text-tertiary)"
-                style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }}
-              />
-            </div>
-          </div>
-
-          {/* Starter Archetype Selector */}
-          <div style={{ marginBottom: '1.75rem' }}>
-            <span className="rpg-label">Starter Focus Discipline</span>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.5rem' }}>
-              {ARCHETYPES.map(arch => {
-                const isSelected = starterDiscipline === arch.key;
-                return (
-                  <button
-                    type="button"
-                    key={arch.key}
-                    onClick={() => setStarterDiscipline(arch.key)}
-                    style={{
-                      padding: '0.6rem 0.5rem',
-                      borderRadius: '8px',
-                      backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'var(--bg-surface-sunken)',
-                      border: isSelected ? '1px solid var(--border-focus)' : '1px solid var(--border-subtle)',
-                      color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      transition: 'all var(--duration-fast) ease',
-                    }}
-                    aria-pressed={isSelected}
-                  >
-                    <span style={{ fontSize: '1.25rem' }}>{arch.icon}</span>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>{arch.label}</span>
-                    <span style={{ fontSize: '0.65rem', color: isSelected ? '#38bdf8' : 'var(--text-tertiary)' }}>
-                      {arch.discipline}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rpg-btn rpg-btn-primary"
-            style={{ width: '100%', padding: '0.85rem', fontSize: '1rem' }}
-          >
-            {isSubmitting ? 'Forging Character...' : 'Forge Character & Embark'}
-            {!isSubmitting && <ArrowRight size={18} />}
-          </button>
-        </form>
 
         <div
           style={{

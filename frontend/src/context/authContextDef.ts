@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { User, Character, LoginRequest, RegisterRequest, CompleteTaskResponse } from '../types/contract';
+import type { User, Character, CompleteTaskResponse } from '../types/contract';
 
 export interface XpProgress {
   currentLevelXp: number;
@@ -39,9 +39,8 @@ export interface AuthContextType {
   xpProgress: XpProgress | null;
   recentActivity: ProgressionActivityItem[];
   lastAttributeChange: AttributeChangeNotice | null;
-  login: (credentials: LoginRequest) => Promise<void>;
-  loginWithGithub: (data: { githubUsername: string; email?: string; displayName?: string; avatarUrl?: string }) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
   refreshCharacter: () => Promise<void>;
@@ -51,4 +50,3 @@ export interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-

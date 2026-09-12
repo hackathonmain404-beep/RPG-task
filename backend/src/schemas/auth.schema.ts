@@ -1,5 +1,17 @@
 import { z } from 'zod';
 
+/**
+ * Sync endpoint schema — used when a Supabase-authenticated user
+ * syncs with our Prisma database for the first time or on login.
+ */
+export const syncSchema = z.object({
+  displayName: z.string().min(2).max(50).optional(),
+  starterDiscipline: z.string().min(1).max(20).optional(),
+}).strict();
+
+export type SyncInput = z.infer<typeof syncSchema>;
+
+// Keep legacy schemas for backwards compatibility / test route
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -22,4 +34,3 @@ export const githubAuthSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type GithubAuthInput = z.infer<typeof githubAuthSchema>;
-
