@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { HeaderHUD } from '../components/layout/HeaderHUD';
@@ -15,6 +16,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   register: vi.fn(),
   logout: vi.fn(),
   refreshSession: vi.fn(),
+  reconcileCompletion: vi.fn(),
   ...overrides,
 });
 
