@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
-import { useCinematicScroll, gsap, ScrollTrigger } from '../../hooks/useCinematicScroll';
+import { useCinematicScroll, gsap } from '../../hooks/useCinematicScroll';
 import { 
   Shield, 
   Flame, 
@@ -122,67 +122,68 @@ export const LandingPage: React.FC = () => {
         }, 0.45);
 
       // ======================================================================
-      // 2. GAMEPLAY LOOP SECTION (Req. 6, 7, 8)
+      // 2. GAMEPLAY LOOP SECTION — BIDIRECTIONAL SCRUB TIMELINE
       // Staggered reveal from depth (opacity, translateY, scale, subtle blur)
       // ======================================================================
       const loopTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#how-it-works',
           start: 'top 85%',
-          end: 'bottom 20%',
-          toggleActions: 'play reverse play reverse',
+          end: 'top 30%',
+          scrub: 0.8,
         },
       });
 
       loopTl
         .fromTo('.gameplay-header-reveal',
           { opacity: 0, y: 35 },
-          { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
+          { opacity: 1, y: 0, ease: 'power2.out' }
         )
         .fromTo('.gameplay-card-wrapper',
-          { opacity: 0, y: 65, scale: 0.96, filter: 'blur(4px)' },
+          { opacity: 0, y: 55, scale: 0.96, filter: 'blur(4px)' },
           {
             opacity: 1,
             y: 0,
             scale: 1,
             filter: 'blur(0px)',
-            duration: 0.7,
             stagger: 0.1,
             ease: 'power2.out',
           },
-          '-=0.25'
+          '-=0.2'
         );
 
       // ======================================================================
-      // 3. DISCIPLINES SECTION (Req. 9, 10, 11)
-      // Eyebrow -> heading -> description -> 5 cards with alternating vectors
+      // 3. DISCIPLINES SECTION — UNIFIED BIDIRECTIONAL SCRUB TIMELINE
+      // Eyebrow -> heading -> description -> 5 cards (alternating vectors) -> progress bars
+      // All synchronized on one reversible timeline: scrolls down to enter, reverses on scroll up
       // ======================================================================
-      const discHeaderTl = gsap.timeline({
+      const discTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#disciplines',
-          start: 'top 82%',
-          toggleActions: 'play reverse play reverse',
+          start: 'top 85%',
+          end: 'top 25%',
+          scrub: 0.8,
         },
       });
 
-      discHeaderTl
+      discTl
         .fromTo('.discipline-eyebrow-reveal',
           { opacity: 0, y: -12 },
-          { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }
+          { opacity: 1, y: 0, ease: 'power2.out' }
         )
         .fromTo('.discipline-heading-reveal',
           { opacity: 0, y: 28 },
-          { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' },
+          { opacity: 1, y: 0, ease: 'power2.out' },
           '-=0.2'
         )
         .fromTo('.discipline-desc-reveal',
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' },
+          { opacity: 1, y: 0, ease: 'power2.out' },
           '-=0.2'
         );
 
       // Alternating directional vectors for the 5 real-world disciplines
-      // Card 1: from left, Card 2: from bottom, Card 3: from right, Card 4: from bottom, Card 5: from left
+      // Staggered onto the same timeline so scrolling up reverses card order (5 -> 4 -> 3 -> 2 -> 1)
       const discCards = gsap.utils.toArray<HTMLElement>('.discipline-card-wrapper');
       const vectors = [
         { x: -35, y: 20 },
@@ -194,52 +195,40 @@ export const LandingPage: React.FC = () => {
 
       discCards.forEach((card, index) => {
         const v = vectors[index % vectors.length];
-        gsap.fromTo(card,
+        discTl.fromTo(card,
           { opacity: 0, x: isMobile ? 0 : v.x, y: v.y, scale: 0.96 },
           {
             opacity: 1,
             x: 0,
             y: 0,
             scale: 1,
-            duration: 0.65,
-            delay: index * 0.08,
             ease: 'power2.out',
-            scrollTrigger: {
-              trigger: '#disciplines',
-              start: 'top 75%',
-              toggleActions: 'play reverse play reverse',
-            },
-          }
+          },
+          index === 0 ? '-=0.15' : '<+=0.08'
         );
       });
 
-      // Attribute Progress Bars: Animate once from 0% to demo value on enter (Req. 10)
-      ScrollTrigger.create({
-        trigger: '#disciplines',
-        start: 'top 70%',
-        once: true,
-        onEnter: () => {
-          const progressBars = gsap.utils.toArray<HTMLElement>('.discipline-progress-bar');
-          progressBars.forEach((bar) => {
-            const targetW = bar.getAttribute('data-target-width') || '50%';
-            gsap.fromTo(bar,
-              { width: '0%' },
-              { width: targetW, duration: 1.15, ease: 'power2.out' }
-            );
-          });
-        },
+      // Attribute Progress Bars: animate in same timeline, naturally reversing to 0% on scroll up
+      const progressBars = gsap.utils.toArray<HTMLElement>('.discipline-progress-bar');
+      progressBars.forEach((bar, index) => {
+        const targetW = bar.getAttribute('data-target-width') || '50%';
+        discTl.fromTo(bar,
+          { width: '0%' },
+          { width: targetW, ease: 'power2.out' },
+          index === 0 ? '<+=0.1' : '<+=0.04'
+        );
       });
 
       // ======================================================================
-      // 4. PERSISTENCE SECTION (Req. 12, 13)
-      // Glow intensification, database core 0.9 -> 1.0, data nodes activate
+      // 4. PERSISTENCE SECTION — BIDIRECTIONAL SCRUB TIMELINE
+      // Glow intensification, database badge 0.88 -> 1.0, data nodes activate
       // ======================================================================
       const persistenceTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#persistence',
           start: 'top 80%',
-          end: 'bottom 25%',
-          toggleActions: 'play reverse play reverse',
+          end: 'top 28%',
+          scrub: 0.8,
         },
       });
 
@@ -249,63 +238,64 @@ export const LandingPage: React.FC = () => {
           {
             boxShadow: '0 0 50px rgba(56, 189, 248, 0.18), 0 20px 50px rgba(0, 0, 0, 0.8)',
             borderColor: 'rgba(56, 189, 248, 0.45)',
-            duration: 0.8,
             ease: 'power2.out',
           }
         )
         .fromTo('.persistence-badge-icon',
           { scale: 0.88, opacity: 0 },
-          { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' },
-          '-=0.5'
+          { scale: 1, opacity: 1, ease: 'back.out(1.4)' },
+          '-=0.3'
         )
         .fromTo('.persistence-heading-reveal',
           { opacity: 0, y: 25 },
-          { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' },
-          '-=0.3'
+          { opacity: 1, y: 0, ease: 'power2.out' },
+          '-=0.2'
         )
         .fromTo('.persistence-node-pill',
           { opacity: 0, x: 20 },
-          { opacity: 1, x: 0, stagger: 0.08, duration: 0.45, ease: 'power2.out' },
-          '-=0.3'
+          { opacity: 1, x: 0, stagger: 0.08, ease: 'power2.out' },
+          '-=0.2'
         )
         .fromTo('.persistence-status-check',
           { opacity: 0, y: 15, scale: 0.95 },
-          { opacity: 1, y: 0, scale: 1, stagger: 0.1, duration: 0.5, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, y: 0, scale: 1, stagger: 0.08, ease: 'power2.out' },
+          '-=0.15'
         );
 
       // ======================================================================
-      // 5. FAQ SECTION (Req. 14, 15)
-      // Calm, measured entry sequence
+      // 5. FAQ SECTION — BIDIRECTIONAL SCRUB TIMELINE
+      // Calm, measured entry sequence, cleanly reversing on scroll up
       // ======================================================================
       const faqTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#faq',
           start: 'top 82%',
-          toggleActions: 'play reverse play reverse',
+          end: 'top 35%',
+          scrub: 0.8,
         },
       });
 
       faqTl
         .fromTo('.faq-header-reveal',
           { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
+          { opacity: 1, y: 0, ease: 'power2.out' }
         )
         .fromTo('.faq-item-reveal',
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out' },
+          { opacity: 1, y: 0, stagger: 0.08, ease: 'power2.out' },
           '-=0.2'
         );
 
       // ======================================================================
-      // 6. FINAL CTA SECTION (Req. 16, 17)
+      // 6. FINAL CTA SECTION — BIDIRECTIONAL SCRUB TIMELINE
       // Climax of the scroll journey, glowing pulse, scale 0.95 -> 1.0
       // ======================================================================
       const ctaTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#final-cta-section',
           start: 'top 85%',
-          toggleActions: 'play reverse play reverse',
+          end: 'bottom 90%',
+          scrub: 0.8,
         },
       });
 
@@ -316,24 +306,23 @@ export const LandingPage: React.FC = () => {
             scale: 1,
             opacity: 1,
             boxShadow: '0 0 50px rgba(56, 189, 248, 0.25), 0 20px 60px rgba(0, 0, 0, 0.8)',
-            duration: 0.85,
             ease: 'power2.out',
           }
         )
         .fromTo('.cta-headline-reveal',
           { opacity: 0, y: 25 },
-          { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' },
-          '-=0.4'
+          { opacity: 1, y: 0, ease: 'power2.out' },
+          '-=0.3'
         )
         .fromTo('.cta-desc-reveal',
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-          '-=0.3'
+          { opacity: 1, y: 0, ease: 'power2.out' },
+          '-=0.2'
         )
         .fromTo('.cta-buttons-reveal',
           { opacity: 0, y: 15, scale: 0.96 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, y: 0, scale: 1, ease: 'power2.out' },
+          '-=0.15'
         );
     }, mainContainerRef);
 
