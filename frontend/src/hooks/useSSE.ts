@@ -44,6 +44,10 @@ export function useSSE(handlers: SSEHandlers, enabled: boolean = true): void {
       ? `${cleanBase}/sse/stream?token=${encodeURIComponent(token)}`
       : `${cleanBase}/sse/stream`;
 
+    if (typeof EventSource === 'undefined') {
+      return;
+    }
+
     const es = new EventSource(sseUrl);
     eventSourceRef.current = es;
 

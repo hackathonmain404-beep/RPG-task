@@ -27,7 +27,6 @@ import {
   BookOpen, 
   Heart,
   ChevronDown,
-  ChevronUp,
   Database
 } from 'lucide-react';
 
@@ -294,22 +293,31 @@ export const DashboardPage: React.FC = () => {
         <div className="analytics-row-3">
           <button
             type="button"
+            id="accountability-matrix-toggle"
             onClick={() => setIsMatrixOpen(prev => !prev)}
-            className="audit-drawer-toggle"
+            className={`audit-drawer-toggle ${isMatrixOpen ? 'is-open' : ''}`}
             aria-expanded={isMatrixOpen}
+            aria-controls="accountability-matrix-panel"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Database size={16} color="#38bdf8" />
+            <div className="audit-drawer-label">
+              <Database size={16} className="audit-drawer-icon" />
               <span>The Accountability Matrix</span>
             </div>
-            {isMatrixOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <ChevronDown size={16} className={`audit-drawer-chevron ${isMatrixOpen ? 'rotated' : ''}`} />
           </button>
 
-          {isMatrixOpen && (
-            <div style={{ marginTop: '1rem' }}>
-              <AccountabilityMatrix tasks={tasks} />
+          <div
+            id="accountability-matrix-panel"
+            role="region"
+            aria-labelledby="accountability-matrix-toggle"
+            className={`audit-drawer-content ${isMatrixOpen ? 'is-open' : ''}`}
+          >
+            <div className="audit-drawer-inner">
+              <div style={{ paddingTop: '1rem' }}>
+                <AccountabilityMatrix tasks={tasks} />
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
