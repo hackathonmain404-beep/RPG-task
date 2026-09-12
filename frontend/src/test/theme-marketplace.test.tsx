@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import React from 'react';
 import { INITIAL_THEMES, DEFAULT_THEME } from '../features/themes/types';
 import { RARITY_CONFIG } from '../features/themes/rarity';
 import { RarityBadge } from '../features/themes/components/RarityBadge';
