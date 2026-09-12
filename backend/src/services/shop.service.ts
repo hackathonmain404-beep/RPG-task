@@ -26,7 +26,10 @@ export async function getShopCatalog() {
  */
 export async function purchaseItem(userId: string, itemId: string) {
   const result = await prisma.$transaction(async (tx) => {
-    // 1. Load item from database — verify exists and is active
+    // 1. Lock Character row to serialize concurrent purchases for this user
+    await tx.$queryRaw`SELECT id FROM "Character" WHERE "userId" = ${userId} FOR UPDATE;`;
+
+    // 2. Load item from database — verify exists and is active
     const item = await tx.shopItem.findUnique({
       where: { id: itemId },
     });
@@ -39,10 +42,10 @@ export async function purchaseItem(userId: string, itemId: string) {
       throw new AppError(400, 'ITEM_INACTIVE', 'This item is no longer available.');
     }
 
-    // 2. Load server price (from DB, NEVER from client)
+    // 3. Load server price (from DB, NEVER from client)
     const serverPrice = item.price;
 
-    // 3. Load character to get gold balance
+    // 4. Load character to verify existence and check gold balance
     const character = await tx.character.findUnique({
       where: { userId },
     });
@@ -51,12 +54,7 @@ export async function purchaseItem(userId: string, itemId: string) {
       throw new AppError(500, 'INTERNAL_SERVER_ERROR', 'Character not found.');
     }
 
-    // 4. Verify sufficient gold (prevent negative balance)
-    if (character.gold < serverPrice) {
-      throw new AppError(400, 'INSUFFICIENT_GOLD', 'You need more Gold to purchase this item.');
-    }
-
-    // 5. Check duplicate ownership (@@unique([userId, shopItemId]))
+    // 5. Check duplicate ownership first (@@unique([userId, shopItemId]))
     const existingOwnership = await tx.inventoryItem.findUnique({
       where: { userId_shopItemId: { userId, shopItemId: itemId } },
     });
@@ -65,19 +63,41 @@ export async function purchaseItem(userId: string, itemId: string) {
       throw new AppError(409, 'ALREADY_OWNED', 'You already own this item.');
     }
 
-    // 6. Deduct gold atomically
-    await tx.character.update({
-      where: { userId },
-      data: { gold: character.gold - serverPrice },
-    });
+    // 6. Verify sufficient gold (prevent negative balance)
+    if (character.gold < serverPrice) {
+      throw new AppError(400, 'INSUFFICIENT_GOLD', 'You need more Gold to purchase this item.');
+    }
 
-    // 7. Create inventory ownership
-    const inventoryItem = await tx.inventoryItem.create({
-      data: {
+    // 7. Deduct gold atomically with non-negative guard (prevents double-spend race conditions)
+    const charUpdate = await tx.character.updateMany({
+      where: {
         userId,
-        shopItemId: itemId,
+        gold: { gte: serverPrice },
+      },
+      data: {
+        gold: { decrement: serverPrice },
       },
     });
+
+    if (charUpdate.count === 0) {
+      throw new AppError(400, 'INSUFFICIENT_GOLD', 'You need more Gold to purchase this item.');
+    }
+
+    // 8. Create inventory ownership (with P2002 race protection)
+    let inventoryItem;
+    try {
+      inventoryItem = await tx.inventoryItem.create({
+        data: {
+          userId,
+          shopItemId: itemId,
+        },
+      });
+    } catch (err: any) {
+      if (err.code === 'P2002') {
+        throw new AppError(409, 'ALREADY_OWNED', 'You already own this item.');
+      }
+      throw err;
+    }
 
     // 8. Create ActivityLog audit record
     await tx.activityLog.create({

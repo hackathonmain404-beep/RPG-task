@@ -3,8 +3,8 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
 import { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
+import { getJwtSecret } from '../utils/jwt.js';
 
-const JWT_SECRET = process.env.SESSION_SECRET || 'super_secret_session_key_32_characters_minimum_rpg';
 const JWT_EXPIRES_IN = '7d';
 
 export interface AuthSessionUser {
@@ -75,7 +75,7 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
 
   const token = jwt.sign(
     { userId: result.user.id, email: result.user.email },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: JWT_EXPIRES_IN }
   );
 
@@ -129,7 +129,7 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
 
   const token = jwt.sign(
     { userId: user.id, email: user.email },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: JWT_EXPIRES_IN }
   );
 

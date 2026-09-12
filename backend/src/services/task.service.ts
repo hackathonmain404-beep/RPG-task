@@ -130,16 +130,41 @@ export async function completeTask(userId: string, taskId: string) {
 
   // Full atomic transaction
   const result = await prisma.$transaction(async (tx) => {
-    // 1. Re-check task state inside transaction (race condition guard)
+    // 1. Lock Character row to serialize progression updates for this user
+    await tx.$queryRaw`SELECT id FROM "Character" WHERE "userId" = ${userId} FOR UPDATE;`;
+
+    // 2. Re-check task state inside transaction (race condition guard)
     const task = await tx.task.findFirst({
-      where: { id: taskId, userId, completed: false },
+      where: { id: taskId, userId },
     });
 
     if (!task) {
+      throw new AppError(404, 'NOT_FOUND', 'Quest not found.');
+    }
+
+    if (task.completed) {
       throw new AppError(409, 'TASK_ALREADY_COMPLETED', 'This quest has already been completed.');
     }
 
-    // 2. Get character with attributes
+    // 3. Calculate reward from server-defined matrix (NEVER from client)
+    const reward = calculateReward(task.difficulty, task.categoryKey);
+
+    // 4. Atomic Compare-And-Swap task completion (prevents duplicate completion race conditions)
+    const updateResult = await tx.task.updateMany({
+      where: { id: taskId, userId, completed: false },
+      data: {
+        completed: true,
+        completedAt: now,
+        xpReward: reward.xp,
+        goldReward: reward.gold,
+      },
+    });
+
+    if (updateResult.count === 0) {
+      throw new AppError(409, 'TASK_ALREADY_COMPLETED', 'This quest has already been completed.');
+    }
+
+    // 5. Get freshly locked character with attributes
     const character = await tx.character.findUnique({
       where: { userId },
       include: { attributes: true },
@@ -149,30 +174,16 @@ export async function completeTask(userId: string, taskId: string) {
       throw new AppError(500, 'INTERNAL_SERVER_ERROR', 'Character not found for user.');
     }
 
-    // 3. Calculate reward from server-defined matrix (NEVER from client)
-    const reward = calculateReward(task.difficulty, task.categoryKey);
-
-    // 4. Compute XP progression and level transition
+    // 6. Compute XP progression and level transition
     const progression = computeProgression(character.totalXp, reward.xp);
 
-    // 5. Calculate streak
+    // 7. Calculate streak
     const streak = calculateStreak(
       character.lastActivityDate,
       character.streakCurrent,
       character.streakBest,
       now
     );
-
-    // 6. Mark task as completed
-    const completedTask = await tx.task.update({
-      where: { id: taskId },
-      data: {
-        completed: true,
-        completedAt: now,
-        xpReward: reward.xp,
-        goldReward: reward.gold,
-      },
-    });
 
     // 7. Create CompletionEvent audit record
     await tx.completionEvent.create({
@@ -228,9 +239,9 @@ export async function completeTask(userId: string, taskId: string) {
 
     return {
       task: {
-        id: completedTask.id,
-        completed: completedTask.completed,
-        completedAt: completedTask.completedAt,
+        id: task.id,
+        completed: true,
+        completedAt: now,
       },
       rewards: {
         xp: reward.xp,
