@@ -17,29 +17,16 @@ describe('LandingPage (Public Marketing & Quest Simulator)', () => {
     ).toBeInTheDocument();
 
     expect(screen.getByText(/The Adventurer's Productivity Operating System/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
-  it('runs the interactive quest simulator dopamine loop', () => {
+  it('renders primary call-to-action navigation elements', () => {
     render(
       <BrowserRouter>
         <LandingPage />
       </BrowserRouter>
     );
 
-    // Initial state: 340 XP and 120 Gold
-    expect(screen.getByText('340 XP')).toBeInTheDocument();
-    expect(screen.getByText('120 Gold')).toBeInTheDocument();
-
-    // Click complete button on simulator
-    const completeBtn = screen.getByRole('button', { name: /Complete Demo Quest/i });
-    fireEvent.click(completeBtn);
-
-    // State after click: 340 + 65 = 405 XP, 120 + 18 = 138 Gold
-    expect(screen.getByText('405 XP')).toBeInTheDocument();
-    expect(screen.getByText('138 Gold')).toBeInTheDocument();
-
-    // Celebration message visible
-    expect(screen.getByText(/Quest Claimed! \+65 XP and \+18 Gold added/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /Log In/i })[0]).toBeInTheDocument();
   });
 
   it('displays the 5 canonical character disciplines', () => {

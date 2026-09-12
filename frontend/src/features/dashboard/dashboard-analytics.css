@@ -1,0 +1,513 @@
+/* ==========================================================================
+   PRODUCTIVITY ANALYTICS DASHBOARD - STYLES
+   Matches reference dark theme, compact cards, subtle borders, high density
+   ========================================================================== */
+
+.analytics-dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+/* Base Analytics Card */
+.analytics-card {
+  background-color: #121824;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 1.35rem 1.5rem;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analytics-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.analytics-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* Row 1 Grid: Productivity Trends & Completed Categories */
+.analytics-row-1 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* Row 2 Grid: Vibe Score & 35-Day Consistency Heatmap */
+.analytics-row-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* Row 3: Full-width Accountability Matrix */
+.analytics-row-3 {
+  width: 100%;
+}
+
+/* ==========================================================================
+   CARD 1: PRODUCTIVITY TRENDS
+   ========================================================================== */
+.trends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.trends-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.trends-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.trends-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.trends-legend-dot.completed {
+  background-color: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.trends-legend-dot.overdue {
+  background-color: #f43f5e;
+  box-shadow: 0 0 6px rgba(244, 63, 94, 0.5);
+}
+
+.chart-container {
+  width: 100%;
+  position: relative;
+  overflow: visible;
+}
+
+.chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/* ==========================================================================
+   CARD 2: COMPLETED CATEGORIES (DONUT)
+   ========================================================================== */
+.donut-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.donut-chart-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut-center-text {
+  position: absolute;
+  text-align: center;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut-total-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+}
+
+.donut-total-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-top: 0.2rem;
+}
+
+.category-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.category-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.category-legend-left {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.category-folder-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-percentage {
+  font-weight: 600;
+  color: #f1f5f9;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   CARD 3: VIBE SCORE
+   ========================================================================== */
+.vibe-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  height: 100%;
+}
+
+.vibe-ring-container {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vibe-score-value {
+  position: absolute;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: var(--font-mono, monospace);
+}
+
+.vibe-text-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.vibe-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.vibe-subtext {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ==========================================================================
+   CARD 4: 35-DAY CONSISTENCY HEATMAP
+   ========================================================================== */
+.heatmap-header {
+  margin-bottom: 1rem;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(18, 14px);
+  grid-template-rows: repeat(2, 14px);
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.heatmap-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.25);
+  z-index: 10;
+  filter: brightness(1.2);
+}
+
+.heatmap-cell.empty {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.heatmap-cell.success {
+  background-color: #10b981;
+  box-shadow: 0 0 5px rgba(16, 185, 129, 0.4);
+}
+
+.heatmap-cell.failed {
+  background-color: #ef4444;
+  box-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+}
+
+/* ==========================================================================
+   CARD 5: THE ACCOUNTABILITY MATRIX
+   ========================================================================== */
+.matrix-card {
+  background-color: #121824;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.matrix-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.matrix-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.matrix-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.matrix-filters {
+  display: inline-flex;
+  align-items: center;
+  background-color: #0b0f17;
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.matrix-filter-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.matrix-filter-btn:hover {
+  color: #f1f5f9;
+}
+
+.matrix-filter-btn.active {
+  background-color: #2e264f;
+  color: #c084fc;
+  font-weight: 600;
+}
+
+/* Table Container */
+.matrix-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.matrix-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+}
+
+.matrix-table td {
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.matrix-row {
+  transition: background-color 0.15s ease;
+}
+
+.matrix-row:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+/* Overdue / Failed Row Accent */
+.matrix-row.overdue-row {
+  background-color: rgba(244, 63, 94, 0.05);
+  border-left: 3px solid #f43f5e;
+}
+
+.matrix-row.overdue-row:hover {
+  background-color: rgba(244, 63, 94, 0.08);
+}
+
+.matrix-task-title {
+  color: #f8fafc;
+  font-weight: 500;
+  max-width: 380px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matrix-category-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.matrix-category-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.matrix-date-cell {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* Status Badges */
+.matrix-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.matrix-status-pill.overdue {
+  background-color: rgba(244, 63, 94, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.matrix-status-pill.done {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Floating Chart & Heatmap Tooltips */
+.analytics-tooltip {
+  position: absolute;
+  background-color: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  color: #f8fafc;
+  pointer-events: none;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+}
+
+/* ==========================================================================
+   RESPONSIVENESS
+   ========================================================================== */
+@media (max-width: 900px) {
+  .analytics-row-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  .analytics-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .analytics-card {
+    padding: 1.1rem;
+  }
+  
+  .trends-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .matrix-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .matrix-filters {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  .matrix-task-title {
+    max-width: 220px;
+  }
+}
