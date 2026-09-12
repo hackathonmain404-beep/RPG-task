@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
-import { TEST_USER } from '../services/auth.service.js';
 
 export async function getCharacter(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -10,26 +9,13 @@ export async function getCharacter(req: Request, res: Response, next: NextFuncti
       throw new AppError(401, 'UNAUTHORIZED', 'Authentication required.');
     }
 
-    if (userId === TEST_USER.id) {
-      res.status(200).json({
-        ...TEST_USER.character,
-        attributes: [
-          { key: 'intellect', displayName: 'Intellect', value: 18 },
-          { key: 'strength', displayName: 'Strength', value: 15 },
-          { key: 'wisdom', displayName: 'Wisdom', value: 14 },
-          { key: 'charisma', displayName: 'Charisma', value: 12 },
-          { key: 'vitality', displayName: 'Vitality', value: 16 },
-        ],
-      });
-      return;
-    }
-
     const char = await prisma.character.findUnique({
       where: { userId },
       include: { attributes: true },
     });
 
     if (!char) {
+      // New user with no character yet — return defaults
       res.status(200).json({
         level: 1,
         totalXp: 0,
@@ -59,18 +45,8 @@ export async function getCharacter(req: Request, res: Response, next: NextFuncti
         value: a.value,
       })),
     });
-  } catch {
-    // Graceful fallback for offline demo testing
-    res.status(200).json({
-      ...TEST_USER.character,
-      attributes: [
-        { key: 'intellect', displayName: 'Intellect', value: 18 },
-        { key: 'strength', displayName: 'Strength', value: 15 },
-        { key: 'wisdom', displayName: 'Wisdom', value: 14 },
-        { key: 'charisma', displayName: 'Charisma', value: 12 },
-        { key: 'vitality', displayName: 'Vitality', value: 16 },
-      ],
-    });
+  } catch (err) {
+    next(err);
   }
 }
 
@@ -81,47 +57,20 @@ export async function getHistory(req: Request, res: Response, next: NextFunction
       throw new AppError(401, 'UNAUTHORIZED', 'Authentication required.');
     }
 
-    if (userId === TEST_USER.id) {
-      res.status(200).json([
-        {
-          id: 'hist-1',
-          type: 'task_completion',
-          title: 'Morning 5km Run',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          xpGained: 30,
-          goldGained: 20,
-          attributeGained: { key: 'vitality', amount: 1 },
-          levelBefore: 3,
-          levelAfter: 3,
-          streakCurrent: 4,
-        },
-        {
-          id: 'hist-2',
-          type: 'task_completion',
-          title: 'Study React Serverless Architecture',
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
-          xpGained: 50,
-          goldGained: 30,
-          attributeGained: { key: 'intellect', amount: 2 },
-          levelBefore: 2,
-          levelAfter: 3,
-          streakCurrent: 4,
-        },
-      ]);
-      return;
-    }
-
     const events = await prisma.completionEvent.findMany({
       where: { userId },
       include: { task: true },
       orderBy: { completedAt: 'desc' },
-      take: 20,
+      take: 50,
     });
 
     const history = events.map(e => ({
       id: e.id,
-      type: 'task_completion',
+      type: e.levelAfter > e.levelBefore ? 'level_up' : 'quest_completed',
       title: e.task.title,
+      description: e.task.description,
+      categoryKey: e.task.categoryKey,
+      difficulty: e.task.difficulty,
       timestamp: e.completedAt.toISOString(),
       xpGained: e.xpAwarded,
       goldGained: e.goldAwarded,
@@ -131,7 +80,7 @@ export async function getHistory(req: Request, res: Response, next: NextFunction
     }));
 
     res.status(200).json(history);
-  } catch {
-    res.status(200).json([]);
+  } catch (err) {
+    next(err);
   }
 }

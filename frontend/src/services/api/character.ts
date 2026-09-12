@@ -20,6 +20,9 @@ export interface HistoryItem {
   id: string;
   type: string;
   title: string;
+  description?: string;
+  categoryKey?: string;
+  difficulty?: string;
   timestamp: string;
   xpGained?: number;
   goldGained?: number;

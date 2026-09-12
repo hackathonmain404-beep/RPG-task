@@ -4,69 +4,7 @@ import { shopApi } from '../services/api/shop';
 import { useAuth } from './useAuth';
 import { ShopContext } from './shopContextDef';
 
-// Canonical starter catalog matching UI_SPEC.md & DESIGN_SYSTEM.md
-const CANONICAL_SEED_ITEMS: ShopItem[] = [
-  {
-    id: 'theme_neon',
-    sku: 'THM-NEON-01',
-    name: 'Neon Outpost Theme',
-    description: 'Deep cyber-void interface with electric fuchsia and cyan accents.',
-    itemType: 'theme',
-    price: 250,
-    rarity: 'epic',
-    active: true,
-  },
-  {
-    id: 'theme_mystic',
-    sku: 'THM-MYST-01',
-    name: 'Mystic Forest Theme',
-    description: 'Dark emerald grove with ancient glowing runes and calm tranquility.',
-    itemType: 'theme',
-    price: 200,
-    rarity: 'rare',
-    active: true,
-  },
-  {
-    id: 'theme_solaris',
-    sku: 'THM-SOL-01',
-    name: 'Solaris Gold Theme',
-    description: 'Celestial solar radiance bathed in warm amber and radiant light.',
-    itemType: 'theme',
-    price: 500,
-    rarity: 'legendary',
-    active: true,
-  },
-  {
-    id: 'frame_bastion',
-    sku: 'FRM-BAST-01',
-    name: 'Midnight Bastion Frame',
-    description: 'Hardened obsidian armor border forged in the Citadel gates.',
-    itemType: 'frame',
-    price: 75,
-    rarity: 'common',
-    active: true,
-  },
-  {
-    id: 'badge_century',
-    sku: 'BDG-CENT-01',
-    name: 'Century of Quests Relic',
-    description: 'Ancient honorary insignia celebrating unwavering discipline mastery.',
-    itemType: 'badge',
-    price: 350,
-    rarity: 'epic',
-    active: true,
-  },
-  {
-    id: 'title_archmage',
-    sku: 'TTL-ARCH-01',
-    name: 'Grand Archmage of Code',
-    description: 'Prestigious honorary title displayed across your public hero profile.',
-    itemType: 'title',
-    price: 1000,
-    rarity: 'legendary',
-    active: true,
-  },
-];
+
 
 function mapItemIdToThemeKey(itemId: string): string {
   if (itemId.includes('neon')) return 'neon_outpost';
@@ -78,7 +16,7 @@ function mapItemIdToThemeKey(itemId: string): string {
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, reconcilePurchase } = useAuth();
 
-  const [shopItems, setShopItems] = useState<ShopItem[]>(CANONICAL_SEED_ITEMS);
+  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [equippedTheme, setEquippedTheme] = useState<string>('default');
   const [isLoadingShop, setIsLoadingShop] = useState<boolean>(false);
@@ -94,16 +32,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setShopError(null);
     try {
       const items = await shopApi.getShopItems();
-      if (Array.isArray(items) && items.length > 0) {
-        setShopItems(items);
-      } else {
-        // Retain canonical seed items if server returns empty catalog
-        setShopItems(CANONICAL_SEED_ITEMS);
-      }
+      setShopItems(Array.isArray(items) ? items : []);
     } catch (err) {
       setShopError(err instanceof Error ? err.message : 'Failed to load shop catalog');
-      // Gracefully fall back to canonical items
-      setShopItems(CANONICAL_SEED_ITEMS);
+      setShopItems([]);
     } finally {
       setIsLoadingShop(false);
     }

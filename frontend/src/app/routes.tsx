@@ -3,8 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, GuestOnlyRoute } from '../components/auth/ProtectedRoute';
 import { AppShell } from '../components/layout/AppShell';
 import { RouteLoadingFallback } from '../components/common/RouteLoadingFallback';
-import { PlaceholderPage } from '../features/placeholder/PlaceholderPage';
-import { History } from 'lucide-react';
+
 
 // Route-level code splitting for optimal initial bundle weight
 const LandingPage = lazy(() => import('../features/landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -16,6 +15,7 @@ const CharacterPage = lazy(() => import('../features/character/CharacterPage').t
 const ShopPage = lazy(() => import('../features/shop/ShopPage').then(m => ({ default: m.ShopPage })));
 const InventoryPage = lazy(() => import('../features/inventory/InventoryPage').then(m => ({ default: m.InventoryPage })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const HistoryPage = lazy(() => import('../features/history/HistoryPage').then(m => ({ default: m.HistoryPage })));
 const PrivacyPage = lazy(() => import('../features/legal/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import('../features/legal/TermsPage').then(m => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import('../features/legal/AccessibilityPage').then(m => ({ default: m.AccessibilityPage })));
@@ -52,23 +52,7 @@ export const AppRoutes: React.FC = () => {
             <Route path="shop" element={<ShopPage />} />
             <Route path="armory" element={<ShopPage />} />
             <Route path="inventory" element={<InventoryPage />} />
-            <Route
-              path="history"
-              element={
-                <PlaceholderPage
-                  title="Chronicles & Activity Log"
-                  phase="Phase 3"
-                  description="A tamper-proof historical log tracking completed quests, earned XP events, streak milestones, and ascension dates."
-                  icon={History}
-                  upcomingFeatures={[
-                    'Chronological timeline grouped by day',
-                    'Exact event details: XP awarded, Gold gained, attribute shifts',
-                    'Level milestone records',
-                    'Audit verification proving real database persistence',
-                  ]}
-                />
-              }
-            />
+            <Route path="history" element={<HistoryPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Route>
