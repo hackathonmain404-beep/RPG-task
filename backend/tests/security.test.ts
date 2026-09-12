@@ -490,5 +490,83 @@ describe('Final Security Audit — Hostile Penetration Testing', () => {
       expect(healthRes.status).toBe(200);
       expect(healthRes.body.status).toBe('healthy');
     });
+
+    it('Enforces HTTP Security Headers via Helmet', async () => {
+      const res = await request(app).get('/api/health');
+      expect(res.headers['x-content-type-options']).toBe('nosniff');
+      expect(res.headers['x-frame-options']).toBeDefined();
+    });
+
+    it('Rejects unexpected payload fields in /api/auth/register (Strict Schema)', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: `strict_${Date.now()}@security.com`,
+          password: 'password123',
+          displayName: 'Strict User',
+          isAdmin: true, // Injected unexpected field
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('Rejects unexpected payload fields in /api/auth/login (Strict Schema)', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: userA.email,
+          password: 'password123',
+          role: 'admin', // Injected unexpected field
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('GET /api/themes complies with API Contract and requires authentication', async () => {
+      // Unauthenticated -> 401
+      const unauthRes = await request(app).get('/api/themes');
+      expect(unauthRes.status).toBe(401);
+
+      // Authenticated -> 200
+      const authRes = await request(app)
+        .get('/api/themes')
+        .set('Authorization', `Bearer ${userA.token}`);
+      expect(authRes.status).toBe(200);
+      expect(Array.isArray(authRes.body.themes)).toBe(true);
+    });
+
+    it('POST /api/auth/logout immediately revokes the JWT token from subsequent requests', async () => {
+      // Create a dedicated user session to test logout revocation
+      const regRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: `logout_test_${Date.now()}@security.com`,
+          password: 'password123',
+          displayName: 'Logout Tester',
+        });
+      const logoutToken = regRes.body.token;
+
+      // Verify token works initially
+      const meResBefore = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${logoutToken}`);
+      expect(meResBefore.status).toBe(200);
+
+      // Logout with Bearer token
+      const logoutRes = await request(app)
+        .post('/api/auth/logout')
+        .set('Authorization', `Bearer ${logoutToken}`);
+      expect(logoutRes.status).toBe(200);
+      expect(logoutRes.body.success).toBe(true);
+
+      // Subsequent request using the revoked token must fail with 401
+      const meResAfter = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${logoutToken}`);
+      expect(meResAfter.status).toBe(401);
+      expect(meResAfter.body.error.code).toBe('UNAUTHORIZED');
+    });
   });
 });

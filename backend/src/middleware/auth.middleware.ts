@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppError } from '../utils/errors.js';
 import { getJwtSecret } from '../utils/jwt.js';
+import { tokenBlocklist } from '../utils/tokenBlocklist.js';
 
 export interface AuthenticatedUser {
   id: string;
@@ -32,6 +33,11 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
 
   if (!token) {
     next(new AppError(401, 'UNAUTHORIZED', 'Authentication token required.'));
+    return;
+  }
+
+  if (tokenBlocklist.isRevoked(token)) {
+    next(new AppError(401, 'UNAUTHORIZED', 'Authentication token has been revoked.'));
     return;
   }
 

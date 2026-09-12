@@ -38,7 +38,7 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
     throw new AppError(409, 'CONFLICT', 'A user with this email already exists.');
   }
 
-  const passwordHash = await bcrypt.hash(input.password, 10);
+  const passwordHash = await bcrypt.hash(input.password, 12);
 
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({

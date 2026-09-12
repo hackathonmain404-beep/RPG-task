@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { registerSchema, loginSchema } from '../schemas/auth.schema.js';
 import * as authService from '../services/auth.service.js';
 import { AppError } from '../utils/errors.js';
+import { tokenBlocklist } from '../utils/tokenBlocklist.js';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -50,8 +51,21 @@ const CLEAR_COOKIE_OPTIONS = {
   sameSite: 'lax' as const,
 };
 
-export async function logout(_req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function logout(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    let token: string | undefined;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+    if (!token && req.cookies) {
+      token = req.cookies.token || req.cookies.session;
+    }
+
+    if (token) {
+      tokenBlocklist.revoke(token);
+    }
+
     res.clearCookie('token', CLEAR_COOKIE_OPTIONS);
     res.clearCookie('session', CLEAR_COOKIE_OPTIONS);
 
