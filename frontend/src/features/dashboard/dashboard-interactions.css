@@ -124,10 +124,10 @@
   box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
   cursor: pointer;
   overflow: hidden;
-  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 250ms ease,
-              border-color 250ms ease,
-              filter 250ms ease;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 320ms ease,
+              filter 320ms ease;
 }
 
 .btn-character-sheet::after {
@@ -140,11 +140,11 @@
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
   transform: rotate(25deg);
   opacity: 0;
-  transition: transform 500ms ease, opacity 250ms ease;
+  transition: transform 550ms ease, opacity 300ms ease;
 }
 
 .btn-character-sheet:hover {
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   filter: brightness(1.08);
   box-shadow: 0 0 20px rgba(56, 189, 248, 0.55), 0 4px 14px rgba(0, 0, 0, 0.3);
   border-color: rgba(125, 211, 252, 0.85);
@@ -161,7 +161,7 @@
 }
 
 .btn-character-sheet:active {
-  transform: translateY(0px) scale(0.98);
+  transform: translate3d(0, 0, 0) scale(0.98);
   filter: brightness(0.96);
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
@@ -172,7 +172,7 @@
 }
 
 .btn-cta-arrow {
-  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* 5. SIDEBAR NAVIGATION HOVER & MICRO-ANIMATIONS */
@@ -402,10 +402,10 @@
   flex-direction: column;
   overflow: hidden;
   cursor: default;
-  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              background-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 440ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -424,7 +424,7 @@
   );
   pointer-events: none;
   opacity: 0;
-  transition: opacity 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .interactive-stat-card:hover::before {
@@ -432,7 +432,7 @@
 }
 
 .interactive-stat-card:hover {
-  transform: translateY(-3px) scale(1.01) translateZ(0);
+  transform: translate3d(0, -3px, 0);
 }
 
 /* Card 1: Player Level (Purple) */
@@ -504,10 +504,10 @@
   will-change: transform, box-shadow, border-color;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              background-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .discipline-stat-card::before {
@@ -522,11 +522,11 @@
   );
   opacity: 0;
   pointer-events: none;
-  transition: opacity 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .discipline-stat-card:hover {
-  transform: translateY(-3px) scale(1.015) translateZ(0);
+  transform: translate3d(0, -3px, 0);
   border-color: var(--discipline-border, rgba(56, 189, 248, 0.45));
   box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.65),
               0 0 22px var(--discipline-shadow-glow, rgba(56, 189, 248, 0.2)),
@@ -539,7 +539,7 @@
 }
 
 .discipline-stat-card:active {
-  transform: translateY(0) scale(0.99) translateZ(0);
+  transform: translate3d(0, 0, 0) scale(0.99);
   transition: transform 120ms ease;
 }
 
@@ -548,8 +548,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              filter 380ms ease;
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .discipline-stat-card:hover .discipline-icon-wrapper {
@@ -561,9 +561,9 @@
 .discipline-card-title {
   font-weight: 700;
   font-size: 0.95rem;
-  transition: color 380ms ease,
-              text-shadow 380ms ease,
-              filter 380ms ease;
+  transition: color 440ms ease,
+              text-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 440ms ease;
 }
 
 .discipline-stat-card:hover .discipline-card-title {
@@ -583,9 +583,9 @@
   font-weight: 700;
   min-width: 24px;
   text-align: right;
-  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              filter 380ms ease,
-              text-shadow 380ms ease;
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 440ms ease,
+              text-shadow 440ms ease;
 }
 
 .discipline-stat-card:hover .discipline-card-number {
@@ -719,10 +719,10 @@
 .analytics-card {
   position: relative;
   overflow: hidden;
-  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 340ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 340ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              background-color 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 440ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 440ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -741,14 +741,14 @@
   );
   opacity: 0;
   pointer-events: none;
-  transition: opacity 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .analytics-card:hover {
-  transform: translateY(-2.5px) scale(1.006) translateZ(0);
+  transform: translate3d(0, -3px, 0);
   border-color: var(--analytics-card-border, rgba(56, 189, 248, 0.35));
-  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6),
-              0 0 22px var(--analytics-card-glow, rgba(56, 189, 248, 0.12));
+  box-shadow: 0 14px 32px -6px rgba(0, 0, 0, 0.62),
+              0 0 24px var(--analytics-card-glow, rgba(56, 189, 248, 0.12));
   background-color: #141b2a;
 }
 
@@ -758,7 +758,7 @@
 
 /* Title subtle illumination on card hover */
 .analytics-card-title {
-  transition: text-shadow 340ms ease, color 340ms ease;
+  transition: text-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1), color 440ms ease;
 }
 
 .analytics-card:hover .analytics-card-title {
@@ -789,7 +789,7 @@
 }
 
 .donut-chart-wrapper {
-  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-analytics-categories:hover .donut-chart-wrapper {
@@ -797,7 +797,7 @@
 }
 
 .donut-center-text {
-  transition: filter 340ms ease, transform 340ms ease;
+  transition: filter 440ms cubic-bezier(0.16, 1, 0.3, 1), transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-analytics-categories:hover .donut-center-text {
@@ -812,11 +812,11 @@
 }
 
 .vibe-card-inner {
-  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .vibe-ring-container svg {
-  transition: filter 340ms ease, transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: filter 440ms cubic-bezier(0.16, 1, 0.3, 1), transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-analytics-vibe:hover .vibe-ring-container svg {
@@ -827,7 +827,7 @@
 .card-analytics-vibe:hover .vibe-card-inner svg[class*="lucide-sparkles"],
 .card-analytics-vibe:hover .vibe-card-inner .lucide-sparkles {
   transform: rotate(15deg) scale(1.18);
-  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1), filter 440ms ease;
   filter: drop-shadow(0 0 6px #f59e0b);
 }
 
