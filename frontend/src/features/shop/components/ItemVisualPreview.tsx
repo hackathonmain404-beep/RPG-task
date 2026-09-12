@@ -7,8 +7,8 @@ interface ItemVisualPreviewProps {
 }
 
 export const ItemVisualPreview: React.FC<ItemVisualPreviewProps> = ({ item }) => {
-  const type = item.itemType.toLowerCase();
-  const id = item.id.toLowerCase();
+  const type = (item.itemType || '').toLowerCase();
+  const id = (item.id || '').toLowerCase();
   const sku = (item.sku || '').toLowerCase();
 
   // 1. THEME PREVIEW

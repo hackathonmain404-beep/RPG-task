@@ -63,8 +63,9 @@ export const ShopPage: React.FC = () => {
       result = result.filter(item => {
         const itemTypeLower = (item.itemType || '').toLowerCase();
         const itemCatLower = (item.category || '').toLowerCase();
+        const itemIdLower = (item.id || '').toLowerCase();
         if (selectedCategory === 'frame') {
-          return itemTypeLower === 'frame' || itemTypeLower === 'cosmetic' || itemCatLower === 'frame' || item.id.startsWith('frame_');
+          return itemTypeLower === 'frame' || itemTypeLower === 'cosmetic' || itemCatLower === 'frame' || itemIdLower.startsWith('frame_');
         }
         return itemTypeLower === selectedCategory.toLowerCase() || itemCatLower === selectedCategory.toLowerCase();
       });
@@ -74,15 +75,17 @@ export const ShopPage: React.FC = () => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
-        item => item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q)
+        item =>
+          (item.name || '').toLowerCase().includes(q) ||
+          (item.description || '').toLowerCase().includes(q)
       );
     }
 
     // 3. Sort items
     if (sortBy === 'price-asc') {
-      result.sort((a, b) => a.price - b.price);
+      result.sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortBy === 'price-desc') {
-      result.sort((a, b) => b.price - a.price);
+      result.sort((a, b) => (b.price || 0) - (a.price || 0));
     } else if (sortBy === 'rarity') {
       result.sort((a, b) => {
         const weightA = RARITY_WEIGHTS[a.rarity?.toLowerCase() || 'common'] || 0;
@@ -90,7 +93,7 @@ export const ShopPage: React.FC = () => {
         return weightB - weightA;
       });
     } else if (sortBy === 'name') {
-      result.sort((a, b) => a.name.localeCompare(b.name));
+      result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
 
     return result;

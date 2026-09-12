@@ -24,9 +24,14 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   const getCategoryCount = (catId: string) => {
     if (catId === 'all') return shopItems.length;
     return shopItems.filter(
-      item =>
-        item.itemType.toLowerCase() === catId.toLowerCase() ||
-        (catId === 'frame' && (item.itemType.toLowerCase() === 'cosmetic' || item.id.startsWith('frame_')))
+      item => {
+        const itemTypeLower = (item.itemType || '').toLowerCase();
+        const itemIdLower = (item.id || '').toLowerCase();
+        return (
+          itemTypeLower === catId.toLowerCase() ||
+          (catId === 'frame' && (itemTypeLower === 'cosmetic' || itemIdLower.startsWith('frame_')))
+        );
+      }
     ).length;
   };
 

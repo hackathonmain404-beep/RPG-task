@@ -43,8 +43,8 @@ export const ItemDetailsModal: React.FC<ItemDetailsModalProps> = ({
 
   if (!isOpen || !item) return null;
 
-  const hasEnoughGold = playerGold >= item.price;
-  const rarityKey = item.rarity?.toLowerCase() || 'common';
+  const hasEnoughGold = playerGold >= (item.price || 0);
+  const rarityKey = (item.rarity || 'common').toLowerCase();
 
   return (
     <div
