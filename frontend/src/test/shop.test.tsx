@@ -334,4 +334,50 @@ describe('Phase 5 — Shop, Inventory & Rewards System', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText(/Failed to retrieve vault records/i)).toBeInTheDocument();
   });
+
+  // 16. Details Inspection Modal
+  it('16. opens item details inspection modal on inspect button click', () => {
+    renderShopPage();
+    const inspectBtn = screen.getByRole('button', { name: /Inspect Neon Outpost Theme/i });
+    fireEvent.click(inspectBtn);
+
+    expect(screen.getByRole('dialog', { name: /Neon Outpost Theme/i })).toBeInTheDocument();
+    expect(screen.getByText(/Requisition Archive Lore/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Close item details/i })).toBeInTheDocument();
+  });
+
+  // 17. Search filtering
+  it('17. filters items by search keyword in the toolbar', () => {
+    renderShopPage();
+    const searchInput = screen.getByRole('textbox', { name: /Filter armory items by keyword/i });
+    fireEvent.change(searchInput, { target: { value: 'Obsidian' } });
+
+    expect(screen.getByText('Midnight Bastion Frame')).toBeInTheDocument();
+    expect(screen.queryByText('Neon Outpost Theme')).not.toBeInTheDocument();
+  });
+
+  // 18. Sorting by price
+  it('18. sorts items by price low-to-high', () => {
+    renderShopPage();
+    const sortSelect = screen.getByRole('combobox', { name: /Sort catalog items/i });
+    fireEvent.change(sortSelect, { target: { value: 'price-asc' } });
+
+    const prices = screen.getAllByText(/\d+/).filter(el => ['75', '200', '250'].includes(el.textContent || ''));
+    expect(prices[0]).toHaveTextContent('75');
+  });
+
+  // 19. Empty search state provides view all CTA
+  it('19. displays empty state with reset CTA when no items match search', () => {
+    renderShopPage();
+    const searchInput = screen.getByRole('textbox', { name: /Filter armory items by keyword/i });
+    fireEvent.change(searchInput, { target: { value: 'NonExistentItemXYZ' } });
+
+    expect(screen.getByText('Armory Empty')).toBeInTheDocument();
+    expect(screen.getByText('Nothing is available in this category yet.')).toBeInTheDocument();
+    const resetBtn = screen.getByRole('button', { name: /View All Requisitions/i });
+    fireEvent.click(resetBtn);
+
+    expect(screen.getByText('Neon Outpost Theme')).toBeInTheDocument();
+  });
 });
+
