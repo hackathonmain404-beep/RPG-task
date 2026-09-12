@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { 
-  Shield, 
   AlertCircle, 
   UserX, 
   AlertTriangle, 
@@ -193,22 +192,19 @@ export const LoginPage: React.FC = () => {
           {/* Terminal Console Header */}
           <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
             {/* Luminous Logo */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
-              <div
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <img
+                src="/achiever-logo.png"
+                alt="Achiever Logo"
                 style={{
                   width: '42px',
                   height: '42px',
                   borderRadius: '10px',
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  objectFit: 'cover',
+                  boxShadow: '0 0 20px rgba(56, 189, 248, 0.45)',
                   border: '1px solid rgba(56, 189, 248, 0.45)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 0 20px rgba(56, 189, 248, 0.35)',
                 }}
-              >
-                <Shield size={24} color="#38bdf8" />
-              </div>
+              />
               <span
                 style={{
                   fontFamily: 'var(--font-display)',
@@ -220,7 +216,7 @@ export const LoginPage: React.FC = () => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                LIFE RPG
+                Achiever
               </span>
             </div>
 

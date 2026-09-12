@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
-  useDocumentMetadata('Life RPG — Turn Everyday Tasks Into Epic Progression & Character Growth', { noindex: false });
+  useDocumentMetadata('Achiever — Turn Everyday Tasks Into Epic Progression & Character Growth', { noindex: false });
 
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const progressCircleRef = useRef<SVGCircleElement>(null);
@@ -505,22 +505,19 @@ export const LandingPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
-              <div
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }} aria-label="Achiever Home">
+              <img
+                src="/achiever-logo.png"
+                alt="Achiever Logo"
                 style={{
                   width: '38px',
                   height: '38px',
                   borderRadius: '10px',
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  objectFit: 'cover',
+                  boxShadow: '0 0 16px rgba(56, 189, 248, 0.45)',
                   border: '1px solid rgba(56, 189, 248, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 0 16px rgba(56, 189, 248, 0.35)',
                 }}
-              >
-                <Shield size={22} color="#38bdf8" />
-              </div>
+              />
               <span
                 style={{
                   fontFamily: 'var(--font-display)',
@@ -532,7 +529,7 @@ export const LandingPage: React.FC = () => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                LIFE RPG
+                Achiever
               </span>
             </Link>
           </div>
@@ -1346,7 +1343,7 @@ export const LandingPage: React.FC = () => {
           <div className="gameplay-header-reveal cinematic-layer" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <span className="rpg-label" style={{ color: '#38bdf8', letterSpacing: '0.08em' }}>The Gameplay Loop</span>
             <h2 style={{ fontSize: '2.35rem', marginTop: '0.5rem', fontWeight: 800 }}>
-              How Life RPG Transforms Your Routine
+              How Achiever Transforms Your Routine
             </h2>
           </div>
 
@@ -1697,7 +1694,7 @@ export const LandingPage: React.FC = () => {
 
             <p className="persistence-heading-reveal" style={{ color: 'var(--text-secondary)', maxWidth: '720px', fontSize: '1.05rem', lineHeight: 1.65, marginBottom: '2.5rem' }}>
               Many productivity demos fake progression using browser localStorage that disappears on another device. 
-              Life RPG uses an enterprise-grade <strong style={{ color: '#38bdf8' }}>PostgreSQL</strong> relational database with atomic transactions, 
+              Achiever uses an enterprise-grade <strong style={{ color: '#38bdf8' }}>PostgreSQL</strong> relational database with atomic transactions, 
               ensuring your hard-earned XP, streak records, and armory inventory are permanently preserved.
             </p>
 
@@ -1735,8 +1732,8 @@ export const LandingPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {[
               {
-                q: 'What is Life RPG?',
-                a: 'Life RPG is a full-stack gamified productivity platform that transforms daily habits and tasks into a role-playing game. You earn verified XP, level up your character across 5 real-world attributes, maintain streaks, and spend earned currency in a virtual armory.',
+                q: 'What is Achiever?',
+                a: 'Achiever is a full-stack gamified productivity platform that transforms daily habits and tasks into a role-playing game. You earn verified XP, level up your character across 5 real-world attributes, maintain streaks, and spend earned currency in a virtual armory.',
               },
               {
                 q: 'How does the XP and Leveling system work?',
@@ -1904,24 +1901,21 @@ export const LandingPage: React.FC = () => {
         >
           {/* Col 1: Brand & Bio */}
           <div style={{ gridColumn: 'span 2' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.85rem' }}>
-              <div
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <img
+                src="/achiever-logo.png"
+                alt="Achiever Logo"
                 style={{
                   width: '36px',
                   height: '36px',
                   borderRadius: '10px',
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                  border: '1px solid rgba(56, 189, 248, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
+                  objectFit: 'cover',
+                  boxShadow: '0 0 15px rgba(56, 189, 248, 0.35)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
                 }}
-              >
-                <Shield size={20} color="#38bdf8" />
-              </div>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.2rem', color: '#f8fafc', letterSpacing: '0.04em' }}>
-                LIFE <span style={{ color: '#38bdf8', textShadow: '0 0 10px rgba(56, 189, 248, 0.5)' }}>RPG</span>
+              />
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.3rem', color: '#f8fafc', letterSpacing: '0.04em' }}>
+                Achiever
               </span>
             </div>
             <p style={{ color: '#38bdf8', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.02em', marginBottom: '0.5rem' }}>
@@ -2022,9 +2016,19 @@ export const LandingPage: React.FC = () => {
             fontFamily: 'var(--font-mono)'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Shield size={16} color="#38bdf8" />
-            <span>&copy; 2026 <strong style={{ color: '#f8fafc' }}>LIFE RPG</strong> — Built for adventurers.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <img
+              src="/achiever-logo.png"
+              alt="Achiever Logo"
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '6px',
+                objectFit: 'cover',
+                boxShadow: '0 0 10px rgba(56, 189, 248, 0.35)',
+              }}
+            />
+            <span>&copy; 2026 <strong style={{ color: '#f8fafc' }}>Achiever</strong> — Built for adventurers.</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>

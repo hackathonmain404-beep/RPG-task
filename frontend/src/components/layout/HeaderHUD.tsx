@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
-import { Shield, Flame, Coins, LogOut, User, Menu, X } from 'lucide-react';
+import { Flame, Coins, LogOut, User, Menu, X } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -72,30 +72,27 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           )}
 
           <Link
-            to="/app/dashboard"
+            to="/dashboard"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem',
+              gap: '0.75rem',
               textDecoration: 'none',
               color: 'var(--text-primary)',
             }}
           >
-            <div
+            <img
+              src="/achiever-logo.png"
+              alt="Achiever Logo"
               style={{
-                width: '36px',
-                height: '36px',
+                width: '34px',
+                height: '34px',
                 borderRadius: '8px',
-                backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                border: '1px solid rgba(56, 189, 248, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 0 10px rgba(56, 189, 248, 0.25)',
+                objectFit: 'cover',
+                boxShadow: '0 0 12px rgba(56, 189, 248, 0.35)',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
               }}
-            >
-              <Shield size={20} color="#38bdf8" />
-            </div>
+            />
             <div>
               <span
                 style={{
@@ -108,7 +105,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                LIFE RPG
+                Achiever
               </span>
             </div>
           </Link>

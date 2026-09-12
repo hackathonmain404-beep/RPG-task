@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
-import { Shield, AlertCircle, Sparkles } from 'lucide-react';
+import { AlertCircle, Sparkles } from 'lucide-react';
 
 const ARCHETYPES = [
   { key: 'intellect', label: 'Scholar', discipline: 'Intellect Focus', icon: '🧠', color: 'var(--attr-intellect)' },
@@ -61,22 +61,19 @@ export const RegisterPage: React.FC = () => {
       }}
     >
       <div style={{ marginBottom: '1.75rem', textAlign: 'center' }}>
-        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
-          <div
+        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }} aria-label="Achiever Home">
+          <img
+            src="/achiever-logo.png"
+            alt="Achiever Logo"
             style={{
               width: '42px',
               height: '42px',
               borderRadius: '10px',
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              objectFit: 'cover',
+              boxShadow: '0 0 18px rgba(56, 189, 248, 0.45)',
               border: '1px solid rgba(56, 189, 248, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 15px rgba(56, 189, 248, 0.3)',
             }}
-          >
-            <Shield size={24} color="#38bdf8" />
-          </div>
+          />
           <span
             style={{
               fontFamily: 'var(--font-display)',
@@ -88,7 +85,7 @@ export const RegisterPage: React.FC = () => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            LIFE RPG
+            Achiever
           </span>
         </Link>
       </div>

@@ -5,7 +5,7 @@ interface MetadataOptions {
   noindex?: boolean;
 }
 
-const DEFAULT_TITLE = 'Life RPG — Turn Everyday Tasks Into Epic Progression & Character Growth';
+const DEFAULT_TITLE = 'Achiever — Turn Everyday Tasks Into Epic Progression & Character Growth';
 const DEFAULT_DESCRIPTION =
   'Transform daily habits, study, and workouts into a real RPG adventure. Level up attributes, build streaks, earn gold, and unlock gear with verified database persistence.';
 
@@ -18,7 +18,7 @@ export function useDocumentMetadata(title?: string, options: MetadataOptions = {
   useEffect(() => {
     // 1. Update Document Title
     const previousTitle = document.title;
-    document.title = title ? (title.includes('Life RPG') ? title : `${title} | Life RPG`) : DEFAULT_TITLE;
+    document.title = title ? (title.includes('Achiever') ? title : `${title} | Achiever`) : DEFAULT_TITLE;
 
     // 2. Update or Create Meta Description
     let descMeta = document.querySelector('meta[name="description"]');
