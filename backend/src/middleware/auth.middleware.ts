@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret } from '../utils/jwt.js';
 import { AppError } from '../utils/errors.js';
+import { tokenBlocklist } from '../utils/tokenBlocklist.js';
 
 export interface AuthenticatedUser {
   id: string;
@@ -47,6 +48,12 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
 
   if (!token) {
     next(new AppError(401, 'UNAUTHORIZED', 'Authentication token required.'));
+    return;
+  }
+
+  // Check if token has been revoked via logout
+  if (tokenBlocklist.isRevoked(token)) {
+    next(new AppError(401, 'UNAUTHORIZED', 'Authentication token has been revoked.'));
     return;
   }
 

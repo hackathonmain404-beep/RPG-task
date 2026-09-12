@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { syncSchema, registerSchema, loginSchema } from '../schemas/auth.schema.js';
 import * as authService from '../services/auth.service.js';
 import { AppError } from '../utils/errors.js';
+import { tokenBlocklist } from '../utils/tokenBlocklist.js';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -104,8 +105,21 @@ export async function sync(req: Request, res: Response, next: NextFunction): Pro
  * POST /api/auth/logout
  * Clears server-side session cookies.
  */
-export async function logout(_req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function logout(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    let token: string | undefined;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+    if (!token && req.cookies) {
+      token = req.cookies.token || req.cookies.session;
+    }
+
+    if (token) {
+      tokenBlocklist.revoke(token);
+    }
+
     const CLEAR_COOKIE_OPTIONS = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
