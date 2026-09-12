@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { 
@@ -33,6 +33,51 @@ export const LandingPage: React.FC = () => {
 
   // FAQ Accordion Open State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  // Theme-Based Scroll Up / Down Tracking State
+  const [activeSection, setActiveSection] = useState<'hero' | 'how-it-works' | 'disciplines' | 'persistence' | 'faq'>('hero');
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = totalScrollable > 0 ? (currentScrollY / totalScrollable) * 100 : 0;
+      setScrollProgress(Math.min(100, Math.max(0, progress)));
+      setShowScrollTop(currentScrollY > 400);
+
+      // Viewport Section Detection
+      const sections: Array<'hero' | 'how-it-works' | 'disciplines' | 'persistence' | 'faq'> = [
+        'hero',
+        'how-it-works',
+        'disciplines',
+        'persistence',
+        'faq'
+      ];
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= window.innerHeight * 0.45) {
+            setActiveSection(sections[i]);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const handleDemoComplete = () => {
     if (isDemoCompleted) return;
@@ -151,68 +196,196 @@ export const LandingPage: React.FC = () => {
         </div>
       </header>
 
+      {/* RIGHT-SIDE RPG HUD SCROLL NAVIGATOR */}
+      <div
+        style={{
+          position: 'fixed',
+          right: '1.5rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 40,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '0.85rem',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '0.72rem',
+          userSelect: 'none',
+        }}
+        className="desktop-only"
+        aria-label="Section Scroll Navigator"
+      >
+        {[
+          { id: 'hero', label: '00 START' },
+          { id: 'how-it-works', label: '01 LOOP' },
+          { id: 'disciplines', label: '02 STATS' },
+          { id: 'persistence', label: '03 VAULT' },
+          { id: 'faq', label: '04 INTEL' },
+        ].map((item) => {
+          const isActive = activeSection === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => scrollToSection(item.id)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '0.2rem 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                cursor: 'pointer',
+                color: isActive ? '#38bdf8' : 'rgba(148, 163, 184, 0.45)',
+                transition: 'all 0.25s ease',
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: isActive ? 700 : 500,
+                  opacity: isActive ? 1 : 0.45,
+                  transform: isActive ? 'translateX(0)' : 'translateX(4px)',
+                  color: isActive ? '#38bdf8' : 'rgba(148, 163, 184, 0.5)',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                {item.label}
+              </span>
+              <div
+                className={isActive ? 'scroll-hud-dot-active' : ''}
+                style={{
+                  width: isActive ? '8px' : '6px',
+                  height: isActive ? '8px' : '6px',
+                  borderRadius: '50%',
+                  backgroundColor: isActive ? '#38bdf8' : 'transparent',
+                  border: isActive ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.25)',
+                  boxShadow: isActive ? '0 0 10px #38bdf8' : 'none',
+                  transition: 'all 0.25s ease',
+                }}
+              />
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Marketing Flow */}
       <main style={{ flex: 1 }}>
-        {/* HERO SECTION */}
+        {/* HERO SECTION WITH CINEMATIC BACKGROUND VIDEO */}
         <section
+          id="hero"
           style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '5rem 1.5rem 4rem',
+            position: 'relative',
+            overflow: 'hidden',
+            width: '100%',
+            padding: '5rem 1.5rem 5rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            position: 'relative',
           }}
         >
-          {/* Eyebrow Tag */}
+          {/* Background Video Layer */}
           <div
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.4rem 1.1rem',
-              borderRadius: '9999px',
-              backgroundColor: 'rgba(56, 189, 248, 0.08)',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              color: '#38bdf8',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              marginBottom: '1.75rem',
-              textTransform: 'uppercase',
-              boxShadow: '0 0 15px rgba(56, 189, 248, 0.12)',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+              pointerEvents: 'none',
+              zIndex: 0,
             }}
           >
-            <Sparkles size={14} />
-            <span>The Adventurer&apos;s Productivity Operating System</span>
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: 0.65,
+                filter: 'contrast(1.15) brightness(0.9)',
+              }}
+              src="/videos/hero-bg.mp4"
+            />
+            {/* Cinematic Gradient Vignette Overlay to ensure perfect contrast and text readability */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: `
+                  radial-gradient(circle at center, rgba(9, 12, 16, 0.45) 0%, rgba(9, 12, 16, 0.85) 75%, #090c10 100%),
+                  linear-gradient(to bottom, rgba(9, 12, 16, 0.7) 0%, transparent 25%, transparent 75%, #090c10 100%)
+                `,
+                pointerEvents: 'none',
+              }}
+            />
           </div>
 
-          {/* H1 Heading */}
-          <h1
+          <div
             style={{
-              fontSize: 'clamp(2.5rem, 5.5vw, 4.25rem)',
-              maxWidth: '920px',
-              marginBottom: '1.5rem',
-              lineHeight: 1.15,
-              fontWeight: 800,
-              letterSpacing: '-0.03em',
+              position: 'relative',
+              zIndex: 1,
+              maxWidth: '1280px',
+              margin: '0 auto',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
             }}
           >
-            Your Life is the Game.{' '}
-            <span
+            {/* Eyebrow Tag */}
+            <div
               style={{
-                display: 'block',
-                background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 25px rgba(56, 189, 248, 0.3))',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.4rem 1.1rem',
+                borderRadius: '9999px',
+                backgroundColor: 'rgba(56, 189, 248, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                color: '#38bdf8',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                marginBottom: '1.75rem',
+                textTransform: 'uppercase',
+                boxShadow: '0 0 15px rgba(56, 189, 248, 0.12)',
               }}
             >
-              Start Gaining XP.
-            </span>
-          </h1>
+              <Sparkles size={14} />
+              <span>The Adventurer&apos;s Productivity Operating System</span>
+            </div>
+
+            {/* H1 Heading */}
+            <h1
+              style={{
+                fontSize: 'clamp(2.5rem, 5.5vw, 4.25rem)',
+                maxWidth: '920px',
+                marginBottom: '1.5rem',
+                lineHeight: 1.15,
+                fontWeight: 800,
+                letterSpacing: '-0.03em',
+              }}
+            >
+              Your Life is the Game.{' '}
+              <span
+                style={{
+                  display: 'block',
+                  background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  filter: 'drop-shadow(0 0 25px rgba(56, 189, 248, 0.3))',
+                }}
+              >
+                Start Gaining XP.
+              </span>
+            </h1>
 
           {/* Subtitle */}
           <p
@@ -397,6 +570,70 @@ export const LandingPage: React.FC = () => {
                 👆 Click the checkbox above to test the tactile dopamine loop.
               </p>
             )}
+          </div>
+
+          {/* THEME-BASED SCROLL DOWN TRIGGER INDICATOR */}
+          <div
+            style={{
+              marginTop: '3.5rem',
+              display: 'inline-flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem',
+              cursor: 'pointer',
+              userSelect: 'none',
+            }}
+            onClick={() => scrollToSection('how-it-works')}
+            role="button"
+            tabIndex={0}
+            aria-label="Scroll down to explore gameplay loop"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                scrollToSection('how-it-works');
+              }
+            }}
+          >
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: '0.14em',
+                color: '#38bdf8',
+                textTransform: 'uppercase',
+                fontWeight: 700,
+                opacity: 0.85,
+              }}
+            >
+              System Dive · Scroll Down
+            </span>
+            <div
+              style={{
+                width: '24px',
+                height: '38px',
+                borderRadius: '12px',
+                border: '2px solid rgba(56, 189, 248, 0.45)',
+                display: 'flex',
+                justifyContent: 'center',
+                paddingTop: '6px',
+                backgroundColor: 'rgba(9, 14, 31, 0.7)',
+                boxShadow: '0 0 16px rgba(56, 189, 248, 0.25)',
+              }}
+            >
+              <div
+                className="scroll-indicator-wheel"
+                style={{
+                  width: '3.5px',
+                  height: '8px',
+                  borderRadius: '2px',
+                  backgroundColor: '#38bdf8',
+                  boxShadow: '0 0 6px #38bdf8',
+                }}
+              />
+            </div>
+            <div className="scroll-indicator-bounce" style={{ marginTop: '-4px' }}>
+              <ChevronDown size={16} color="#38bdf8" />
+            </div>
+          </div>
           </div>
         </section>
 
@@ -1137,6 +1374,89 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* FLOATING CYBER HUD SCROLL UP / ASCEND BUTTON */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          zIndex: 45,
+          opacity: showScrollTop ? 1 : 0,
+          pointerEvents: showScrollTop ? 'auto' : 'none',
+          transform: showScrollTop ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.9)',
+          transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        <button
+          type="button"
+          onClick={scrollToTop}
+          aria-label="Scroll back to top of page"
+          style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(9, 14, 31, 0.94)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(56, 189, 248, 0.45)',
+            boxShadow: '0 0 20px rgba(56, 189, 248, 0.25), 0 10px 25px rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            position: 'relative',
+            color: '#38bdf8',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.08)';
+            e.currentTarget.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.55)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.25), 0 10px 25px rgba(0, 0, 0, 0.8)';
+          }}
+        >
+          {/* Circular SVG Scroll Progress Ring */}
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '54px',
+              height: '54px',
+              transform: 'rotate(-90deg)',
+              pointerEvents: 'none',
+            }}
+          >
+            <circle
+              cx="27"
+              cy="27"
+              r="23"
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.08)"
+              strokeWidth="2.5"
+            />
+            <circle
+              cx="27"
+              cy="27"
+              r="23"
+              fill="none"
+              stroke="#38bdf8"
+              strokeWidth="2.5"
+              strokeDasharray={144.5}
+              strokeDashoffset={144.5 - (144.5 * scrollProgress) / 100}
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dashoffset 0.15s linear' }}
+            />
+          </svg>
+          <ArrowUp size={16} strokeWidth={2.5} color="#38bdf8" />
+          <span style={{ fontSize: '0.52rem', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#38bdf8', marginTop: '-1px' }}>
+            {Math.round(scrollProgress)}%
+          </span>
+        </button>
+      </div>
     </div>
   );
 };
