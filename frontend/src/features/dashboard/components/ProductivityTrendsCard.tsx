@@ -104,7 +104,7 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
   }, [days, maxVal]);
 
   return (
-    <div className="analytics-card anim-entrance-5">
+    <div className="analytics-card card-analytics-trends anim-entrance-5">
       <div className="trends-header">
         <h3 className="analytics-card-title">Productivity Trends</h3>
         <div className="trends-legend">

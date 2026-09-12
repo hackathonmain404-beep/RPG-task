@@ -712,16 +712,140 @@
   animation-delay: 500ms;
 }
 
+/* ==========================================================================
+   ANALYTICS CARDS — SLIGHT, REFINED HOVER PHYSICS & AMBIENT ACCENTS
+   ========================================================================== */
+
+.analytics-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 340ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 340ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Subtle top edge ambient sheen */
+.analytics-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle 320px at 50% 0%,
+    var(--analytics-card-sheen, rgba(56, 189, 248, 0.08)) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.analytics-card:hover {
+  transform: translateY(-2.5px) scale(1.006) translateZ(0);
+  border-color: var(--analytics-card-border, rgba(56, 189, 248, 0.35));
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6),
+              0 0 22px var(--analytics-card-glow, rgba(56, 189, 248, 0.12));
+  background-color: #141b2a;
+}
+
+.analytics-card:hover::before {
+  opacity: 1;
+}
+
+/* Title subtle illumination on card hover */
+.analytics-card-title {
+  transition: text-shadow 340ms ease, color 340ms ease;
+}
+
+.analytics-card:hover .analytics-card-title {
+  text-shadow: 0 0 14px rgba(248, 250, 252, 0.16);
+  color: #ffffff;
+}
+
+/* Card 1: Productivity Trends (Cyan / Emerald) */
+.card-analytics-trends {
+  --analytics-card-sheen: rgba(56, 189, 248, 0.09);
+  --analytics-card-border: rgba(56, 189, 248, 0.35);
+  --analytics-card-glow: rgba(56, 189, 248, 0.12);
+}
+
+.card-analytics-trends:hover .trends-legend-dot.completed {
+  box-shadow: 0 0 8px #10b981;
+}
+
+.card-analytics-trends:hover .trends-legend-dot.overdue {
+  box-shadow: 0 0 8px #f43f5e;
+}
+
+/* Card 2: Completed Categories (Purple / Violet) */
+.card-analytics-categories {
+  --analytics-card-sheen: rgba(168, 85, 247, 0.09);
+  --analytics-card-border: rgba(168, 85, 247, 0.35);
+  --analytics-card-glow: rgba(168, 85, 247, 0.12);
+}
+
+.donut-chart-wrapper {
+  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-analytics-categories:hover .donut-chart-wrapper {
+  transform: scale(1.025);
+}
+
+.donut-center-text {
+  transition: filter 340ms ease, transform 340ms ease;
+}
+
+.card-analytics-categories:hover .donut-center-text {
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.35));
+}
+
+/* Card 3: Vibe Score (Purple / Gold) */
+.card-analytics-vibe {
+  --analytics-card-sheen: rgba(168, 85, 247, 0.12);
+  --analytics-card-border: rgba(168, 85, 247, 0.38);
+  --analytics-card-glow: rgba(168, 85, 247, 0.16);
+}
+
 .vibe-card-inner {
-  transition: transform 0.22s ease;
+  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.analytics-card:hover .vibe-card-inner {
-  transform: translateY(-2px);
+.vibe-ring-container svg {
+  transition: filter 340ms ease, transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.analytics-card:hover .vibe-ring-container svg {
-  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+.card-analytics-vibe:hover .vibe-ring-container svg {
+  transform: scale(1.03);
+  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.55));
+}
+
+.card-analytics-vibe:hover .vibe-card-inner svg[class*="lucide-sparkles"],
+.card-analytics-vibe:hover .vibe-card-inner .lucide-sparkles {
+  transform: rotate(15deg) scale(1.18);
+  transition: transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: drop-shadow(0 0 6px #f59e0b);
+}
+
+/* Card 4: 35-Day Consistency Heatmap (Teal / Emerald) */
+.card-analytics-heatmap {
+  --analytics-card-sheen: rgba(16, 185, 129, 0.08);
+  --analytics-card-border: rgba(56, 189, 248, 0.35);
+  --analytics-card-glow: rgba(56, 189, 248, 0.12);
+}
+
+.card-analytics-heatmap:hover .heatmap-cell.success {
+  filter: brightness(1.12);
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+}
+
+.card-analytics-heatmap:hover .heatmap-cell.failed {
+  filter: brightness(1.12);
+  box-shadow: 0 0 4px rgba(244, 63, 94, 0.4);
 }
 
 /* 11. 35-DAY CONSISTENCY HEATMAP SEQUENTIAL WAVE */

@@ -54,7 +54,7 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
   const strokeDashoffset = circumference * (1 - fillPercent);
 
   return (
-    <div className="analytics-card anim-entrance-7" style={{ display: 'flex', alignItems: 'center' }}>
+    <div className="analytics-card card-analytics-vibe anim-entrance-7" style={{ display: 'flex', alignItems: 'center' }}>
       <div className="vibe-card-inner">
         {/* Glowing Circular Ring with Score */}
         <div className="vibe-ring-container">
