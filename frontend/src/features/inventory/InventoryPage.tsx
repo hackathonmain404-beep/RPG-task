@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../context/useShop';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { InventoryItemCard } from './InventoryItemCard';
 import { 
   Package, 
@@ -21,6 +22,8 @@ const CATEGORIES = [
 ];
 
 export const InventoryPage: React.FC = () => {
+  useDocumentMetadata('Vault Inventory', { noindex: true });
+
   const {
     inventory,
     equippedTheme,
@@ -50,7 +53,7 @@ export const InventoryPage: React.FC = () => {
       const name = target?.shopItem?.name || itemId;
       setEquipMessage(`Equipped ${name}! Visual tokens applied across Citadel.`);
       setTimeout(() => setEquipMessage(null), 4000);
-    } catch (err: any) {
+    } catch {
       setEquipMessage(null);
     }
   };

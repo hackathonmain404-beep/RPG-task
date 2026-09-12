@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { 
   Settings as SettingsIcon, 
   Palette, 
@@ -18,6 +19,8 @@ const THEMES = [
 ];
 
 export const SettingsPage: React.FC = () => {
+  useDocumentMetadata('Citadel Settings', { noindex: true });
+
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 

@@ -240,7 +240,7 @@ export const AppShell: React.FC = () => {
         className="mobile-bottom-nav"
         aria-label="Mobile Navigation"
       >
-        {NAV_ITEMS.slice(0, 5).map(item => {
+        {NAV_ITEMS.map(item => {
           const Icon = item.icon;
           return (
             <NavLink

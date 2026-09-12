@@ -568,12 +568,50 @@ h1, h2, h3, h4, h5, h6 {
   animation: attributeGlow 1.5s ease-in-out;
 }
 
-/* Reduced Motion Override */
+/* Accessible High-Contrast Focus Ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--border-focus, #38bdf8) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* Reduced Motion Override (WCAG 2.1 AA) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .xp-bar-shimmer,
+  .animate-spin,
+  .animate-reward-float,
+  .animate-level-up-pulse,
+  .animate-shield-entrance,
+  .animate-number-pop,
+  .animate-toast-in,
+  .animate-toast-out,
+  .animate-fade-in-up,
+  .attribute-card-updated {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Small Viewport Responsive Tweaks (320px - 480px) */
+@media (max-width: 480px) {
+  .hud-xp-wrapper {
+    display: none !important;
+  }
+  .hud-metrics-container {
+    gap: 0.4rem !important;
+  }
+  .app-main-content {
+    padding: 1rem 0.75rem !important;
   }
 }

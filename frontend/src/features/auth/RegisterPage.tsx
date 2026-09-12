@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { ApiError } from '../../types/contract';
 import { Shield, Lock, Mail, User, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -13,6 +14,11 @@ const ARCHETYPES = [
 ];
 
 export const RegisterPage: React.FC = () => {
+  useDocumentMetadata('Forge Character', {
+    description: 'Create your Life RPG adventurer account and choose your starting discipline.',
+    noindex: false,
+  });
+
   const { register, serverReachable } = useAuth();
   const navigate = useNavigate();
 

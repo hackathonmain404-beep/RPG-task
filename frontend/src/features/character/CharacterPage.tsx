@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/useAuth';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { AttributeCard } from './AttributeCard';
 import { RecentActivityFeed } from './RecentActivityFeed';
 import { 
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export const CharacterPage: React.FC = () => {
+  useDocumentMetadata('Character Sheet', { noindex: true });
   const { 
     user, 
     character, 

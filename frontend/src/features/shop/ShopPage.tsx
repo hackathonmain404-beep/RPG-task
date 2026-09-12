@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/useAuth';
 import { useShop } from '../../context/useShop';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import type { ShopItem } from '../../types/contract';
 import { ShopItemCard } from './ShopItemCard';
 import { PurchaseConfirmModal } from './PurchaseConfirmModal';
@@ -22,6 +23,8 @@ const CATEGORIES = [
 ];
 
 export const ShopPage: React.FC = () => {
+  useDocumentMetadata('The Citadel Armory', { noindex: true });
+
   const { character } = useAuth();
   const {
     shopItems,
@@ -90,7 +93,7 @@ export const ShopPage: React.FC = () => {
       setTimeout(() => {
         setPurchaseSuccessMessage(null);
       }, 4000);
-    } catch (err: any) {
+    } catch {
       setPurchaseSuccessMessage(null);
     }
   };

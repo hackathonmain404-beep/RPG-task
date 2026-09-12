@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useQuests } from '../../context/useQuests';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { characterApi, type CharacterResponse } from '../../services/api/character';
 import { RewardToast } from '../../components/common/RewardToast';
 import { LevelUpOverlay } from '../../components/common/LevelUpOverlay';
@@ -41,6 +42,8 @@ const DEFAULT_ATTRIBUTES: Attribute[] = [
 ];
 
 export const DashboardPage: React.FC = () => {
+  useDocumentMetadata('Command Citadel', { noindex: true });
+
   const { user, character, xpProgress } = useAuth();
   const { tasks, isLoading, pendingTaskIds, completeTask, lastRewardNotice, clearRewardNotice, levelUpEvent, clearLevelUpEvent } = useQuests();
 

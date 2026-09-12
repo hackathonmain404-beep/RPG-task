@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Shield, ArrowRight } from 'lucide-react';
 import type { LevelUpEvent } from '../../context/questsContextDef';
 
@@ -8,6 +8,15 @@ interface LevelUpOverlayProps {
 }
 
 export const LevelUpOverlay: React.FC<LevelUpOverlayProps> = ({ event, onDismiss }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onDismiss();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onDismiss]);
   return (
     <div
       className="level-up-backdrop"

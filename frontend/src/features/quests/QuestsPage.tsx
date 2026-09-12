@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuests } from '../../context/useQuests';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import type { Task, CreateTaskRequest } from '../../types/contract';
 import { QuestList } from './QuestList';
 import { QuestComposerModal } from './QuestComposerModal';
@@ -16,6 +17,8 @@ import {
 } from 'lucide-react';
 
 export const QuestsPage: React.FC = () => {
+  useDocumentMetadata('Quest Board', { noindex: true });
+
   const {
     tasks,
     isLoading,
@@ -47,6 +50,23 @@ export const QuestsPage: React.FC = () => {
     setEditingTask(null);
     setIsComposerOpen(true);
   };
+
+  // Shortcut 'N': open composer when not typing in an input
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.key === 'n' || e.key === 'N') &&
+        !isComposerOpen &&
+        !deletingTask &&
+        !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement)
+      ) {
+        e.preventDefault();
+        handleOpenCreate();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isComposerOpen, deletingTask]);
 
   const handleOpenEdit = (task: Task) => {
     setEditingTask(task);

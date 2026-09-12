@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { ApiError } from '../../types/contract';
 import { Shield, Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
+  useDocumentMetadata('Citadel Login', {
+    description: 'Access your persistent Life RPG character, quest log, and daily momentum.',
+    noindex: false,
+  });
+
   const { login, serverReachable } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

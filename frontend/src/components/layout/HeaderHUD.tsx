@@ -145,11 +145,12 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
 
           {/* XP Bar — Server-authoritative progress */}
           <div
+            className="hud-xp-wrapper"
             style={{
               display: 'flex',
               flexDirection: 'column',
               gap: '0.2rem',
-              minWidth: '130px',
+              minWidth: '120px',
             }}
           >
             <div

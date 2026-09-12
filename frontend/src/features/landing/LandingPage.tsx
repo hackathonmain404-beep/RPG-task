@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { 
   Shield, 
   Flame, 
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
+  useDocumentMetadata('Life RPG — Turn Everyday Tasks Into Epic Progression & Character Growth', { noindex: false });
+
   // Sandboxed Interactive Hero Quest Demo state
   const [isDemoCompleted, setIsDemoCompleted] = useState(false);
   const [demoXp, setDemoXp] = useState(340);
