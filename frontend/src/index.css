@@ -251,13 +251,126 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.rpg-card-hover {
+  cursor: pointer;
 }
 
 .rpg-card-hover:hover {
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 255, 255, 0.05);
+  transform: translateY(-5px) translateZ(0);
+}
+
+/* ==========================================================================
+   GAMEPLAY & DISCIPLINE CARDS — ULTRA-SMOOTH SPRING HOVER PHYSICS
+   ========================================================================== */
+
+.gameplay-card {
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.gameplay-card:hover {
+  border-color: var(--card-accent-border, rgba(56, 189, 248, 0.45));
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.72),
+              0 0 30px var(--card-accent-glow, rgba(56, 189, 248, 0.2)),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(-7px) translateZ(0);
+  background-color: #111722 !important;
+}
+
+.gameplay-card-step {
+  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: color, transform;
+}
+
+.gameplay-card:hover .gameplay-card-step {
+  color: var(--card-accent-num, rgba(56, 189, 248, 0.28)) !important;
+  text-shadow: 0 0 16px var(--card-accent-glow, rgba(56, 189, 248, 0.2));
+  transform: translateY(-1px);
+}
+
+.gameplay-card-icon {
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease;
+  will-change: transform;
+}
+
+.gameplay-card:hover .gameplay-card-icon {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 0 24px var(--card-accent-glow, rgba(56, 189, 248, 0.4)) !important;
+  border-color: var(--card-accent, #38bdf8) !important;
+}
+
+/* Discipline Cards */
+.discipline-card {
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.discipline-card:hover {
+  border-color: var(--card-accent-border, rgba(56, 189, 248, 0.45));
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.7),
+              0 0 26px var(--card-accent-glow, rgba(56, 189, 248, 0.2)),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(-7px) translateZ(0);
+  background-color: #111722 !important;
+}
+
+.discipline-card-icon {
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease;
+  will-change: transform;
+}
+
+.discipline-card:hover .discipline-card-icon {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 0 22px var(--card-accent-glow, rgba(56, 189, 248, 0.4)) !important;
+  border-color: var(--card-accent, #38bdf8) !important;
+}
+
+.discipline-card-badge {
+  transition: box-shadow 0.35s ease,
+              border-color 0.35s ease,
+              background-color 0.35s ease;
+}
+
+.discipline-card:hover .discipline-card-badge {
+  box-shadow: 0 0 14px var(--card-accent-glow, rgba(56, 189, 248, 0.3));
+  border-color: var(--card-accent, #38bdf8) !important;
+}
+
+.discipline-progress-bar {
+  transition: box-shadow 0.35s ease;
+}
+
+.discipline-card:hover .discipline-progress-bar {
+  box-shadow: 0 0 16px var(--card-accent, #38bdf8) !important;
 }
 
 /* Form Controls */
@@ -642,32 +755,6 @@ h1, h2, h3, h4, h5, h6 {
 .cinematic-layer {
   will-change: transform, opacity;
   transform: translateZ(0);
-}
-
-.cinematic-stage-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
-  background: rgba(9, 14, 31, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #38bdf8;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cinematic-stage-badge .stage-pulse {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #38bdf8;
-  box-shadow: 0 0 8px #38bdf8;
-  animation: hudGlowPulse 2s infinite ease-in-out;
 }
 
 /* Persistence Section Cinematic Line & Node Animations */

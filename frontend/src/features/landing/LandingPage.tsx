@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
-  useDocumentMetadata('Life RPG — Turn Everyday Tasks Into Epic Progression & Character Growth', { noindex: false });
+  useDocumentMetadata('Achiever — Turn Everyday Tasks Into Epic Progression & Character Growth', { noindex: false });
 
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const progressCircleRef = useRef<SVGCircleElement>(null);
@@ -505,22 +505,19 @@ export const LandingPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
-              <div
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }} aria-label="Achiever Home">
+              <img
+                src="/achiever-logo.png"
+                alt="Achiever Logo"
                 style={{
                   width: '38px',
                   height: '38px',
                   borderRadius: '10px',
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  objectFit: 'cover',
+                  boxShadow: '0 0 16px rgba(56, 189, 248, 0.45)',
                   border: '1px solid rgba(56, 189, 248, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 0 16px rgba(56, 189, 248, 0.35)',
                 }}
-              >
-                <Shield size={22} color="#38bdf8" />
-              </div>
+              />
               <span
                 style={{
                   fontFamily: 'var(--font-display)',
@@ -532,15 +529,9 @@ export const LandingPage: React.FC = () => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                LIFE RPG
+                Achiever
               </span>
             </Link>
-
-            {/* Subtle Adventure Journey Stage Badge */}
-            <div className="cinematic-stage-badge desktop-only" aria-label={`Current Journey Stage: ${adventureStage}`}>
-              <span className="stage-pulse" />
-              <span>STAGE: {adventureStage}</span>
-            </div>
           </div>
 
           <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="desktop-only" aria-label="Public sections">
@@ -1352,7 +1343,7 @@ export const LandingPage: React.FC = () => {
           <div className="gameplay-header-reveal cinematic-layer" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <span className="rpg-label" style={{ color: '#38bdf8', letterSpacing: '0.08em' }}>The Gameplay Loop</span>
             <h2 style={{ fontSize: '2.35rem', marginTop: '0.5rem', fontWeight: 800 }}>
-              How Life RPG Transforms Your Routine
+              How Achiever Transforms Your Routine
             </h2>
           </div>
 
@@ -1371,6 +1362,9 @@ export const LandingPage: React.FC = () => {
                 desc: 'Define your real goals with targeted disciplines and balanced difficulty tiers.',
                 icon: Shield,
                 color: '#38bdf8',
+                accentBorder: 'rgba(56, 189, 248, 0.45)',
+                accentGlow: 'rgba(56, 189, 248, 0.22)',
+                accentNum: 'rgba(56, 189, 248, 0.28)',
               },
               {
                 step: '02',
@@ -1378,6 +1372,9 @@ export const LandingPage: React.FC = () => {
                 desc: 'Put your distraction away, hit the gym, study the lesson, or write the prose.',
                 icon: Zap,
                 color: '#f59e0b',
+                accentBorder: 'rgba(245, 158, 11, 0.45)',
+                accentGlow: 'rgba(245, 158, 11, 0.22)',
+                accentNum: 'rgba(245, 158, 11, 0.28)',
               },
               {
                 step: '03',
@@ -1385,6 +1382,9 @@ export const LandingPage: React.FC = () => {
                 desc: 'Check off the quest to trigger XP fly-ups, gold counter chimes, and attribute growth.',
                 icon: Coins,
                 color: '#a855f7',
+                accentBorder: 'rgba(168, 85, 247, 0.45)',
+                accentGlow: 'rgba(168, 85, 247, 0.22)',
+                accentNum: 'rgba(168, 85, 247, 0.28)',
               },
               {
                 step: '04',
@@ -1392,23 +1392,30 @@ export const LandingPage: React.FC = () => {
                 desc: 'Conquer non-linear level thresholds, maintain streak flames, and unlock gear in the Armory.',
                 icon: Flame,
                 color: '#ef4444',
+                accentBorder: 'rgba(239, 68, 68, 0.45)',
+                accentGlow: 'rgba(239, 68, 68, 0.22)',
+                accentNum: 'rgba(239, 68, 68, 0.28)',
               },
             ].map(item => {
               const Icon = item.icon;
               return (
                 <div key={item.step} className="gameplay-card-wrapper cinematic-layer">
                   <div 
-                    className="rpg-card rpg-card-hover" 
+                    className="rpg-card rpg-card-hover gameplay-card" 
                     style={{ 
                       position: 'relative',
                       backgroundColor: '#0f141c',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '14px',
                       padding: '1.75rem',
                       height: '100%',
+                      ['--card-accent' as any]: item.color,
+                      ['--card-accent-border' as any]: item.accentBorder,
+                      ['--card-accent-glow' as any]: item.accentGlow,
+                      ['--card-accent-num' as any]: item.accentNum,
                     }}
                   >
                     <div
+                      className="gameplay-card-step"
                       style={{
                         position: 'absolute',
                         top: '1.25rem',
@@ -1422,6 +1429,7 @@ export const LandingPage: React.FC = () => {
                       {item.step}
                     </div>
                     <div
+                      className="gameplay-card-icon"
                       style={{
                         width: '46px',
                         height: '46px',
@@ -1477,20 +1485,64 @@ export const LandingPage: React.FC = () => {
             }}
           >
             {[
-              { name: 'Intellect', level: 'LVL 14', progress: 70, icon: Brain, color: 'var(--attr-intellect)', tasks: 'Coding · Logic · System Design · Languages' },
-              { name: 'Strength', level: 'LVL 12', progress: 55, icon: Dumbbell, color: 'var(--attr-strength)', tasks: 'Gym · Calisthenics · Running · Conditioning' },
-              { name: 'Wisdom', level: 'LVL 18', progress: 85, icon: BookOpen, color: 'var(--attr-wisdom)', tasks: 'Reading · Research · Reflection · Strategy' },
-              { name: 'Charisma', level: 'LVL 09', progress: 40, icon: Sparkles, color: 'var(--attr-charisma)', tasks: 'Public Speaking · Teamwork · Mentorship' },
-              { name: 'Vitality', level: 'LVL 16', progress: 80, icon: Heart, color: 'var(--attr-vitality)', tasks: 'Sleep · Nutrition · Mindfulness · Hydration' },
+              { 
+                name: 'Intellect', 
+                level: 'LVL 14', 
+                progress: 70, 
+                icon: Brain, 
+                color: '#3b82f6', 
+                accentBorder: 'rgba(59, 130, 246, 0.45)',
+                accentGlow: 'rgba(59, 130, 246, 0.22)',
+                tasks: 'Coding · Logic · System Design · Languages' 
+              },
+              { 
+                name: 'Strength', 
+                level: 'LVL 12', 
+                progress: 55, 
+                icon: Dumbbell, 
+                color: '#ef4444', 
+                accentBorder: 'rgba(239, 68, 68, 0.45)',
+                accentGlow: 'rgba(239, 68, 68, 0.22)',
+                tasks: 'Gym · Calisthenics · Running · Conditioning' 
+              },
+              { 
+                name: 'Wisdom', 
+                level: 'LVL 18', 
+                progress: 85, 
+                icon: BookOpen, 
+                color: '#14b8a6', 
+                accentBorder: 'rgba(20, 184, 166, 0.45)',
+                accentGlow: 'rgba(20, 184, 166, 0.22)',
+                tasks: 'Reading · Research · Reflection · Strategy' 
+              },
+              { 
+                name: 'Charisma', 
+                level: 'LVL 09', 
+                progress: 40, 
+                icon: Sparkles, 
+                color: '#8b5cf6', 
+                accentBorder: 'rgba(139, 92, 246, 0.45)',
+                accentGlow: 'rgba(139, 92, 246, 0.22)',
+                tasks: 'Public Speaking · Teamwork · Mentorship' 
+              },
+              { 
+                name: 'Vitality', 
+                level: 'LVL 16', 
+                progress: 80, 
+                icon: Heart, 
+                color: '#10b981', 
+                accentBorder: 'rgba(16, 185, 129, 0.45)',
+                accentGlow: 'rgba(16, 185, 129, 0.22)',
+                tasks: 'Sleep · Nutrition · Mindfulness · Hydration' 
+              },
             ].map(disc => {
               const Icon = disc.icon;
               return (
                 <div key={disc.name} className="discipline-card-wrapper cinematic-layer">
                   <div 
-                    className="rpg-card rpg-card-hover"
+                    className="rpg-card rpg-card-hover discipline-card"
                     style={{
                       backgroundColor: '#0f141c',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '12px',
                       padding: '1.35rem',
                       position: 'relative',
@@ -1498,11 +1550,15 @@ export const LandingPage: React.FC = () => {
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       height: '100%',
+                      ['--card-accent' as any]: disc.color,
+                      ['--card-accent-border' as any]: disc.accentBorder,
+                      ['--card-accent-glow' as any]: disc.accentGlow,
                     }}
                   >
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                         <div
+                          className="discipline-card-icon"
                           style={{
                             width: '42px',
                             height: '42px',
@@ -1518,6 +1574,7 @@ export const LandingPage: React.FC = () => {
                           <Icon size={20} color={disc.color} />
                         </div>
                         <span
+                          className="discipline-card-badge"
                           style={{
                             fontSize: '0.72rem',
                             fontFamily: 'var(--font-mono)',
@@ -1637,7 +1694,7 @@ export const LandingPage: React.FC = () => {
 
             <p className="persistence-heading-reveal" style={{ color: 'var(--text-secondary)', maxWidth: '720px', fontSize: '1.05rem', lineHeight: 1.65, marginBottom: '2.5rem' }}>
               Many productivity demos fake progression using browser localStorage that disappears on another device. 
-              Life RPG uses an enterprise-grade <strong style={{ color: '#38bdf8' }}>PostgreSQL</strong> relational database with atomic transactions, 
+              Achiever uses an enterprise-grade <strong style={{ color: '#38bdf8' }}>PostgreSQL</strong> relational database with atomic transactions, 
               ensuring your hard-earned XP, streak records, and armory inventory are permanently preserved.
             </p>
 
@@ -1675,8 +1732,8 @@ export const LandingPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {[
               {
-                q: 'What is Life RPG?',
-                a: 'Life RPG is a full-stack gamified productivity platform that transforms daily habits and tasks into a role-playing game. You earn verified XP, level up your character across 5 real-world attributes, maintain streaks, and spend earned currency in a virtual armory.',
+                q: 'What is Achiever?',
+                a: 'Achiever is a full-stack gamified productivity platform that transforms daily habits and tasks into a role-playing game. You earn verified XP, level up your character across 5 real-world attributes, maintain streaks, and spend earned currency in a virtual armory.',
               },
               {
                 q: 'How does the XP and Leveling system work?',
@@ -1844,24 +1901,21 @@ export const LandingPage: React.FC = () => {
         >
           {/* Col 1: Brand & Bio */}
           <div style={{ gridColumn: 'span 2' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.85rem' }}>
-              <div
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <img
+                src="/achiever-logo.png"
+                alt="Achiever Logo"
                 style={{
                   width: '36px',
                   height: '36px',
                   borderRadius: '10px',
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                  border: '1px solid rgba(56, 189, 248, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
+                  objectFit: 'cover',
+                  boxShadow: '0 0 15px rgba(56, 189, 248, 0.35)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
                 }}
-              >
-                <Shield size={20} color="#38bdf8" />
-              </div>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.2rem', color: '#f8fafc', letterSpacing: '0.04em' }}>
-                LIFE <span style={{ color: '#38bdf8', textShadow: '0 0 10px rgba(56, 189, 248, 0.5)' }}>RPG</span>
+              />
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.3rem', color: '#f8fafc', letterSpacing: '0.04em' }}>
+                Achiever
               </span>
             </div>
             <p style={{ color: '#38bdf8', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.02em', marginBottom: '0.5rem' }}>
@@ -1938,7 +1992,7 @@ export const LandingPage: React.FC = () => {
             <h4 style={{ color: '#f8fafc', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1.25rem', borderLeft: '2px solid #f43f5e', paddingLeft: '0.6rem' }}>
               Legal
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.85rem' }}>
               <li><Link to="/privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
               <li><Link to="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
               <li><Link to="/accessibility" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Accessibility Statement <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
@@ -1946,108 +2000,13 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
 
-        {/* DECORATIVE RPG SYSTEM STATUS MODULE (HUD Console) */}
-        <div
-          style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '1.5rem 0',
-            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '1rem',
-            fontSize: '0.75rem',
-            fontFamily: 'var(--font-mono)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-            {/* Status Pill */}
-            <div
-              style={{
-                padding: '0.35rem 0.75rem',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(9, 14, 31, 0.9)',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-                color: '#38bdf8',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                boxShadow: '0 0 12px rgba(56, 189, 248, 0.2)'
-              }}
-            >
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
-              System Status
-            </div>
-
-            <span className="desktop-only" style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
-
-            {/* Engine Status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(6, 9, 19, 0.6)', padding: '0.35rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <span style={{ color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '0.65rem' }}>Quest Engine:</span>
-              <span style={{ color: '#34d399', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#34d399' }} /> ONLINE
-              </span>
-            </div>
-
-            {/* XP Progression Status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(6, 9, 19, 0.6)', padding: '0.35rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <span style={{ color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '0.65rem' }}>XP Progression:</span>
-              <span style={{ color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8' }} /> ONLINE
-              </span>
-            </div>
-
-            {/* Cloud Vault Status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(6, 9, 19, 0.6)', padding: '0.35rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <span style={{ color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '0.65rem' }}>Cloud Vault (PostgreSQL):</span>
-              <span style={{ color: '#818cf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#818cf8' }} /> VERIFIED
-              </span>
-            </div>
-
-            {/* Latency */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '0.35rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.25)', color: '#fbbf24' }}>
-              <Zap size={13} color="#fbbf24" />
-              <span>24ms SYNCHRONIZED</span>
-            </div>
-          </div>
-
-          {/* Back to Top */}
-          <button
-            type="button"
-            onClick={scrollToTop}
-            id="back-to-top"
-            aria-label="Scroll back to top of page"
-            style={{
-              background: 'rgba(15, 23, 49, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              padding: '0.45rem 0.95rem',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              fontSize: '0.75rem',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <ArrowUp size={12} /> Back to Top
-          </button>
-        </div>
-
         {/* COPYRIGHT & SESSION METADATA BAR */}
         <div
           style={{
             maxWidth: '1280px',
             margin: '0 auto',
-            paddingTop: '1.75rem',
+            paddingTop: '2rem',
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -2057,9 +2016,19 @@ export const LandingPage: React.FC = () => {
             fontFamily: 'var(--font-mono)'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Shield size={16} color="#38bdf8" />
-            <span>&copy; 2026 <strong style={{ color: '#f8fafc' }}>LIFE RPG</strong> — Built for adventurers.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <img
+              src="/achiever-logo.png"
+              alt="Achiever Logo"
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '6px',
+                objectFit: 'cover',
+                boxShadow: '0 0 10px rgba(56, 189, 248, 0.35)',
+              }}
+            />
+            <span>&copy; 2026 <strong style={{ color: '#f8fafc' }}>Achiever</strong> — Built for adventurers.</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
