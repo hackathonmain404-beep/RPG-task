@@ -27,6 +27,38 @@ const REWARD_MATRIX: Record<string, { xp: number; gold: number; attribute: numbe
   hard:   { xp: 140, gold: 40, attribute: 16 },
 };
 
+// ─── Timezone Policy (GAMIFICATION.md §1) ─────────────────────────────────────
+
+/**
+ * EXPLICIT TIMEZONE POLICY:
+ * All streak calculations use UTC calendar days.
+ * This ensures deterministic, server-consistent behavior regardless of client timezone.
+ * If user-profile timezone support is needed later, inject it into calculateStreak().
+ */
+export const STREAK_TIMEZONE_POLICY = 'UTC' as const;
+
+// ─── Category → Attribute Mapping (GAMIFICATION.md §2) ───────────────────────
+
+/**
+ * Deterministic category-to-attribute mapping.
+ * The categoryKey on a task determines which attribute receives progression.
+ *
+ * | Category Key | Attribute   | Real-World Activities                          |
+ * |-------------|-------------|------------------------------------------------|
+ * | intellect   | Intellect   | Coding, technical, programming, debugging      |
+ * | wisdom      | Wisdom      | Study, reading, academic, language learning     |
+ * | strength    | Strength    | Gym, fitness, weightlifting, cardio, sports     |
+ * | charisma    | Charisma    | Social, community, networking, public speaking  |
+ * | vitality    | Vitality    | Sleep, health, hydration, nutrition, meditation |
+ */
+export const CATEGORY_ATTRIBUTE_MAP: Record<string, { key: string; displayName: string }> = {
+  intellect: { key: 'intellect', displayName: 'Intellect' },
+  strength:  { key: 'strength',  displayName: 'Strength'  },
+  wisdom:    { key: 'wisdom',    displayName: 'Wisdom'    },
+  charisma:  { key: 'charisma',  displayName: 'Charisma'  },
+  vitality:  { key: 'vitality',  displayName: 'Vitality'  },
+};
+
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
 export interface LevelProgression {

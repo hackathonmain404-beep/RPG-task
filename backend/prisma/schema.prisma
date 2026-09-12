@@ -19,6 +19,7 @@ model User {
   character        Character?
   tasks            Task[]
   completionEvents CompletionEvent[]
+  attributeEvents  AttributeEvent[]
 
   @@index([email])
 }
@@ -100,4 +101,19 @@ model CompletionEvent {
   createdAt   DateTime @default(now())
 
   @@index([userId, completedAt])
+}
+
+model AttributeEvent {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  attributeKey String
+  amount       Int
+  sourceType   String   // task_completion, milestone, item
+  sourceId     String?
+
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
