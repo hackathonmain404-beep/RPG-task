@@ -19,6 +19,8 @@ const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then
 const PrivacyPage = lazy(() => import('../features/legal/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import('../features/legal/TermsPage').then(m => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import('../features/legal/AccessibilityPage').then(m => ({ default: m.AccessibilityPage })));
+const QuestsInfoPage = lazy(() => import('../features/legal/QuestsPage').then(m => ({ default: m.QuestsPage })));
+const RewardsInfoPage = lazy(() => import('../features/legal/RewardsPage').then(m => ({ default: m.RewardsPage })));
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -31,6 +33,8 @@ export const AppRoutes: React.FC = () => {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />
+        <Route path="/quests" element={<QuestsInfoPage />} />
+        <Route path="/rewards" element={<RewardsInfoPage />} />
 
         {/* Guest-only Auth routes (redirects to /app/dashboard if already authenticated) */}
         <Route element={<GuestOnlyRoute />}>

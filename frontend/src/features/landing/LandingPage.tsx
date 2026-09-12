@@ -1406,9 +1406,9 @@ export const LandingPage: React.FC = () => {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
               <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Features <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
               <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>How It Works <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><Link to="/register" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Quests <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><Link to="/quests" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Quests <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
               <li><a href="#disciplines" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Character Progression <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><Link to="/register" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Rewards <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><Link to="/rewards" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Rewards <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
             </ul>
           </div>
 
