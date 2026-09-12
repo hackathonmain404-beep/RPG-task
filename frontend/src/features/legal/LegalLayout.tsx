@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, ArrowLeft, Lock, FileText, Eye, CheckCircle2 } from 'lucide-react';
+import { Shield, ArrowLeft, Lock, FileText, Eye, CheckCircle2, Swords, Gift } from 'lucide-react';
 
 interface LegalLayoutProps {
   title: string;
@@ -30,6 +30,8 @@ export const LegalLayout: React.FC<LegalLayoutProps> = ({
     { name: 'Privacy Policy', path: '/privacy', icon: Lock },
     { name: 'Terms of Service', path: '/terms', icon: FileText },
     { name: 'Accessibility', path: '/accessibility', icon: Eye },
+    { name: 'Quest System', path: '/quests', icon: Swords },
+    { name: 'Reward Types', path: '/rewards', icon: Gift },
   ];
 
   return (
