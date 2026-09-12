@@ -97,28 +97,29 @@ export const LandingPage: React.FC = () => {
 
       heroTl
         .to('.hero-video-el', {
-          y: isMobile ? -15 : -45,
-          scale: 0.96,
+          y: isMobile ? -15 : -40,
+          scale: 0.95,
+          opacity: 0.2,
           ease: 'none',
         }, 0)
         .to('.hero-vignette-overlay', {
-          backgroundColor: 'rgba(9, 12, 16, 0.92)',
-          ease: 'none',
-        }, 0.2)
-        .to('.hero-headline-group', {
-          y: isMobile ? -20 : -45,
-          opacity: 0.25,
-          ease: 'none',
-        }, 0.2)
-        .to('.hero-scroll-indicator', {
-          opacity: 0,
-          y: 20,
+          opacity: 0.95,
           ease: 'none',
         }, 0.1)
+        .to('.hero-scroll-indicator', {
+          opacity: 0,
+          y: 12,
+          ease: 'power1.in',
+        }, 0)
+        .to('.hero-headline-group', {
+          y: isMobile ? -25 : -55,
+          opacity: 0,
+          ease: 'power1.in',
+        }, 0.05)
         .to('.hero-content-layer', {
           opacity: 0,
           ease: 'none',
-        }, 0.65);
+        }, 0.45);
 
       // ======================================================================
       // 2. GAMEPLAY LOOP SECTION (Req. 6, 7, 8)
@@ -127,7 +128,7 @@ export const LandingPage: React.FC = () => {
       const loopTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#how-it-works',
-          start: 'top 80%',
+          start: 'top 85%',
           end: 'bottom 20%',
           toggleActions: 'play reverse play reverse',
         },
@@ -342,7 +343,13 @@ export const LandingPage: React.FC = () => {
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const headerOffset = 72;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
     }
   };
 
@@ -556,14 +563,16 @@ export const LandingPage: React.FC = () => {
             position: 'relative',
             overflow: 'hidden',
             width: '100%',
-            padding: '5rem 1.5rem 5rem',
+            minHeight: 'clamp(620px, calc(100vh - 72px), 880px)',
+            padding: 'clamp(3rem, 6vh, 4.5rem) 1.5rem clamp(1.5rem, 3vh, 2.5rem)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            justifyContent: 'space-between',
             textAlign: 'center',
           }}
         >
-          {/* Background Video Layer */}
+          {/* Background Video Layer with smooth gradient feathering */}
           <div
             style={{
               position: 'absolute',
@@ -574,6 +583,8 @@ export const LandingPage: React.FC = () => {
               overflow: 'hidden',
               pointerEvents: 'none',
               zIndex: 0,
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.35) 85%, rgba(0,0,0,0) 100%)',
+              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.35) 85%, rgba(0,0,0,0) 100%)',
             }}
           >
             <video
@@ -592,7 +603,7 @@ export const LandingPage: React.FC = () => {
               }}
               src="/videos/hero-bg.mp4"
             />
-            {/* Cinematic Gradient Vignette Overlay to ensure perfect contrast and text readability */}
+            {/* Cinematic Gradient Vignette Overlay to ensure perfect contrast and soft bottom fade */}
             <div
               className="hero-vignette-overlay cinematic-layer"
               style={{
@@ -602,8 +613,8 @@ export const LandingPage: React.FC = () => {
                 right: 0,
                 bottom: 0,
                 background: `
-                  radial-gradient(circle at center, rgba(9, 12, 16, 0.45) 0%, rgba(9, 12, 16, 0.85) 75%, #090c10 100%),
-                  linear-gradient(to bottom, rgba(9, 12, 16, 0.7) 0%, transparent 25%, transparent 75%, #090c10 100%)
+                  radial-gradient(ellipse at 50% 40%, rgba(9, 12, 16, 0.3) 0%, rgba(9, 12, 16, 0.75) 60%, #090c10 100%),
+                  linear-gradient(to bottom, rgba(9, 12, 16, 0.75) 0%, transparent 20%, transparent 55%, rgba(9, 12, 16, 0.6) 75%, rgba(9, 12, 16, 0.95) 90%, #090c10 100%)
                 `,
                 pointerEvents: 'none',
               }}
@@ -615,15 +626,26 @@ export const LandingPage: React.FC = () => {
             style={{
               position: 'relative',
               zIndex: 1,
+              width: '100%',
               maxWidth: '1280px',
               margin: '0 auto',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
+              justifyContent: 'space-between',
+              flex: 1,
             }}
           >
             {/* Layer 1: Headline, Eyebrow, CTAs */}
-            <div className="hero-headline-group cinematic-layer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div 
+              className="hero-headline-group cinematic-layer" 
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                margin: 'auto 0',
+              }}
+            >
               {/* Eyebrow Tag */}
               <div
                 style={{
@@ -718,13 +740,14 @@ export const LandingPage: React.FC = () => {
             <div
               className="hero-scroll-indicator cinematic-layer"
               style={{
-                marginTop: '2.5rem',
+                marginTop: '1.5rem',
                 display: 'inline-flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '0.5rem',
                 cursor: 'pointer',
                 userSelect: 'none',
+                transition: 'transform 0.2s ease, filter 0.2s ease',
               }}
               onClick={() => scrollToSection('how-it-works')}
               role="button"
@@ -780,14 +803,70 @@ export const LandingPage: React.FC = () => {
           </div>
         </section>
 
+        {/* ATMOSPHERIC CYBER HORIZON CONNECTOR */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2,
+            marginTop: '-1px',
+            pointerEvents: 'none',
+          }}
+          aria-hidden="true"
+        >
+          {/* Ambient Glow Pool between sections */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-35px',
+              width: 'min(900px, 90vw)',
+              height: '70px',
+              background: 'radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.04) 50%, transparent 80%)',
+              filter: 'blur(10px)',
+            }}
+          />
+
+          {/* Luminous Feathered Horizon Beam */}
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '1280px',
+              height: '1px',
+              background: 'linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.05) 15%, rgba(56, 189, 248, 0.4) 50%, rgba(56, 189, 248, 0.05) 85%, transparent 100%)',
+              boxShadow: '0 0 20px rgba(56, 189, 248, 0.3)',
+              position: 'relative',
+            }}
+          >
+            {/* Center Glowing Rune Waypoint */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%) rotate(45deg)',
+                width: '6px',
+                height: '6px',
+                backgroundColor: '#090c10',
+                border: '1px solid #38bdf8',
+                boxShadow: '0 0 10px #38bdf8',
+              }}
+            />
+          </div>
+        </div>
+
         {/* SECTION 2: HOW IT WORKS (THE 4-STEP LOOP) */}
         <section
           id="how-it-works"
           style={{
             maxWidth: '1280px',
             margin: '0 auto',
-            padding: '5.5rem 1.5rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            padding: '5rem 1.5rem 6.5rem',
+            scrollMarginTop: '80px',
+            position: 'relative',
           }}
         >
           <div className="gameplay-header-reveal cinematic-layer" style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
