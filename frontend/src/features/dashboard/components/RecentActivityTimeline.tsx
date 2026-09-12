@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Sparkles, Trophy, ArrowUpRight } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import type { Task } from '../../../types/contract';
 import type { ProgressionActivityItem } from '../../../context/authContextDef';
 

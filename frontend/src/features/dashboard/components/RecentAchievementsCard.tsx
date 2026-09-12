@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Flame, BookOpen, Lock, CheckCircle2, Sparkles } from 'lucide-react';
+import { Trophy, Lock, CheckCircle2 } from 'lucide-react';
 import type { Task, Character } from '../../../types/contract';
 
 interface RecentAchievementsCardProps {
