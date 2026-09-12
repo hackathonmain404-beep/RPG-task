@@ -40,6 +40,7 @@ export interface AuthContextType {
   recentActivity: ProgressionActivityItem[];
   lastAttributeChange: AttributeChangeNotice | null;
   login: (credentials: LoginRequest) => Promise<void>;
+  loginWithGithub: (data: { githubUsername: string; email?: string; displayName?: string; avatarUrl?: string }) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;

@@ -7,5 +7,6 @@ export const authRouter = Router();
 
 authRouter.post('/register', authRateLimiter, authController.register);
 authRouter.post('/login', authRateLimiter, authController.login);
+authRouter.post('/github', authRateLimiter, authController.githubAuth);
 authRouter.post('/logout', authController.logout);
 authRouter.get('/me', requireAuth, authController.getMe);

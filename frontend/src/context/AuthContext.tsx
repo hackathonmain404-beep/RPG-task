@@ -324,6 +324,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setServerReachable(true);
   };
 
+  const loginWithGithub = async (profile: { githubUsername: string; email?: string; displayName?: string; avatarUrl?: string }) => {
+    const data = await authApi.loginWithGithub(profile);
+    setUser(data.user);
+    
+    let attrs = data.character.attributes;
+    try {
+      const fullChar = await characterApi.getCharacter();
+      if (fullChar.attributes) {
+        attrs = fullChar.attributes;
+      }
+    } catch {
+      // Fallback
+    }
+
+    setCharacter({
+      ...data.character,
+      attributes: normalizeAttributes(attrs),
+    });
+    setServerReachable(true);
+  };
+
   const register = async (data: RegisterRequest) => {
     const res = await authApi.register(data);
     setUser(res.user);
@@ -357,6 +378,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         recentActivity,
         lastAttributeChange,
         login,
+        loginWithGithub,
         register,
         logout,
         refreshSession,

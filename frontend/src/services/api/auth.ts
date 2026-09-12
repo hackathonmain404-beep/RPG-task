@@ -35,6 +35,17 @@ export const authApi = {
   },
 
   /**
+   * 1-Click GitHub authentication or username verification.
+   * Dispatches POST /api/auth/github
+   */
+  async loginWithGithub(data: { githubUsername: string; email?: string; displayName?: string; avatarUrl?: string }): Promise<AuthMeResponse> {
+    return request<AuthMeResponse>('/auth/github', {
+      method: 'POST',
+      data,
+    });
+  },
+
+  /**
    * Invalidates the active server session and clears authentication cookies.
    * Dispatches POST /api/auth/logout
    */

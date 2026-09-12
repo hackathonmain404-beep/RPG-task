@@ -45,6 +45,24 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
   }
 }
 
+export async function githubAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { githubAuthSchema } = await import('../schemas/auth.schema.js');
+    const validated = githubAuthSchema.parse(req.body);
+    const result = await authService.loginOrRegisterWithGithub(validated);
+
+    res.cookie('token', result.token, COOKIE_OPTIONS);
+
+    res.status(200).json({
+      user: result.user,
+      character: result.character,
+      token: result.token,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 const CLEAR_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',

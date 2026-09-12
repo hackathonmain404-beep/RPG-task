@@ -29,13 +29,19 @@ export interface AuthResult {
 
 export async function registerUser(input: RegisterInput): Promise<AuthResult> {
   const email = input.email.toLowerCase().trim();
+  const githubUsername = input.githubUsername?.trim() || null;
 
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email },
+        ...(githubUsername ? [{ githubUsername: { equals: githubUsername, mode: 'insensitive' as const } }] : []),
+      ],
+    },
   });
 
   if (existingUser) {
-    throw new AppError(409, 'CONFLICT', 'A user with this email already exists.');
+    throw new AppError(409, 'CONFLICT', 'An adventurer with this email or GitHub username already exists.');
   }
 
   const passwordHash = await bcrypt.hash(input.password, 12);
@@ -46,6 +52,7 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
         email,
         passwordHash,
         displayName: input.displayName.trim(),
+        githubUsername,
         lastActiveAt: new Date(),
       },
     });
@@ -111,10 +118,10 @@ export const TEST_USER = {
 };
 
 export async function loginUser(input: LoginInput): Promise<AuthResult> {
-  const email = input.email.toLowerCase().trim();
-  const isTestAccount = (email === 'adventurer@liferpg.app' || email === 'test@liferpg.app') && input.password === 'password123';
+  const identifier = input.email.trim();
+  const isTestAccount = (identifier === 'adventurer@liferpg.app' || identifier === 'test@liferpg.app') && input.password === 'password123';
 
-  // 1. Instant response for test account (zero DB latency, 100% reliable offline/online)
+  // 1. Instant response for test account
   if (isTestAccount) {
     const token = jwt.sign(
       { userId: TEST_USER.id, email: TEST_USER.email },
@@ -133,143 +140,175 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
     };
   }
 
-  // 2. Standard database authentication for registered users
+  // 2. Database authentication: checks email OR GitHub username
   try {
-    let user = await prisma.user.findUnique({
-      where: { email },
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: { equals: identifier.toLowerCase() } },
+          { githubUsername: { equals: identifier, mode: 'insensitive' } },
+          { displayName: { equals: identifier, mode: 'insensitive' } },
+        ],
+      },
       include: { character: true },
     });
 
     if (user) {
-      const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
-      if (passwordMatch || isTestAccount) {
-        if (!user.character) {
-          user.character = await prisma.character.create({
-            data: {
-              userId: user.id,
-              level: 1,
-              totalXp: 0,
-              gold: 50,
-              streakCurrent: 0,
-              streakBest: 0,
-            },
-          });
+      if (user.passwordHash) {
+        const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
+        if (!passwordMatch && !isTestAccount) {
+          throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid password.');
         }
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastActiveAt: new Date() },
-        });
-
-        const token = jwt.sign(
-          { userId: user.id, email: user.email },
-          getJwtSecret(),
-          { expiresIn: JWT_EXPIRES_IN }
-        );
-
-        return {
-          user: {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName,
-          },
-          character: {
-            level: user.character.level,
-            totalXp: user.character.totalXp,
-            gold: user.character.gold,
-            streakCurrent: user.character.streakCurrent,
-            streakBest: user.character.streakBest,
-          },
-          token,
-        };
       }
-    } else if (isTestAccount) {
-      // Auto-provision test account in DB if database is active
-      const passwordHash = await bcrypt.hash('password123', 10);
-      const created = await prisma.$transaction(async (tx) => {
-        const u = await tx.user.create({
+
+      if (!user.character) {
+        user.character = await prisma.character.create({
           data: {
-            email: 'adventurer@liferpg.app',
-            passwordHash,
-            displayName: TEST_USER.displayName,
-            lastActiveAt: new Date(),
+            userId: user.id,
+            level: 1,
+            totalXp: 0,
+            gold: 50,
+            streakCurrent: 0,
+            streakBest: 0,
           },
         });
-        const c = await tx.character.create({
-          data: {
-            userId: u.id,
-            level: TEST_USER.character.level,
-            totalXp: TEST_USER.character.totalXp,
-            gold: TEST_USER.character.gold,
-            streakCurrent: TEST_USER.character.streakCurrent,
-            streakBest: TEST_USER.character.streakBest,
-            attributes: {
-              create: [
-                { key: 'intellect', displayName: 'Intellect', value: 18 },
-                { key: 'strength', displayName: 'Strength', value: 15 },
-                { key: 'wisdom', displayName: 'Wisdom', value: 14 },
-                { key: 'charisma', displayName: 'Charisma', value: 12 },
-                { key: 'vitality', displayName: 'Vitality', value: 16 },
-              ],
-            },
-          },
-        });
-        return { user: u, character: c };
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastActiveAt: new Date() },
       });
 
       const token = jwt.sign(
-        { userId: created.user.id, email: created.user.email },
+        { userId: user.id, email: user.email },
         getJwtSecret(),
         { expiresIn: JWT_EXPIRES_IN }
       );
 
       return {
         user: {
-          id: created.user.id,
-          email: created.user.email,
-          displayName: created.user.displayName,
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
         },
         character: {
-          level: created.character.level,
-          totalXp: created.character.totalXp,
-          gold: created.character.gold,
-          streakCurrent: created.character.streakCurrent,
-          streakBest: created.character.streakBest,
+          level: user.character.level,
+          totalXp: user.character.totalXp,
+          gold: user.character.gold,
+          streakCurrent: user.character.streakCurrent,
+          streakBest: user.character.streakBest,
         },
         token,
       };
     }
   } catch (err: unknown) {
-    // If DB is offline / not connected yet, fall through to in-memory test account if valid
-    if (!isTestAccount) {
-      const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('reach database') || msg.includes('DATABASE_URL')) {
-        throw new AppError(503, 'DATABASE_OFFLINE', 'Database server not connected yet. Use the test login ID.');
-      }
-      throw err;
-    }
+    if (err instanceof AppError) throw err;
+    console.error('Database login query error:', err);
   }
 
-  // 2. If test account and DB was unavailable or not found, return test session
-  if (isTestAccount) {
+  throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email, GitHub username, or password.');
+}
+
+/**
+ * 1-Click GitHub Authentication (Login or Register)
+ */
+export async function loginOrRegisterWithGithub(profile: {
+  githubUsername: string;
+  email?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  githubId?: string;
+}): Promise<AuthResult> {
+  const username = profile.githubUsername.trim();
+  const email = profile.email ? profile.email.toLowerCase().trim() : `${username.toLowerCase()}@github.liferpg.app`;
+
+  try {
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { githubUsername: { equals: username, mode: 'insensitive' } },
+          { email: { equals: email } },
+          ...(profile.githubId ? [{ githubId: profile.githubId }] : []),
+        ],
+      },
+      include: { character: true },
+    });
+
+    if (user) {
+      // Update metadata on login
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          githubUsername: username,
+          avatarUrl: profile.avatarUrl || user.avatarUrl,
+          lastActiveAt: new Date(),
+        },
+        include: { character: true },
+      });
+    } else {
+      // Auto-register new adventurer via GitHub
+      user = await prisma.$transaction(async (tx) => {
+        const newUser = await tx.user.create({
+          data: {
+            email,
+            displayName: profile.displayName?.trim() || username,
+            githubUsername: username,
+            githubId: profile.githubId || null,
+            avatarUrl: profile.avatarUrl || null,
+            lastActiveAt: new Date(),
+          },
+        });
+
+        const newChar = await tx.character.create({
+          data: {
+            userId: newUser.id,
+            level: 1,
+            totalXp: 0,
+            gold: 50,
+            streakCurrent: 0,
+            streakBest: 0,
+            attributes: {
+              create: [
+                { key: 'intellect', displayName: 'Intellect', value: 10 },
+                { key: 'strength', displayName: 'Strength', value: 10 },
+                { key: 'wisdom', displayName: 'Wisdom', value: 10 },
+                { key: 'charisma', displayName: 'Charisma', value: 10 },
+                { key: 'vitality', displayName: 'Vitality', value: 10 },
+              ],
+            },
+          },
+        });
+
+        return { ...newUser, character: newChar };
+      });
+    }
+
     const token = jwt.sign(
-      { userId: TEST_USER.id, email: TEST_USER.email },
+      { userId: user.id, email: user.email },
       getJwtSecret(),
       { expiresIn: JWT_EXPIRES_IN }
     );
 
     return {
       user: {
-        id: TEST_USER.id,
-        email: TEST_USER.email,
-        displayName: TEST_USER.displayName,
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
       },
-      character: TEST_USER.character,
+      character: {
+        level: user.character?.level ?? 1,
+        totalXp: user.character?.totalXp ?? 0,
+        gold: user.character?.gold ?? 50,
+        streakCurrent: user.character?.streakCurrent ?? 0,
+        streakBest: user.character?.streakBest ?? 0,
+      },
       token,
     };
+  } catch (err: unknown) {
+    if (err instanceof AppError) throw err;
+    console.error('GitHub auth error:', err);
+    throw new AppError(500, 'GITHUB_AUTH_FAILED', 'Failed to authenticate with GitHub.');
   }
-
-  throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password.');
 }
 
 export async function getAuthMe(userId: string): Promise<{ user: AuthSessionUser; character: CharacterSummary }> {

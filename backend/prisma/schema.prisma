@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -8,13 +9,16 @@ generator client {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
-  passwordHash String
-  displayName  String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  lastActiveAt DateTime?
+  id             String     @id @default(cuid())
+  email          String     @unique
+  passwordHash   String?
+  githubId       String?    @unique
+  githubUsername String?    @unique
+  avatarUrl      String?
+  displayName    String
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  lastActiveAt   DateTime?
 
   character        Character?
   tasks            Task[]
@@ -26,6 +30,7 @@ model User {
   activityLogs     ActivityLog[]
 
   @@index([email])
+  @@index([githubUsername])
 }
 
 model Character {
