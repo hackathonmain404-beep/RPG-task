@@ -1,37 +1,42 @@
-# ENVIRONMENT VARIABLES SPECIFICATION
+# Environment
 
-**Canonical Authority:** Backend Branch  
-**Companion File:** `.env.example`
+## Frontend
 
----
+```text
+VITE_API_URL
+VITE_PUBLIC_APP_URL
+```
 
-## 1. Required Variables
+## Backend
 
-| Variable | Type | Description | Default / Example |
-|---|---|---|---|
-| `PORT` | Number | Port on which the Express server listens | `5000` |
-| `NODE_ENV` | String | Runtime environment (`development`, `production`, `test`) | `development` |
-| `DATABASE_URL` | String | PostgreSQL connection string with credentials | `postgresql://postgres:password@localhost:5432/liferpg?schema=public` |
-| `JWT_SECRET` | String | Secret key for signing and verifying JSON Web Tokens ($\ge 32$ chars) | `super_secret_jwt_key_at_least_32_characters_long` |
-| `JWT_EXPIRES_IN` | String | Token time-to-live string | `7d` |
-| `FRONTEND_URL` | String | Allowed origin for Cross-Origin Resource Sharing (CORS) | `http://localhost:3000` |
+```text
+PORT
+DATABASE_URL
+SESSION_SECRET
+FRONTEND_ORIGIN
+NODE_ENV
+```
 
----
+## Rules
 
-## 2. `.env.example` Template
+- `.env` is never committed.
+- `.env.example` is committed.
+- Variable names stay stable.
+- Development and production values are separate.
 
+## Example
+
+Frontend (`.env.example`):
 ```env
-# Server
-PORT=5000
-NODE_ENV=development
+VITE_API_URL=http://localhost:3000/api
+VITE_PUBLIC_APP_URL=http://localhost:5173
+```
 
-# Database (PostgreSQL)
-DATABASE_URL="postgresql://postgres:password@localhost:5432/liferpg?schema=public"
-
-# Authentication
-JWT_SECRET="replace_with_a_secure_random_string_32_chars_minimum"
-JWT_EXPIRES_IN="7d"
-
-# CORS
-FRONTEND_URL="http://localhost:3000"
+Backend (`.env.example`):
+```env
+PORT=3000
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/liferpg"
+SESSION_SECRET="replace_me_with_a_long_random_secret"
+FRONTEND_ORIGIN="http://localhost:5173"
+NODE_ENV="development"
 ```

@@ -1,86 +1,111 @@
-# GAMIFICATION SYSTEM SPECIFICATION
+# Gamification System
 
-**Canonical Authority:** Server-Side Authoritative  
-**Covers:** Streaks, Attributes, In-Game Economy, Shop Purchases, Badges
+## 1. Streaks
 
----
+### Definition
 
-## 1. Streaks Engine
+A streak counts consecutive calendar days on which the user completes at least one task.
 
-### Streak Rules
-1. **Time Window:** Evaluated against UTC calendar days (or user-configured timezone offset).
-2. **First Activity Ever:** `streakDays = 1`.
-3. **Same Day Completion:** If a user completes another task on the same UTC day as `lastActiveDate`, the streak count remains intact (does not double-increment).
-4. **Consecutive Day Completion:** If the current UTC day is exactly 1 calendar day after `lastActiveDate`, `streakDays` increments by 1.
-5. **Broken Streak:** If more than 1 calendar day has elapsed since `lastActiveDate`, the streak resets to 1.
+The timezone policy must be explicit. Recommended:
+use the user's profile timezone or a server-defined default (UTC) and compare calendar dates in that timezone.
 
-### Streak Calculation Logic
+### Rules
 
-```typescript
-export interface StreakResult {
-  streakDays: number;
-  isStreakIncreased: boolean;
-  isStreakReset: boolean;
-}
+- **Same day:** completing multiple tasks does not add multiple streak days.
+- **Next consecutive day:** `streakCurrent + 1`. If `streakCurrent > streakBest`, update `streakBest = streakCurrent`.
+- **More than one missed calendar day:** reset `streakCurrent` to 1 on the next active day.
+- **Best streak:** store historical maximum in `streakBest`.
 
-export function evaluateStreak(lastActiveDate: Date | null, currentDate: Date = new Date()): StreakResult {
-  if (!lastActiveDate) {
-    return { streakDays: 1, isStreakIncreased: true, isStreakReset: false };
-  }
+### Feedback
 
-  const lastUtc = Date.UTC(lastActiveDate.getUTCFullYear(), lastActiveDate.getUTCMonth(), lastActiveDate.getUTCDate());
-  const currentUtc = Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
-  const diffDays = Math.floor((currentUtc - lastUtc) / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    // Same day
-    return { streakDays: -1, isStreakIncreased: false, isStreakReset: false };
-  } else if (diffDays === 1) {
-    // Consecutive day
-    return { streakDays: 1, isStreakIncreased: true, isStreakReset: false };
-  } else {
-    // Broken streak
-    return { streakDays: 1, isStreakIncreased: false, isStreakReset: true };
-  }
-}
-```
+Completing today's first quest triggers:
+- streak flame animation
+- current streak count display
+- best streak notification
+- motivational feedback
 
 ---
 
-## 2. Character Attributes
+## 2. Attributes
 
-Tasks are assigned one of 5 RPG attributes:
+5 core character attributes:
+- **Intellect**
+- **Strength**
+- **Wisdom**
+- **Charisma**
+- **Vitality**
 
-| Attribute | Focus Area | Example Real-World Activities |
+### Category Mapping
+
+| Category | Target Attribute | Real-World Activities |
 |---|---|---|
-| **`STRENGTH`** | Physical Power & Fitness | Weightlifting, calisthenics, running, martial arts |
-| **`INTELLECT`** | Knowledge & Problem Solving | Coding, reading textbooks, research, puzzles |
-| **`DISCIPLINE`** | Routine & Willpower | Deep work blocks, waking at 6 AM, cleaning room |
-| **`CREATIVITY`** | Artistic & Lateral Expression | Writing, sketching, guitar practice, UI design |
-| **`VITALITY`** | Health & Recovery | 8 hours sleep, hydration, meditation, healthy meals |
+| **Coding / Technical** | `intellect` | Programming, algorithmic problems, debugging |
+| **Study / Reading** | `wisdom` | Academic courses, non-fiction reading, language learning |
+| **Gym / Fitness** | `strength` | Weightlifting, cardio, sports, physical endurance |
+| **Social / Community** | `charisma` | Networking, public speaking, team collaboration |
+| **Sleep / Health** | `vitality` | 8 hours sleep, hydration, nutrition, meditation |
 
-### Attribute Milestones & Tiers
-- **Novice (10 - 49):** Baseline starting stats.
-- **Adept (50 - 99):** Unlocks Adept class title for that attribute.
-- **Master (100 - 199):** Unlocks special glowing badge and profile flair.
-- **Grandmaster (200+):** Apex tier.
+Completing a task gives attribute XP/value according to its registered category. The client is never allowed to submit arbitrary attribute rewards.
 
 ---
 
-## 3. Virtual Economy & Shop
+## 3. Rewards
 
-### Gold Economy
-- Starting Balance: **50 Gold** upon user registration.
-- Income:
-  - `TRIVIAL`: +5 Gold
-  - `EASY`: +15 Gold
-  - `MEDIUM`: +35 Gold
-  - `HARD`: +75 Gold
-  - `EPIC`: +150 Gold
-  - Streak Bonus: Every 7 consecutive days awards a **+50 Gold** milestone bonus.
+Completion awards:
+- **XP**
+- **Gold**
+- **Attribute progression**
 
-### Purchase Transaction Rules
-1. **Server Pricing:** Prices are strictly queried from the `Item` database table.
-2. **Balance Verification:** The transaction checks `character.gold >= item.cost`. If not, rejects with `INSUFFICIENT_GOLD`.
-3. **Uniqueness Check:** If `item.isUnique === true`, the database checks if `[userId, itemId]` exists in `Inventory`. If yes, rejects with `ITEM_ALREADY_OWNED`.
-4. **Atomic Execution:** `character.gold` deduction and `Inventory` row insertion occur inside a single atomic transaction.
+Reward magnitude depends authoritatively on:
+- category
+- difficulty (`easy`, `medium`, `hard`)
+
+*Standard Reward Matrix:*
+- `easy`: +35 XP, +10 Gold, +4 Attribute
+- `medium`: +70 XP, +18 Gold, +8 Attribute
+- `hard`: +140 XP, +40 Gold, +16 Attribute
+
+Avoid reward inflation.
+
+---
+
+## 4. Economy
+
+Gold can purchase:
+- themes (e.g. Cyberpunk, Lo-Fi, Retro)
+- profile frames
+- badges / relics
+- avatars / cosmetics
+- unlockable UI decorations
+
+Every purchase:
+- checks current price server-side from database
+- atomically deducts gold
+- creates inventory ownership (`InventoryItem` / `UserTheme` / `UserBadge`)
+
+---
+
+## 5. Badges
+
+Deterministic milestone badges:
+- **First Quest:** Complete your first task.
+- **Seven-Day Flame:** Achieve a 7-day streak.
+- **Quest Master:** Complete 50 total tasks.
+- **Early Riser:** Complete a task before 8:00 AM.
+- **Scholar:** Reach 50 Wisdom.
+- **Iron Will:** Reach 50 Strength.
+- **Jack of All Trades:** Raise all 5 attributes above 20.
+
+Unlock conditions are evaluated deterministically from server data during the completion transaction.
+
+---
+
+## 6. Reward Presentation
+
+Rewards feel tactile and immediate:
+- floating XP numbers
+- smooth animated progress bars
+- gold counter roll-up animation
+- attribute meter filling
+- celebratory toasts / modals upon level-up
+- animations must never block keyboard or screen-reader interaction

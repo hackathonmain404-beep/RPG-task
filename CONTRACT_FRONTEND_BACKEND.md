@@ -1,390 +1,537 @@
-# FRONTEND <-> BACKEND CONTRACT (SHARED SOURCE OF TRUTH)
+# Frontend ↔ Backend Contract
 
-**Status:** Canonical & Locked for Hackathon  
-**Authority:** Server-Authoritative  
-**Rule:** Neither Frontend nor Backend may alter field names, types, error codes, or semantics without updating this document.
+## Purpose
+
+This document is the shared integration contract between the frontend and backend.
+
+Its purpose is to prevent merge conflicts, mismatched payloads, broken assumptions and integration failures.
+
+This file must be treated as a **shared source of truth**.
+
+## Golden rule
+
+### Frontend asks. Backend decides.
+
+Frontend may request:
+- create task
+- update task
+- delete task
+- complete task
+- buy item
+- equip item
+
+Backend decides:
+- whether allowed
+- reward amount
+- XP
+- Gold
+- level
+- streak
+- attribute changes
+- inventory ownership
+- authoritative task state
 
 ---
 
-## 1. Global Conventions
+# 1. Shared conventions
 
-1. **Base URL:** `/api`
-2. **Format:** JSON (`Content-Type: application/json`, `Accept: application/json`)
-3. **Date/Time:** ISO 8601 UTC string (e.g., `2026-09-12T10:00:00.000Z`)
-4. **Identifiers:** CUID or UUID strings (e.g., `clx01a...` or `550e8400-e29b-41d4-a716-446655440000`)
-5. **Authentication:** 
-   - `Authorization: Bearer <jwt_token>` header, or `token` in HTTP-only Cookie.
-   - All authenticated routes infer the user identity strictly from the verified session token. The client NEVER passes a `userId` in the payload.
+## IDs
 
----
+All IDs are opaque strings/UUIDs.
 
-## 2. Standard Error Format
+Frontend must never parse business meaning from IDs.
 
-All error responses return standard HTTP error status codes (400, 401, 403, 404, 409, 422, 500) and follow this exact JSON structure:
+## Dates
+
+Use ISO-8601 timestamps over the API.
+
+Example:
+
+```text
+2026-09-12T10:30:00.000Z
+```
+
+Do not return locale-specific display strings from the backend.
+
+## Nullability
+
+If a field can be absent, document it explicitly as nullable.
+
+Do not randomly omit fields between responses.
+
+## Errors
+
+All API errors use:
 
 ```json
 {
   "error": {
-    "code": "MACHINE_READABLE_CODE",
-    "message": "Human-readable explanation for display or debugging.",
-    "details": null
+    "code": "ERROR_CODE",
+    "message": "Human-readable message",
+    "details": {}
   }
 }
 ```
 
-### Standard Error Codes
+Frontend should branch on `code`, not on parsing human messages.
 
-| Error Code | HTTP Status | Meaning |
-|---|---|---|
-| `VALIDATION_ERROR` | 400 / 422 | Invalid payload fields or missing required properties |
-| `UNAUTHORIZED` | 401 | Missing, expired, or invalid authentication token |
-| `FORBIDDEN` | 403 | User does not have permission to access or modify resource |
-| `NOT_FOUND` | 404 | Target resource (task, item, user) does not exist |
-| `CONFLICT` | 409 | Resource already exists (e.g. duplicate email) |
-| `TASK_ALREADY_COMPLETED` | 409 | Quest was already completed; duplicate rewards prevented |
-| `INSUFFICIENT_GOLD` | 400 | User does not have enough Gold to purchase the item |
-| `ITEM_ALREADY_OWNED` | 400 | User already owns this unique cosmetic or badge |
-| `INTERNAL_SERVER_ERROR` | 500 | Unhandled server error |
+## HTTP status
 
----
-
-## 3. Core Enums & Value Sets
-
-### Task Difficulty
-Determines the base XP and Gold rewards calculated on the server.
-```typescript
-type TaskDifficulty = "TRIVIAL" | "EASY" | "MEDIUM" | "HARD" | "EPIC";
-```
-*Server Rewards Mapping:*
-- `TRIVIAL`: +10 XP, +5 Gold
-- `EASY`: +25 XP, +15 Gold
-- `MEDIUM`: +50 XP, +35 Gold
-- `HARD`: +100 XP, +75 Gold
-- `EPIC`: +200 XP, +150 Gold
-
-### Task Attribute Category
-Determines which character RPG stat is improved upon completion.
-```typescript
-type AttributeType = "STRENGTH" | "INTELLECT" | "DISCIPLINE" | "CREATIVITY" | "VITALITY";
-```
-*Attribute Mapping:*
-- `STRENGTH`: Workouts, physical fitness, sports
-- `INTELLECT`: Coding, studying, reading, research
-- `DISCIPLINE`: Chores, cleaning, waking early, admin tasks
-- `CREATIVITY`: Writing, drawing, music, design
-- `VITALITY`: Meditation, sleep, hydration, nutrition
-
-### Task Status
-```typescript
-type TaskStatus = "PENDING" | "COMPLETED";
-```
-
-### Item Category
-```typescript
-type ItemCategory = "AVATAR_FRAME" | "THEME" | "TITLE" | "BADGE" | "POTION";
-```
+Use:
+- 200 for successful read/update
+- 201 for creation
+- 204 for successful deletion where no body is needed
+- 400 for invalid request
+- 401 for unauthenticated
+- 403 for unauthorized
+- 404 for not found
+- 409 for state conflicts
+- 422 for validation where appropriate
+- 429 for rate limiting
+- 500 for unexpected server failure
 
 ---
 
-## 4. Endpoints & Data Payloads
+# 2. Auth contract
 
-### 4.1. Authentication
+### POST `/api/auth/register`
 
-#### `POST /api/auth/register`
-Create a new user and initialize their RPG character.
-- **Request Body:**
-  ```json
-  {
-    "email": "hero@example.com",
-    "password": "StrongPassword123!",
-    "username": "ShadowKnight"
-  }
-  ```
-- **Success Response (`201 Created`):**
-  ```json
-  {
-    "user": {
-      "id": "usr_12345",
-      "email": "hero@example.com",
-      "username": "ShadowKnight"
-    },
-    "token": "eyJhbGciOi..."
-  }
-  ```
+Request:
+```json
+{
+  "email": "player@example.com",
+  "password": "securePassword123!",
+  "displayName": "Player"
+}
+```
 
-#### `POST /api/auth/login`
-- **Request Body:**
-  ```json
-  {
-    "email": "hero@example.com",
-    "password": "StrongPassword123!"
+Success (`201`):
+```json
+{
+  "user": {
+    "id": "usr_123",
+    "email": "player@example.com",
+    "displayName": "Player"
+  },
+  "character": {
+    "level": 1,
+    "totalXp": 0,
+    "gold": 50,
+    "streakCurrent": 0,
+    "streakBest": 0
   }
-  ```
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "user": {
-      "id": "usr_12345",
-      "email": "hero@example.com",
-      "username": "ShadowKnight"
-    },
-    "token": "eyJhbGciOi..."
-  }
-  ```
+}
+```
 
-#### `GET /api/auth/me`
-Validate active session and return current user credentials.
-- **Headers:** `Authorization: Bearer <token>`
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "user": {
-      "id": "usr_12345",
-      "email": "hero@example.com",
-      "username": "ShadowKnight"
+### POST `/api/auth/login`
+
+Request:
+```json
+{
+  "email": "player@example.com",
+  "password": "securePassword123!"
+}
+```
+
+Success (`200`):
+```json
+{
+  "user": {
+    "id": "usr_123",
+    "email": "player@example.com",
+    "displayName": "Player"
+  },
+  "character": {
+    "level": 1,
+    "totalXp": 0,
+    "gold": 50,
+    "streakCurrent": 0,
+    "streakBest": 0
+  }
+}
+```
+
+### POST `/api/auth/logout`
+
+Success (`200`):
+```json
+{
+  "success": true
+}
+```
+
+### GET `/api/auth/me`
+
+Success (`200`):
+
+```json
+{
+  "user": {
+    "id": "usr_123",
+    "email": "user@example.com",
+    "displayName": "Player"
+  },
+  "character": {
+    "level": 5,
+    "totalXp": 720,
+    "gold": 430,
+    "streakCurrent": 4,
+    "streakBest": 9
+  }
+}
+```
+
+If not authenticated:
+`401`
+
+---
+
+# 3. Tasks
+
+### GET `/api/tasks`
+
+Returns only authenticated user's tasks.
+
+Query parameters (optional):
+- `?completed=false` or `?completed=true`
+
+Success (`200`):
+```json
+{
+  "tasks": [
+    {
+      "id": "task_123",
+      "title": "Study React",
+      "description": "Complete the hooks lesson",
+      "categoryKey": "intellect",
+      "difficulty": "medium",
+      "completed": false,
+      "completedAt": null,
+      "dueDate": "2026-09-13",
+      "createdAt": "2026-09-12T10:00:00.000Z",
+      "updatedAt": "2026-09-12T10:00:00.000Z"
     }
-  }
-  ```
+  ]
+}
+```
+
+### POST `/api/tasks`
+
+Request:
+
+```json
+{
+  "title": "Study React",
+  "description": "Complete the hooks lesson",
+  "categoryKey": "intellect",
+  "difficulty": "medium",
+  "dueDate": "2026-09-13"
+}
+```
+
+Success (`201`): Returns created task object.
+
+Backend calculates/retrieves reward policy.
+
+Do not require frontend to send authoritative XP/Gold.
+
+### PATCH `/api/tasks/:id`
+
+Only owner can update.
+
+### DELETE `/api/tasks/:id`
+
+Only owner can delete. Returns `200` or `204`.
 
 ---
 
-### 4.2. Character Profile & RPG State
+# 4. Complete task
 
-#### `GET /api/character`
-Fetches the full authoritative character progression state for the authenticated user.
-- **Headers:** `Authorization: Bearer <token>`
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "character": {
-      "id": "chr_12345",
-      "userId": "usr_12345",
-      "username": "ShadowKnight",
-      "level": 3,
-      "currentXp": 140,
-      "nextLevelXp": 520,
-      "totalXp": 640,
-      "gold": 210,
-      "streakDays": 4,
-      "lastActiveDate": "2026-09-12T08:30:00.000Z",
-      "attributes": {
-        "STRENGTH": 45,
-        "INTELLECT": 80,
-        "DISCIPLINE": 30,
-        "CREATIVITY": 20,
-        "VITALITY": 50
-      },
-      "equippedTheme": "theme_cyberpunk",
-      "equippedTitle": "Novice Bug Hunter"
+### POST `/api/tasks/:id/complete`
+
+No reward numbers accepted from the client.
+
+Success (`200`):
+
+```json
+{
+  "task": {
+    "id": "task_123",
+    "completed": true,
+    "completedAt": "2026-09-12T10:30:00.000Z"
+  },
+  "rewards": {
+    "xp": 70,
+    "gold": 18,
+    "attribute": {
+      "key": "intellect",
+      "amount": 8
     }
+  },
+  "progression": {
+    "levelBefore": 4,
+    "levelAfter": 5,
+    "totalXp": 540,
+    "currentLevelXp": 500,
+    "nextLevelXp": 720,
+    "progressPercent": 11.36
+  },
+  "streak": {
+    "current": 4,
+    "best": 9
   }
-  ```
+}
+```
 
-#### `PATCH /api/character/equip`
-Equip an unlocked theme or title from user inventory.
-- **Request Body:**
-  ```json
-  {
-    "equippedTheme": "theme_cyberpunk",
-    "equippedTitle": "Novice Bug Hunter"
+Possible conflict:
+
+```json
+{
+  "error": {
+    "code": "TASK_ALREADY_COMPLETED",
+    "message": "This quest has already been completed."
   }
-  ```
-- **Success Response (`200 OK`):** Updated character profile.
+}
+```
+
+## Idempotency rule
+
+A task completion may reward a task only once.
+
+Double-clicks/retries must not duplicate:
+- XP
+- Gold
+- attribute progression
+- streak progression
+- completion events
 
 ---
 
-### 4.3. Quests (Tasks) CRUD & Completion
+# 5. Character
 
-#### `GET /api/tasks`
-List all tasks belonging to the authenticated user.
-- **Query Params (Optional):** `?status=PENDING` or `?status=COMPLETED`
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "tasks": [
-      {
-        "id": "tsk_001",
-        "title": "Study Dynamic Programming for 1 hour",
-        "description": "Solve 2 LeetCode Mediums on Memoization",
-        "difficulty": "MEDIUM",
-        "attribute": "INTELLECT",
-        "status": "PENDING",
-        "dueDate": "2026-09-12T18:00:00.000Z",
-        "completedAt": null,
-        "createdAt": "2026-09-12T09:00:00.000Z"
-      }
-    ]
-  }
-  ```
+### GET `/api/character`
 
-#### `POST /api/tasks`
-Create a new quest.
-- **Request Body:**
-  ```json
-  {
-    "title": "Gym - Chest & Triceps workout",
-    "description": "45 mins progressive overload",
-    "difficulty": "HARD",
-    "attribute": "STRENGTH",
-    "dueDate": "2026-09-12T20:00:00.000Z"
-  }
-  ```
-- **Success Response (`201 Created`):** Returns the created task object.
+Returns:
 
-#### `PATCH /api/tasks/:id`
-Update an existing quest details (cannot update completion status here; use `/complete`).
-- **Request Body:**
-  ```json
-  {
-    "title": "Updated Quest Title",
-    "difficulty": "EASY"
-  }
-  ```
-- **Success Response (`200 OK`):** Returns updated task.
-
-#### `DELETE /api/tasks/:id`
-Soft delete or permanently remove a task belonging to user.
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "success": true,
-    "deletedTaskId": "tsk_001"
-  }
-  ```
-
-#### `POST /api/tasks/:id/complete` (CRITICAL RPG TRANSACTION)
-The authoritative server completion event.
-- **Client Request Body:** `{}` (Empty; server calculates all rewards!)
-- **Server Execution Flow:**
-  1. Authenticates session.
-  2. Verifies task belongs to session user and `status === 'PENDING'`.
-  3. Authoritatively calculates XP, Gold, Attribute increment, and Streak.
-  4. Checks for level-up threshold transition (`currentXp + earnedXp >= nextLevelXp`).
-  5. Commits everything in an atomic database transaction.
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "task": {
-      "id": "tsk_001",
-      "status": "COMPLETED",
-      "completedAt": "2026-09-12T10:15:30.000Z"
+```json
+{
+  "level": 5,
+  "totalXp": 540,
+  "gold": 430,
+  "streakCurrent": 4,
+  "streakBest": 9,
+  "attributes": [
+    {
+      "key": "intellect",
+      "displayName": "Intellect",
+      "value": 18
     },
-    "rewards": {
-      "xpEarned": 50,
-      "goldEarned": 35,
-      "attributeUpdated": "INTELLECT",
-      "attributeIncrement": 5,
-      "streakDays": 5,
-      "isStreakIncreased": true
+    {
+      "key": "strength",
+      "displayName": "Strength",
+      "value": 24
     },
-    "levelUp": {
-      "didLevelUp": true,
-      "oldLevel": 3,
-      "newLevel": 4,
-      "unlockedItems": ["badge_level_4"]
+    {
+      "key": "wisdom",
+      "displayName": "Wisdom",
+      "value": 15
     },
-    "character": {
-      "level": 4,
-      "currentXp": 40,
-      "nextLevelXp": 800,
-      "totalXp": 690,
-      "gold": 245,
-      "streakDays": 5,
-      "attributes": {
-        "STRENGTH": 45,
-        "INTELLECT": 85,
-        "DISCIPLINE": 30,
-        "CREATIVITY": 20,
-        "VITALITY": 50
-      }
+    {
+      "key": "charisma",
+      "displayName": "Charisma",
+      "value": 12
+    },
+    {
+      "key": "vitality",
+      "displayName": "Vitality",
+      "value": 20
     }
-  }
-  ```
+  ]
+}
+```
+
+### GET `/api/character/history`
+
+Returns progression and completion event history.
 
 ---
 
-### 4.4. Shop & Inventory
+# 6. Shop
 
-#### `GET /api/shop/items`
-Lists available items in the shop.
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "items": [
-      {
-        "id": "itm_cyberpunk_theme",
-        "name": "Neon Cyberpunk Theme",
-        "description": "High-contrast glowing neon aesthetic for the dashboard",
-        "category": "THEME",
-        "cost": 150,
-        "imageUrl": "/assets/items/theme_cyber.png",
-        "isPurchased": false
-      }
-    ]
-  }
-  ```
+### GET `/api/shop`
 
-#### `POST /api/shop/purchase`
-Buy an item using accumulated Gold.
-- **Request Body:**
-  ```json
-  {
-    "itemId": "itm_cyberpunk_theme"
-  }
-  ```
-- **Server Execution Flow:**
-  1. Authenticates session.
-  2. Verifies item exists and loads authoritative database cost.
-  3. Verifies user has not already purchased item (if unique).
-  4. Verifies `user.gold >= item.cost`.
-  5. Deducts Gold and adds item to Inventory atomically.
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "success": true,
-    "purchasedItem": {
-      "id": "itm_cyberpunk_theme",
+Returns catalog of available shop items, themes, and badges.
+
+Success (`200`):
+```json
+{
+  "items": [
+    {
+      "id": "shop_item_1",
+      "sku": "theme_neon",
       "name": "Neon Cyberpunk Theme",
-      "category": "THEME"
-    },
-    "remainingGold": 95,
-    "inventoryId": "inv_98765"
-  }
-  ```
+      "description": "Glowing cyberpunk aesthetic",
+      "itemType": "THEME",
+      "price": 250,
+      "rarity": "rare",
+      "active": true
+    }
+  ]
+}
+```
 
-#### `GET /api/inventory`
-Lists all items owned by the authenticated user.
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "inventory": [
-      {
-        "id": "inv_98765",
-        "itemId": "itm_cyberpunk_theme",
-        "acquiredAt": "2026-09-12T10:20:00.000Z",
-        "item": {
-          "id": "itm_cyberpunk_theme",
-          "name": "Neon Cyberpunk Theme",
-          "category": "THEME",
-          "imageUrl": "/assets/items/theme_cyber.png"
-        }
-      }
-    ]
+### POST `/api/shop/:itemId/purchase`
+
+Request body should contain no authoritative price.
+
+Backend loads current price from DB.
+
+Success (`200`):
+
+```json
+{
+  "purchase": {
+    "itemId": "theme_neon",
+    "price": 250
+  },
+  "wallet": {
+    "gold": 180
+  },
+  "inventoryItem": {
+    "id": "inv_123",
+    "itemId": "theme_neon"
   }
-  ```
+}
+```
+
+Conflict:
+```json
+{
+  "error": {
+    "code": "INSUFFICIENT_GOLD",
+    "message": "You need more Gold to purchase this item."
+  }
+}
+```
 
 ---
 
-### 4.5. Observability & Health
+# 7. Inventory
 
-#### `GET /api/health`
-Public health status for deployment verification.
-- **Success Response (`200 OK`):**
-  ```json
-  {
-    "status": "healthy",
-    "timestamp": "2026-09-12T10:00:00.000Z",
-    "database": "connected",
-    "uptimeSeconds": 1420
-  }
-  ```
+### GET `/api/inventory`
+
+Returns authenticated user's inventory only.
+
+Success (`200`):
+```json
+{
+  "inventory": [
+    {
+      "id": "inv_123",
+      "shopItemId": "theme_neon",
+      "purchasedAt": "2026-09-12T10:35:00.000Z"
+    }
+  ]
+}
+```
+
+### POST `/api/inventory/:itemId/equip`
+
+Server verifies ownership before equipping.
+
+---
+
+# 8. Frontend request rules
+
+Frontend must:
+- send only documented fields
+- ignore unknown response fields safely
+- handle errors by error code
+- show loading state
+- prevent duplicate actions when an operation is already pending
+- reconcile optimistic state after server response
+
+Frontend must NOT:
+- alter returned XP
+- invent Gold
+- increment streak locally as authority
+- assume purchase succeeded before server confirmation
+- send another user's ID as authority
+
+---
+
+# 9. Backend response rules
+
+Backend must:
+- keep field names stable
+- return the same shape for equivalent success cases
+- return authoritative reward values
+- include sufficient data for the UI to update without another unnecessary request where practical
+
+Do not introduce breaking response changes without updating this contract.
+
+---
+
+# 10. Shared TypeScript contract
+
+Where practical, generate or manually maintain shared types under:
+
+```text
+shared/contracts/
+```
+
+The frontend imports API/domain types from the shared contract.
+
+The backend validates its own input with runtime schemas.
+
+The frontend must not share server implementation files; only contract/type definitions may be shared.
+
+---
+
+# 11. Change protocol
+
+If frontend needs a new field:
+1. open a contract change
+2. update this file
+3. update shared types
+4. backend implements it
+5. backend tests it
+6. frontend integrates it
+7. end-to-end test runs
+8. merge
+
+Never:
+- silently rename fields
+- remove fields without checking consumers
+- change enum strings casually
+- change numeric units silently
+
+---
+
+# 12. Merge gate
+
+A frontend/backend merge is allowed only when:
+
+```text
+API starts
+↓
+DB connects
+↓
+Frontend starts
+↓
+Auth works
+↓
+Request reaches backend
+↓
+Response matches contract
+↓
+Frontend renders response
+↓
+Mutation persists
+↓
+Refresh preserves result
+↓
+Tests pass
+```
+
+If any step fails, the merge is not release-ready.

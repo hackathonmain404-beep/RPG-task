@@ -1,23 +1,10 @@
-# DATABASE SCHEMA SPECIFICATION
+# Database Schema
 
-**Canonical Database:** PostgreSQL 15+  
-**ORM / Query Builder:** Prisma ORM  
-**Authority:** Server-side Only (Clients have zero direct database access)
+Use PostgreSQL through Prisma.
 
 ---
 
-## 1. Architectural Principles
-
-1. **Relational Integrity & ACID Transactions:**  
-   Task completion, reward calculation, and shop purchasing rely on atomic PostgreSQL transactions (`$transaction` in Prisma) to guarantee no partial state (e.g. XP awarded without marking task complete, or gold deducted without granting an item).
-2. **User Data Isolation:**  
-   Every tenant model (`Character`, `Task`, `Inventory`, `ActivityLog`) is strictly foreign-keyed to `User.id` with mandatory indexes for fast lookup and strict scoping.
-3. **No LocalStorage Persistence:**  
-   Per hackathon zero-tolerance disqualification rules, PostgreSQL is the sole authoritative store. Browser state is hydrated strictly from backend API responses.
-
----
-
-## 2. Complete Prisma Schema (`prisma/schema.prisma`)
+## 1. Complete Prisma Schema (`prisma/schema.prisma`)
 
 ```prisma
 datasource db {
@@ -29,143 +16,205 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum TaskDifficulty {
-  TRIVIAL
-  EASY
-  MEDIUM
-  HARD
-  EPIC
-}
-
-enum AttributeType {
-  STRENGTH
-  INTELLECT
-  DISCIPLINE
-  CREATIVITY
-  VITALITY
-}
-
-enum TaskStatus {
-  PENDING
-  COMPLETED
-}
-
-enum ItemCategory {
-  AVATAR_FRAME
-  THEME
-  TITLE
-  BADGE
-  POTION
-}
-
-enum ActivityType {
-  QUEST_CREATED
-  QUEST_COMPLETED
-  LEVEL_UP
-  ITEM_PURCHASED
-  STREAK_INCREASED
-}
-
 model User {
   id           String        @id @default(cuid())
   email        String        @unique
   passwordHash String
-  username     String        @unique
+  displayName  String
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  lastActiveAt DateTime?
 
-  character    Character?
-  tasks        Task[]
-  inventory    Inventory[]
-  activityLogs ActivityLog[]
+  character        Character?
+  tasks            Task[]
+  completionEvents CompletionEvent[]
+  attributeEvents  AttributeEvent[]
+  inventoryItems   InventoryItem[]
+  userBadges       UserBadge[]
+  userThemes       UserTheme[]
+  activityLogs     ActivityLog[]
 
   @@index([email])
-  @@index([username])
 }
 
 model Character {
-  id             String    @id @default(cuid())
-  userId         String    @unique
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String      @id @default(cuid())
+  userId           String      @unique
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  level          Int       @default(1)
-  currentXp      Int       @default(0)
-  nextLevelXp    Int       @default(100)
-  totalXp        Int       @default(0)
-  gold           Int       @default(50)
-  streakDays     Int       @default(0)
-  lastActiveDate DateTime?
+  level            Int         @default(1)
+  totalXp          Int         @default(0)
+  gold             Int         @default(50)
+  streakCurrent    Int         @default(0)
+  streakBest       Int         @default(0)
+  lastActivityDate DateTime?
 
-  // RPG Attributes
-  strength       Int       @default(10)
-  intellect      Int       @default(10)
-  discipline     Int       @default(10)
-  creativity     Int       @default(10)
-  vitality       Int       @default(10)
+  attributes       Attribute[]
 
-  // Cosmetics
-  equippedTheme  String    @default("default_fantasy")
-  equippedTitle  String    @default("Novice Adventurer")
-
-  updatedAt      DateTime  @updatedAt
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   @@index([userId])
 }
 
+model Attribute {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  key         String    // intellect, strength, wisdom, charisma, vitality
+  displayName String    // Intellect, Strength, Wisdom, Charisma, Vitality
+  value       Int       @default(10)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([characterId, key])
+  @@index([characterId])
+}
+
 model Task {
-  id          String         @id @default(cuid())
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title            String
+  description      String?
+  categoryKey      String            @default("intellect")
+  difficulty       String            @default("medium") // easy, medium, hard
+  xpReward         Int?
+  goldReward       Int?
+  completed        Boolean           @default(false)
+  completedAt      DateTime?
+  dueDate          String?
+
+  completionEvents CompletionEvent[]
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([userId, completed])
+}
+
+model CompletionEvent {
+  id          String   @id @default(cuid())
   userId      String
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
-  title       String
-  description String?
-  difficulty  TaskDifficulty @default(MEDIUM)
-  attribute   AttributeType  @default(INTELLECT)
-  status      TaskStatus     @default(PENDING)
-  dueDate     DateTime?
-  completedAt DateTime?
+  completedAt DateTime @default(now())
+  xpAwarded   Int
+  goldAwarded Int
+  streakAfter Int
+  levelBefore Int
+  levelAfter  Int
 
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime @default(now())
 
-  @@index([userId, status])
-  @@index([userId, dueDate])
+  @@index([userId, completedAt])
 }
 
-model Item {
-  id          String       @id
-  name        String
-  description String
-  category    ItemCategory
-  cost        Int
-  imageUrl    String?
-  isUnique    Boolean      @default(true)
-  createdAt   DateTime     @default(now())
+model AttributeEvent {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  inventories Inventory[]
+  attributeKey String
+  amount       Int
+  sourceType   String   // task_completion, milestone, item
+  sourceId     String?
 
-  @@index([category])
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
-model Inventory {
+model ShopItem {
+  id             String          @id @default(cuid())
+  sku            String          @unique
+  name           String
+  description    String
+  itemType       String          // THEME, BADGE, COSMETIC
+  price          Int
+  rarity         String          @default("common")
+  metadataJson   Json?
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+
+  inventoryItems InventoryItem[]
+
+  @@index([itemType, active])
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopItemId  String
+  shopItem    ShopItem @relation(fields: [shopItemId], references: [id], onDelete: Restrict)
+  purchasedAt DateTime @default(now())
+
+  @@unique([userId, shopItemId])
+  @@index([userId])
+}
+
+model Badge {
+  id             String      @id @default(cuid())
+  key            String      @unique
+  name           String
+  description    String
+  icon           String
+  unlockRuleJson Json?
+
+  userBadges     UserBadge[]
+}
+
+model UserBadge {
   id         String   @id @default(cuid())
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  itemId     String
-  item       Item     @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  acquiredAt DateTime @default(now())
+  badgeId    String
+  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  unlockedAt DateTime @default(now())
 
-  @@unique([userId, itemId])
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model Theme {
+  id          String      @id @default(cuid())
+  key         String      @unique
+  name        String
+  description String
+  themeJson   Json?
+  price       Int         @default(100)
+  active      Boolean     @default(true)
+
+  userThemes  UserTheme[]
+}
+
+model UserTheme {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  themeId     String
+  theme       Theme     @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  purchasedAt DateTime  @default(now())
+  equippedAt  DateTime?
+
+  @@unique([userId, themeId])
   @@index([userId])
 }
 
 model ActivityLog {
-  id        String       @id @default(cuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  action    ActivityType
-  metadata  Json?
-  createdAt DateTime     @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType    String
+  metadataJson Json?
+  createdAt    DateTime @default(now())
 
   @@index([userId, createdAt])
 }
@@ -173,13 +222,18 @@ model ActivityLog {
 
 ---
 
-## 3. Seed Data Specification
+## 2. Ownership Rule
 
-Initial items pre-seeded in the database on deployment:
+Every user-owned object must have a server-verifiable path back to `userId`.
 
-1. **`theme_cyberpunk`**: Cyberpunk 2077 neon glow dashboard (`THEME`, 150 Gold, Unique).
-2. **`theme_lofi`**: Cozy Lo-Fi study room aesthetic (`THEME`, 100 Gold, Unique).
-3. **`title_code_wizard`**: "Code Wizard" Title (`TITLE`, 75 Gold, Unique).
-4. **`title_iron_lifter`**: "Iron Lifter" Title (`TITLE`, 75 Gold, Unique).
-5. **`badge_streak_master`**: 7-day consistency badge (`BADGE`, 120 Gold, Unique).
-6. **`badge_polymath`**: Master of all 5 attributes (`BADGE`, 200 Gold, Unique).
+## 3. Indexes
+
+At minimum:
+- `User.email` unique
+- `Character.userId` unique
+- `Task.userId`
+- `Task.userId + completed`
+- `CompletionEvent.userId + completedAt`
+- `AttributeEvent.userId + createdAt`
+- `ActivityLog.userId + createdAt`
+- `InventoryItem.userId + shopItemId` unique
