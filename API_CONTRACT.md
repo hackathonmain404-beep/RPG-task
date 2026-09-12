@@ -9,16 +9,16 @@ Base URL: `/api`
 ## 1. Auth
 
 ### `POST /api/auth/register`
-Creates user + character.
+Creates user + character. Strict payload: `{ email, password, displayName }`. Rate limited.
 
 ### `POST /api/auth/login`
-Creates authenticated session.
+Creates authenticated session. Strict payload: `{ email, password }`. Rate limited.
 
 ### `POST /api/auth/logout`
-Invalidates session.
+Invalidates session (revokes active token in server blocklist and clears cookies).
 
 ### `GET /api/auth/me`
-Returns current user and character summary.
+Returns current user and character summary `{ user, character }`.
 
 ---
 
@@ -82,11 +82,12 @@ Response example:
 
 ## 3. Character
 
-### `GET /api/character`
-Returns current user's character and attributes.
+Character state and progression are provided via:
+- `GET /api/auth/me` (returns current user + `{ level, totalXp, gold, streakCurrent, streakBest }`)
+- `POST /api/tasks/:id/complete` (returns reward breakdown, progression diff, and streak stats)
+- `POST /api/auth/register` & `POST /api/auth/login` (return initial / current character summary)
 
-### `GET /api/character/history`
-Returns progression and completion activity history.
+Standalone `GET /api/character` and `GET /api/character/history` endpoints will be integrated in subsequent iteration.
 
 ---
 

@@ -309,50 +309,12 @@ Double-clicks/retries must not duplicate:
 
 # 5. Character
 
-### GET `/api/character`
-
-Returns:
-
-```json
-{
-  "level": 5,
-  "totalXp": 540,
-  "gold": 430,
-  "streakCurrent": 4,
-  "streakBest": 9,
-  "attributes": [
-    {
-      "key": "intellect",
-      "displayName": "Intellect",
-      "value": 18
-    },
-    {
-      "key": "strength",
-      "displayName": "Strength",
-      "value": 24
-    },
-    {
-      "key": "wisdom",
-      "displayName": "Wisdom",
-      "value": 15
-    },
-    {
-      "key": "charisma",
-      "displayName": "Charisma",
-      "value": 12
-    },
-    {
-      "key": "vitality",
-      "displayName": "Vitality",
-      "value": 20
-    }
-  ]
-}
-```
-
-### GET `/api/character/history`
-
-Returns progression and completion event history.
+> **Current Implementation Note:**  
+> Character summary (`level`, `totalXp`, `gold`, `streakCurrent`, `streakBest`) is currently served live via:
+> - **`GET /api/auth/me`** (returns `{ user, character }`)
+> - **`POST /api/tasks/:id/complete`** (returns real-time progression diff and streak updates)
+>
+> Standalone `GET /api/character` and `GET /api/character/history` endpoints are slated for subsequent integration.
 
 ---
 

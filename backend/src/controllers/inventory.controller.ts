@@ -5,7 +5,7 @@ export async function handleGetInventory(req: Request, res: Response, next: Next
   try {
     const userId = req.user!.id;
     const items = await getUserInventory(userId);
-    res.json({ items });
+    res.json({ items, inventory: items });
   } catch (error) {
     next(error);
   }
