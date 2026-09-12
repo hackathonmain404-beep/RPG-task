@@ -111,6 +111,56 @@ export interface CompleteTaskResponse {
 }
 
 /* ==========================================================================
+   SHOP & INVENTORY CONTRACT (CONTRACT_FRONTEND_BACKEND.md Sections 6 & 7)
+   ========================================================================== */
+
+export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type ItemType = 'theme' | 'frame' | 'badge' | 'title' | string;
+
+export interface ShopItem {
+  id: string;
+  sku?: string;
+  name: string;
+  description: string;
+  itemType: ItemType;
+  price: number;
+  rarity: ItemRarity;
+  metadataJson?: string | Record<string, unknown>;
+  active?: boolean;
+}
+
+export interface InventoryItem {
+  id: string;
+  userId?: string;
+  shopItemId: string;
+  itemId?: string;
+  purchasedAt?: string;
+  equipped?: boolean;
+  equippedAt?: string;
+  shopItem?: ShopItem;
+}
+
+export interface PurchaseResponse {
+  purchase: {
+    itemId: string;
+    price: number;
+  };
+  wallet: {
+    gold: number;
+  };
+  inventoryItem: {
+    id: string;
+    itemId: string;
+  };
+}
+
+export interface EquipResponse {
+  success: boolean;
+  equippedItemId: string;
+  itemType?: string;
+}
+
+/* ==========================================================================
    API ERROR CONTRACT
    ========================================================================== */
 

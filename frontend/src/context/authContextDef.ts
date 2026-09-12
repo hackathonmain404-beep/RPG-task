@@ -45,6 +45,7 @@ export interface AuthContextType {
   refreshSession: () => Promise<void>;
   refreshCharacter: () => Promise<void>;
   reconcileCompletion: (res: CompleteTaskResponse, taskTitle?: string) => void;
+  reconcilePurchase: (walletGold: number) => void;
   clearAttributeChangeNotice: () => void;
 }
 

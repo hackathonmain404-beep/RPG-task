@@ -8,9 +8,11 @@ import { AppShell } from '../components/layout/AppShell';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { QuestsPage } from '../features/quests/QuestsPage';
 import { CharacterPage } from '../features/character/CharacterPage';
+import { ShopPage } from '../features/shop/ShopPage';
+import { InventoryPage } from '../features/inventory/InventoryPage';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { PlaceholderPage } from '../features/placeholder/PlaceholderPage';
-import { Store, History } from 'lucide-react';
+import { History } from 'lucide-react';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -31,24 +33,9 @@ export const AppRoutes: React.FC = () => {
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="quests" element={<QuestsPage />} />
           <Route path="character" element={<CharacterPage />} />
-          <Route
-            path="armory"
-            element={
-              <PlaceholderPage
-                title="The Armory & Economy"
-                phase="Phase 6"
-                description="A virtual marketplace where adventurers spend hard-earned Gold on cosmetic UI themes, avatar frames, and milestone relics."
-                icon={Store}
-                upcomingFeatures={[
-                  'Shop catalog verified from PostgreSQL database',
-                  'Atomic purchase transactions checking wallet balance server-side',
-                  'Persistent user inventory and cosmetic equipment',
-                  'Unlockable HUD themes dynamically modifying CSS variables',
-                  'Duplicate purchase prevention and anti-cheat validation',
-                ]}
-              />
-            }
-          />
+          <Route path="shop" element={<ShopPage />} />
+          <Route path="armory" element={<ShopPage />} />
+          <Route path="inventory" element={<InventoryPage />} />
           <Route
             path="history"
             element={

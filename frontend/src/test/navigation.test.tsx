@@ -21,6 +21,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   refreshSession: vi.fn(),
   refreshCharacter: vi.fn(),
   reconcileCompletion: vi.fn(),
+  reconcilePurchase: vi.fn(),
   clearAttributeChangeNotice: vi.fn(),
   ...overrides,
 });

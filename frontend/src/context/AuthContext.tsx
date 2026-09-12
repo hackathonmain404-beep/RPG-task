@@ -219,6 +219,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLastAttributeChange(null);
   }, []);
 
+  // Reconciles authoritative wallet balance returned by server after purchase
+  const reconcilePurchase = useCallback((walletGold: number) => {
+    setCharacter(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        gold: walletGold,
+      };
+    });
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     const initAuth = async () => {
@@ -351,6 +362,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshSession,
         refreshCharacter,
         reconcileCompletion,
+        reconcilePurchase,
         clearAttributeChangeNotice,
       }}
     >

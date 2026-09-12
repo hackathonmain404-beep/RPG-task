@@ -6,17 +6,24 @@ import {
   Scroll, 
   UserCircle, 
   Store, 
-  History, 
+  Package, 
   Settings,
   Sparkles
 } from 'lucide-react';
 
-const NAV_ITEMS = [
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  badge?: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
   { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/app/quests', label: 'Quests', icon: Scroll, badge: 'Phase 2' },
+  { to: '/app/quests', label: 'Quests', icon: Scroll },
   { to: '/app/character', label: 'Character', icon: UserCircle },
-  { to: '/app/armory', label: 'Armory', icon: Store, badge: 'Phase 6' },
-  { to: '/app/history', label: 'History', icon: History, badge: 'Phase 3' },
+  { to: '/app/shop', label: 'Shop', icon: Store },
+  { to: '/app/inventory', label: 'Inventory', icon: Package },
   { to: '/app/settings', label: 'Settings', icon: Settings },
 ];
 

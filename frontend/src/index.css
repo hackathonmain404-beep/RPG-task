@@ -92,6 +92,27 @@
   --color-xp: #fb923c;
 }
 
+/* Rarity Tiers (Armory & Vault) */
+.rarity-common {
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  color: #94a3b8;
+}
+.rarity-rare {
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  color: #38bdf8;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+}
+.rarity-epic {
+  border-color: rgba(168, 85, 247, 0.5) !important;
+  color: #c084fc;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+}
+.rarity-legendary {
+  border-color: rgba(245, 158, 11, 0.55) !important;
+  color: #fde047;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.25);
+}
+
 /* Base CSS Reset */
 *, *::before, *::after {
   box-sizing: border-box;
