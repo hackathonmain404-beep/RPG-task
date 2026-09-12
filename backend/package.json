@@ -12,7 +12,8 @@
     "prisma:push": "prisma db push",
     "prisma:deploy": "prisma migrate deploy",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed": "tsx prisma/seed.ts"
   },
   "keywords": [
     "liferpg",
