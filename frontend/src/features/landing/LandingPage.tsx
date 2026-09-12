@@ -37,21 +37,35 @@ export const LandingPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'hero' | 'how-it-works' | 'disciplines' | 'persistence' | 'faq'>('hero');
   const [showScrollTop, setShowScrollTop] = useState(false);
 
+  // Hero Live Progression HUD Micro-Interaction States
+  const [questHovered, setQuestHovered] = useState(false);
+  const [xpHovered, setXpHovered] = useState(false);
+  const [attrHovered, setAttrHovered] = useState(false);
+
   // GSAP Cinematic ScrollTrigger System
   useEffect(() => {
     const ctx = gsap.context(() => {
       if (prefersReducedMotion) {
         // Instant reveal without transform animation for users preferring reduced motion
         gsap.set(
-          '.cinematic-layer, .gameplay-card-wrapper, .discipline-card-wrapper, .persistence-glow-card, .faq-item-reveal, .cta-box-reveal',
+          '.cinematic-layer, .hero-progression-hud-wrapper, .gameplay-card-wrapper, .discipline-card-wrapper, .persistence-glow-card, .faq-item-reveal, .cta-box-reveal',
           { opacity: 1, y: 0, x: 0, scale: 1, clearProps: 'all' }
         );
         gsap.set('.discipline-progress-bar', {
           scaleX: 1,
           clearProps: 'transform',
         });
+        gsap.set('.hero-hud-progress-fill', {
+          scaleX: 0.68,
+        });
         return;
       }
+
+      // Initial Entrance for Hero HUD Progress Bar
+      gsap.fromTo('.hero-hud-progress-fill',
+        { scaleX: 0 },
+        { scaleX: 0.68, duration: 1.1, delay: 0.4, ease: 'power2.out' }
+      );
 
       // 0. SCROLL STATE TRACKERS (Native to GSAP, zero unthrottled reflow loops)
       ScrollTrigger.create({
@@ -127,6 +141,11 @@ export const LandingPage: React.FC = () => {
           opacity: 0,
           ease: 'none',
         }, 0.05)
+        .to('.hero-progression-hud-wrapper', {
+          y: isMobile ? -18 : -38,
+          opacity: 0,
+          ease: 'none',
+        }, 0.08)
         .to('.hero-content-layer', {
           opacity: 0,
           ease: 'none',
@@ -563,8 +582,8 @@ export const LandingPage: React.FC = () => {
             width: '100%',
             minHeight: '100dvh',
             boxSizing: 'border-box',
-            paddingTop: 'calc(76px + clamp(1.5rem, 4vh, 3rem))',
-            paddingBottom: 'clamp(1.5rem, 3vh, 2.5rem)',
+            paddingTop: 'calc(76px + clamp(0.75rem, 2vh, 1.75rem))',
+            paddingBottom: 'clamp(0.75rem, 2vh, 1.5rem)',
             paddingLeft: '1.5rem',
             paddingRight: '1.5rem',
             display: 'flex',
@@ -662,7 +681,7 @@ export const LandingPage: React.FC = () => {
                   fontSize: '0.78rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
-                  marginBottom: '1.75rem',
+                  marginBottom: '1rem',
                   textTransform: 'uppercase',
                   boxShadow: '0 0 15px rgba(56, 189, 248, 0.12)',
                 }}
@@ -676,7 +695,7 @@ export const LandingPage: React.FC = () => {
                 style={{
                   fontSize: 'clamp(2.5rem, 5.5vw, 4.25rem)',
                   maxWidth: '920px',
-                  marginBottom: '1.5rem',
+                  marginBottom: '1rem',
                   lineHeight: 1.15,
                   fontWeight: 800,
                   letterSpacing: '-0.03em',
@@ -702,7 +721,7 @@ export const LandingPage: React.FC = () => {
                   fontSize: '1.15rem',
                   color: 'var(--text-secondary)',
                   maxWidth: '720px',
-                  marginBottom: '2.5rem',
+                  marginBottom: '1.25rem',
                   lineHeight: 1.6,
                 }}
               >
@@ -711,7 +730,7 @@ export const LandingPage: React.FC = () => {
               </p>
 
               {/* CTAs */}
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '0.4rem' }}>
                 <Link 
                   to="/login" 
                   className="rpg-btn rpg-btn-primary" 
@@ -724,13 +743,270 @@ export const LandingPage: React.FC = () => {
                   Begin Your Adventure — Free <ArrowRight size={18} />
                 </Link>
               </div>
+
+              {/* Luminous Energy Connector from CTA to Live Progression HUD */}
+              <div className="hero-hud-energy-connector" aria-hidden="true" />
+
+              {/* LIVE PROGRESSION HUD (Layered Floating Player Interface) */}
+              <div
+                className="hero-progression-hud-wrapper cinematic-layer"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginTop: '0.2rem',
+                  marginBottom: '0.2rem',
+                }}
+              >
+                <div
+                  className="hero-progression-hud-card"
+                  onMouseLeave={() => {
+                    setQuestHovered(false);
+                    setXpHovered(false);
+                    setAttrHovered(false);
+                  }}
+                  role="region"
+                  aria-label="Live Quest and Progression Demonstration HUD"
+                >
+                  {/* Top Status Row */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '0.55rem',
+                      fontSize: '0.68rem',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <Radio size={12} color="#38bdf8" />
+                      <span style={{ fontWeight: 800, letterSpacing: '0.12em', color: '#38bdf8', textTransform: 'uppercase' }}>
+                        LIVE PROGRESSION HUD
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.15rem 0.55rem',
+                        borderRadius: '9999px',
+                        backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                        border: '1px solid rgba(16, 185, 129, 0.35)',
+                        color: '#34d399',
+                        fontWeight: 700,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '5px',
+                          height: '5px',
+                          borderRadius: '50%',
+                          backgroundColor: '#10b981',
+                          boxShadow: '0 0 6px #10b981',
+                        }}
+                      />
+                      <span>ACTIVE QUEST</span>
+                    </div>
+                  </div>
+
+                  {/* Middle Quest Showcase Row */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '0.6rem',
+                      padding: '0.45rem 0.75rem',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.025)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      marginBottom: '0.55rem',
+                    }}
+                  >
+                    <div 
+                      className="hero-hud-quest-pill"
+                      onMouseEnter={() => setQuestHovered(true)}
+                      onMouseLeave={() => setQuestHovered(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        color: '#f8fafc',
+                      }}
+                    >
+                      <span>45-MIN DEEP CODING SESSION</span>
+                      {questHovered && (
+                        <span
+                          style={{
+                            fontSize: '0.62rem',
+                            fontFamily: 'var(--font-mono)',
+                            color: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                            padding: '0.1rem 0.4rem',
+                            borderRadius: '4px',
+                            border: '1px solid rgba(56, 189, 248, 0.3)',
+                          }}
+                        >
+                          COMPLETE QUEST
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 700,
+                          color: '#38bdf8',
+                          backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                          padding: '0.18rem 0.5rem',
+                          borderRadius: '4px',
+                          border: '1px solid rgba(56, 189, 248, 0.3)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                        }}
+                      >
+                        <Brain size={11} color="#38bdf8" /> INTELLECT
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontFamily: 'var(--font-mono)',
+                          color: 'var(--text-tertiary)',
+                        }}
+                      >
+                        MEDIUM
+                      </span>
+                      <span
+                        className="hero-hud-xp-badge"
+                        onMouseEnter={() => setXpHovered(true)}
+                        onMouseLeave={() => setXpHovered(false)}
+                        style={{
+                          fontSize: '0.72rem',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 800,
+                          color: '#fbbf24',
+                          backgroundColor: xpHovered ? 'rgba(245, 158, 11, 0.22)' : 'rgba(245, 158, 11, 0.12)',
+                          padding: '0.18rem 0.55rem',
+                          borderRadius: '4px',
+                          border: xpHovered ? '1px solid rgba(245, 158, 11, 0.65)' : '1px solid rgba(245, 158, 11, 0.35)',
+                          boxShadow: xpHovered ? '0 0 12px rgba(245, 158, 11, 0.35)' : 'none',
+                          transform: xpHovered ? 'scale(1.04)' : 'scale(1)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                        }}
+                      >
+                        <Sparkles size={11} color="#fbbf24" /> +65 XP
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Visual Progression Path */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '0.5rem',
+                      fontSize: '0.72rem',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    {/* Visual Vector Sequence: Quest -> XP -> Attribute */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-tertiary)' }}>
+                      <span style={{ color: '#94a3b8' }}>QUEST</span>
+                      <span style={{ color: '#38bdf8' }}>→</span>
+                      <span style={{ color: '#fbbf24' }}>+65 XP</span>
+                      <span style={{ color: '#38bdf8' }}>→</span>
+                      <div
+                        className="hero-hud-attr-pill"
+                        onMouseEnter={() => setAttrHovered(true)}
+                        onMouseLeave={() => setAttrHovered(false)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          color: '#60a5fa',
+                          backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                          padding: '0.12rem 0.45rem',
+                          borderRadius: '4px',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          fontWeight: 700,
+                        }}
+                      >
+                        <span>INTELLECT +2</span>
+                        {attrHovered && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: 'calc(100% + 6px)',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              whiteSpace: 'nowrap',
+                              padding: '0.25rem 0.55rem',
+                              backgroundColor: '#0f172a',
+                              border: '1px solid rgba(56, 189, 248, 0.4)',
+                              borderRadius: '4px',
+                              fontSize: '0.65rem',
+                              color: '#38bdf8',
+                              boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
+                              zIndex: 30,
+                              pointerEvents: 'none',
+                            }}
+                          >
+                            Real-world action → Attribute progression
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Integrated Level Progress Bar */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: '160px' }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.68rem' }}>340 / 500 XP</span>
+                      <div
+                        style={{
+                          flex: 1,
+                          height: '5px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                          borderRadius: '9999px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          className="hero-hud-progress-fill"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            transformOrigin: 'left center',
+                            transform: prefersReducedMotion ? 'scaleX(0.68)' : 'scaleX(0)',
+                            background: 'linear-gradient(90deg, #38bdf8, #a855f7)',
+                            boxShadow: '0 0 8px rgba(56, 189, 248, 0.5)',
+                          }}
+                        />
+                      </div>
+                      <span style={{ color: '#a855f7', fontWeight: 800, fontSize: '0.68rem' }}>LVL 1</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Layer 2: THEME-BASED SCROLL DOWN TRIGGER INDICATOR */}
             <div
               className="hero-scroll-indicator cinematic-layer"
               style={{
-                marginTop: '1.5rem',
+                marginTop: '0.75rem',
                 display: 'inline-flex',
                 flexDirection: 'column',
                 alignItems: 'center',
