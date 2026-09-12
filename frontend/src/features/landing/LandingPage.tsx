@@ -1371,6 +1371,9 @@ export const LandingPage: React.FC = () => {
                 desc: 'Define your real goals with targeted disciplines and balanced difficulty tiers.',
                 icon: Shield,
                 color: '#38bdf8',
+                accentBorder: 'rgba(56, 189, 248, 0.45)',
+                accentGlow: 'rgba(56, 189, 248, 0.22)',
+                accentNum: 'rgba(56, 189, 248, 0.28)',
               },
               {
                 step: '02',
@@ -1378,6 +1381,9 @@ export const LandingPage: React.FC = () => {
                 desc: 'Put your distraction away, hit the gym, study the lesson, or write the prose.',
                 icon: Zap,
                 color: '#f59e0b',
+                accentBorder: 'rgba(245, 158, 11, 0.45)',
+                accentGlow: 'rgba(245, 158, 11, 0.22)',
+                accentNum: 'rgba(245, 158, 11, 0.28)',
               },
               {
                 step: '03',
@@ -1385,6 +1391,9 @@ export const LandingPage: React.FC = () => {
                 desc: 'Check off the quest to trigger XP fly-ups, gold counter chimes, and attribute growth.',
                 icon: Coins,
                 color: '#a855f7',
+                accentBorder: 'rgba(168, 85, 247, 0.45)',
+                accentGlow: 'rgba(168, 85, 247, 0.22)',
+                accentNum: 'rgba(168, 85, 247, 0.28)',
               },
               {
                 step: '04',
@@ -1392,23 +1401,30 @@ export const LandingPage: React.FC = () => {
                 desc: 'Conquer non-linear level thresholds, maintain streak flames, and unlock gear in the Armory.',
                 icon: Flame,
                 color: '#ef4444',
+                accentBorder: 'rgba(239, 68, 68, 0.45)',
+                accentGlow: 'rgba(239, 68, 68, 0.22)',
+                accentNum: 'rgba(239, 68, 68, 0.28)',
               },
             ].map(item => {
               const Icon = item.icon;
               return (
                 <div key={item.step} className="gameplay-card-wrapper cinematic-layer">
                   <div 
-                    className="rpg-card rpg-card-hover" 
+                    className="rpg-card rpg-card-hover gameplay-card" 
                     style={{ 
                       position: 'relative',
                       backgroundColor: '#0f141c',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '14px',
                       padding: '1.75rem',
                       height: '100%',
+                      ['--card-accent' as any]: item.color,
+                      ['--card-accent-border' as any]: item.accentBorder,
+                      ['--card-accent-glow' as any]: item.accentGlow,
+                      ['--card-accent-num' as any]: item.accentNum,
                     }}
                   >
                     <div
+                      className="gameplay-card-step"
                       style={{
                         position: 'absolute',
                         top: '1.25rem',
@@ -1422,6 +1438,7 @@ export const LandingPage: React.FC = () => {
                       {item.step}
                     </div>
                     <div
+                      className="gameplay-card-icon"
                       style={{
                         width: '46px',
                         height: '46px',
@@ -1477,20 +1494,64 @@ export const LandingPage: React.FC = () => {
             }}
           >
             {[
-              { name: 'Intellect', level: 'LVL 14', progress: 70, icon: Brain, color: 'var(--attr-intellect)', tasks: 'Coding · Logic · System Design · Languages' },
-              { name: 'Strength', level: 'LVL 12', progress: 55, icon: Dumbbell, color: 'var(--attr-strength)', tasks: 'Gym · Calisthenics · Running · Conditioning' },
-              { name: 'Wisdom', level: 'LVL 18', progress: 85, icon: BookOpen, color: 'var(--attr-wisdom)', tasks: 'Reading · Research · Reflection · Strategy' },
-              { name: 'Charisma', level: 'LVL 09', progress: 40, icon: Sparkles, color: 'var(--attr-charisma)', tasks: 'Public Speaking · Teamwork · Mentorship' },
-              { name: 'Vitality', level: 'LVL 16', progress: 80, icon: Heart, color: 'var(--attr-vitality)', tasks: 'Sleep · Nutrition · Mindfulness · Hydration' },
+              { 
+                name: 'Intellect', 
+                level: 'LVL 14', 
+                progress: 70, 
+                icon: Brain, 
+                color: '#3b82f6', 
+                accentBorder: 'rgba(59, 130, 246, 0.45)',
+                accentGlow: 'rgba(59, 130, 246, 0.22)',
+                tasks: 'Coding · Logic · System Design · Languages' 
+              },
+              { 
+                name: 'Strength', 
+                level: 'LVL 12', 
+                progress: 55, 
+                icon: Dumbbell, 
+                color: '#ef4444', 
+                accentBorder: 'rgba(239, 68, 68, 0.45)',
+                accentGlow: 'rgba(239, 68, 68, 0.22)',
+                tasks: 'Gym · Calisthenics · Running · Conditioning' 
+              },
+              { 
+                name: 'Wisdom', 
+                level: 'LVL 18', 
+                progress: 85, 
+                icon: BookOpen, 
+                color: '#14b8a6', 
+                accentBorder: 'rgba(20, 184, 166, 0.45)',
+                accentGlow: 'rgba(20, 184, 166, 0.22)',
+                tasks: 'Reading · Research · Reflection · Strategy' 
+              },
+              { 
+                name: 'Charisma', 
+                level: 'LVL 09', 
+                progress: 40, 
+                icon: Sparkles, 
+                color: '#8b5cf6', 
+                accentBorder: 'rgba(139, 92, 246, 0.45)',
+                accentGlow: 'rgba(139, 92, 246, 0.22)',
+                tasks: 'Public Speaking · Teamwork · Mentorship' 
+              },
+              { 
+                name: 'Vitality', 
+                level: 'LVL 16', 
+                progress: 80, 
+                icon: Heart, 
+                color: '#10b981', 
+                accentBorder: 'rgba(16, 185, 129, 0.45)',
+                accentGlow: 'rgba(16, 185, 129, 0.22)',
+                tasks: 'Sleep · Nutrition · Mindfulness · Hydration' 
+              },
             ].map(disc => {
               const Icon = disc.icon;
               return (
                 <div key={disc.name} className="discipline-card-wrapper cinematic-layer">
                   <div 
-                    className="rpg-card rpg-card-hover"
+                    className="rpg-card rpg-card-hover discipline-card"
                     style={{
                       backgroundColor: '#0f141c',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
                       borderRadius: '12px',
                       padding: '1.35rem',
                       position: 'relative',
@@ -1498,11 +1559,15 @@ export const LandingPage: React.FC = () => {
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       height: '100%',
+                      ['--card-accent' as any]: disc.color,
+                      ['--card-accent-border' as any]: disc.accentBorder,
+                      ['--card-accent-glow' as any]: disc.accentGlow,
                     }}
                   >
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                         <div
+                          className="discipline-card-icon"
                           style={{
                             width: '42px',
                             height: '42px',
@@ -1518,6 +1583,7 @@ export const LandingPage: React.FC = () => {
                           <Icon size={20} color={disc.color} />
                         </div>
                         <span
+                          className="discipline-card-badge"
                           style={{
                             fontSize: '0.72rem',
                             fontFamily: 'var(--font-mono)',
