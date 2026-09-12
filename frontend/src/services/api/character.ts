@@ -4,7 +4,7 @@
  * Calls the backend GET /api/character endpoint for the full character sheet
  * including server-authoritative attribute values.
  */
-import type { Character, Attribute } from '../../types/contract';
+import type { Attribute } from '../../types/contract';
 import { ApiError } from '../../types/contract';
 
 export interface CharacterResponse {

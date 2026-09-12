@@ -51,6 +51,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   character: { level: 4, totalXp: 1200, gold: 350, streakCurrent: 5, streakBest: 9 },
   isLoading: false,
   serverReachable: true,
+  xpProgress: null,
   login: vi.fn(),
   register: vi.fn(),
   logout: vi.fn(),
@@ -75,6 +76,8 @@ const createMockQuestsContext = (overrides: Partial<QuestsContextType> = {}): Qu
   }),
   lastRewardNotice: null,
   clearRewardNotice: vi.fn(),
+  levelUpEvent: null,
+  clearLevelUpEvent: vi.fn(),
   ...overrides,
 });
 

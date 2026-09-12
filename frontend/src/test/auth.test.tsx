@@ -12,6 +12,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   character: null,
   isLoading: false,
   serverReachable: true,
+  xpProgress: null,
   login: vi.fn(),
   register: vi.fn(),
   logout: vi.fn(),
