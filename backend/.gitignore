@@ -5,3 +5,4 @@ dist/
 .pgdata/
 powershell.cmd
 *.log
+*.tsbuildinfo
