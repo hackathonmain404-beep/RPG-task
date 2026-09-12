@@ -29,7 +29,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
 });
 
 describe('HeaderHUD', () => {
-  it('renders authoritative character metrics (Level, XP, Gold, Streak)', () => {
+  it('renders Achiever brand, user display name, and sign out action', () => {
     const mockAuth = createMockAuthContext();
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -39,12 +39,9 @@ describe('HeaderHUD', () => {
       </AuthContext.Provider>
     );
 
-    expect(screen.getByText('5')).toBeInTheDocument(); // Level
-    expect(screen.getByText('1,840 XP')).toBeInTheDocument(); // Total XP
-    expect(screen.getByText('430')).toBeInTheDocument(); // Gold
-    expect(screen.getByText('7d')).toBeInTheDocument(); // Streak
+    expect(screen.getByText('Achiever')).toBeInTheDocument();
     expect(screen.getByText('ValiantCoder')).toBeInTheDocument(); // Display name
-    expect(screen.getByRole('button', { name: /Sign out of Life RPG/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign out of Achiever/i })).toBeInTheDocument();
   });
 });
 

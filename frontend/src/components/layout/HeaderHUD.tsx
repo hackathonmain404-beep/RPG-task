@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
-import { Flame, Coins, LogOut, User, Menu, X } from 'lucide-react';
+import { LogOut, User, Menu, X } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -9,7 +9,7 @@ interface HeaderHUDProps {
 }
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
-  const { user, character, logout, xpProgress } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -22,17 +22,6 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
       setIsLoggingOut(false);
     }
   };
-
-  const level = character?.level || 1;
-  const totalXp = character?.totalXp || 0;
-  const gold = character?.gold || 0;
-  const streak = character?.streakCurrent || 0;
-
-  // Server-authoritative XP progress: use cached progression from last completion,
-  // fallback to a reasonable default when no completion data is available yet
-  const xpProgressPercent = xpProgress?.progressPercent ?? 0;
-  const xpBarWidth = Math.max(2, Math.min(100, xpProgressPercent));
-  const hasXpData = xpProgress !== null;
 
   return (
     <header
@@ -111,117 +100,6 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           </Link>
         </div>
 
-        {/* Center: RPG Progression HUD (Desktop / Tablet) */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.25rem',
-            flexWrap: 'wrap',
-          }}
-          className="hud-metrics-container"
-        >
-          {/* Level Badge */}
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(168, 85, 247, 0.15)',
-              border: '1px solid rgba(168, 85, 247, 0.35)',
-              boxShadow: 'var(--glow-xp)',
-            }}
-          >
-            <span style={{ color: 'var(--color-xp)', fontWeight: 700, fontSize: '0.8rem' }}>LVL</span>
-            <span className="mono-numbers" style={{ fontWeight: 800, color: '#ffffff', fontSize: '1rem' }}>
-              {level}
-            </span>
-          </div>
-
-          {/* XP Bar — Server-authoritative progress */}
-          <div
-            className="hud-xp-wrapper"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.2rem',
-              minWidth: '120px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '0.75rem',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <span style={{ fontWeight: 600 }}>EXP</span>
-              <span className="mono-numbers" style={{ color: 'var(--color-xp)' }}>
-                {totalXp.toLocaleString()} XP
-              </span>
-            </div>
-            <div
-              role="progressbar"
-              aria-valuenow={xpProgressPercent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Level ${level} XP Progress: ${Math.round(xpProgressPercent)}%`}
-              className="rpg-progress-track"
-              style={{ height: '6px' }}
-            >
-              <div
-                className={`rpg-progress-fill${hasXpData ? ' xp-bar-shimmer' : ''}`}
-                style={{
-                  width: `${xpBarWidth}%`,
-                  background: 'linear-gradient(90deg, #a855f7, #c084fc)',
-                  transition: 'width 0.8s var(--ease-spring)',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Gold Wallet */}
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(245, 158, 11, 0.12)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              boxShadow: 'var(--glow-gold)',
-            }}
-          >
-            <Coins size={16} color="#f59e0b" />
-            <span className="mono-numbers" style={{ fontWeight: 800, color: '#fef08a', fontSize: '0.95rem' }}>
-              {gold.toLocaleString()}
-            </span>
-          </div>
-
-          {/* Streak Flame */}
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              boxShadow: 'var(--glow-streak)',
-            }}
-          >
-            <Flame size={16} color="#ef4444" />
-            <span className="mono-numbers" style={{ fontWeight: 800, color: '#fca5a5', fontSize: '0.95rem' }}>
-              {streak}d
-            </span>
-          </div>
-        </div>
-
         {/* Right: Player Profile & Sign Out */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <div
@@ -270,7 +148,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             disabled={isLoggingOut}
             className="rpg-btn rpg-btn-danger"
             style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
-            aria-label="Sign out of Life RPG"
+            aria-label="Sign out of Achiever"
           >
             <LogOut size={16} />
             <span className="desktop-only">{isLoggingOut ? 'Leaving...' : 'Sign Out'}</span>
