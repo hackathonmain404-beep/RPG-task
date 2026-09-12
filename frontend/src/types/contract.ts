@@ -193,3 +193,32 @@ export class ApiError extends Error {
     this.details = details;
   }
 }
+
+/* ==========================================================================
+   FEEDBACK SYSTEM CONTRACT
+   ========================================================================== */
+
+export type FeedbackType = 'BUG_REPORT' | 'FEATURE_REQUEST' | 'GENERAL';
+
+export interface Feedback {
+  id: string;
+  userId: string;
+  type: FeedbackType;
+  message: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface CreateFeedbackRequest {
+  type: FeedbackType;
+  message: string;
+}
+
+export interface FeedbackResponse {
+  feedback: Feedback;
+}
+
+export interface FeedbackListResponse {
+  feedbacks: Feedback[];
+}
+

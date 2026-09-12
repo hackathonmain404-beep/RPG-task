@@ -8,8 +8,11 @@ import {
   Store, 
   Package, 
   Settings,
-  Sparkles
+  Sparkles,
+  MessageSquarePlus
 } from 'lucide-react';
+import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
+import { FeedbackModal } from '../common/FeedbackModal';
 
 interface NavItem {
   to: string;
@@ -27,8 +30,9 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/app/settings', label: 'Settings', icon: Settings },
 ];
 
-export const AppShell: React.FC = () => {
+const AppShellInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
@@ -125,6 +129,43 @@ export const AppShell: React.FC = () => {
             );
           })}
 
+          {/* Feedback Action Button in Left Sidebar */}
+          <button
+            type="button"
+            onClick={openFeedback}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              width: '100%',
+              padding: '0.7rem 0.85rem',
+              borderRadius: '8px',
+              backgroundColor: 'transparent',
+              border: '1px solid transparent',
+              color: 'var(--text-secondary)',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              fontFamily: 'var(--font-display)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all var(--duration-fast) ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.12)';
+              e.currentTarget.style.color = '#c084fc';
+              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.borderColor = 'transparent';
+            }}
+            aria-label="Open Feedback Modal"
+          >
+            <MessageSquarePlus size={18} />
+            <span>Feedback</span>
+          </button>
+
           <div
             style={{
               marginTop: 'auto',
@@ -202,6 +243,33 @@ export const AppShell: React.FC = () => {
                   </NavLink>
                 );
               })}
+
+              {/* Mobile Drawer Feedback Action Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  closeSidebar();
+                  openFeedback();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(139, 92, 246, 0.12)',
+                  border: '1px solid rgba(139, 92, 246, 0.3)',
+                  color: '#c084fc',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+                aria-label="Open Feedback Modal"
+              >
+                <MessageSquarePlus size={18} />
+                <span>Feedback</span>
+              </button>
             </div>
           </div>
         )}
@@ -262,6 +330,17 @@ export const AppShell: React.FC = () => {
           );
         })}
       </nav>
+
+      {/* Global Unified Feedback Modal */}
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={closeFeedback} />
     </div>
+  );
+};
+
+export const AppShell: React.FC = () => {
+  return (
+    <FeedbackProvider>
+      <AppShellInner />
+    </FeedbackProvider>
   );
 };

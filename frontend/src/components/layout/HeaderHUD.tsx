@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
-import { LogOut, User, Menu, X } from 'lucide-react';
+import { useFeedback } from '../../context/FeedbackContext';
+import { LogOut, User, Menu, X, MessageSquarePlus } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -10,6 +11,7 @@ interface HeaderHUDProps {
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   const { user, logout } = useAuth();
+  const { openFeedback } = useFeedback();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -99,8 +101,40 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           </Link>
         </div>
 
-        {/* Right: Player Profile & Sign Out */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        {/* Right: Feedback Button, Player Profile & Sign Out */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Feedback Trigger — immediately to the left of user profile */}
+          <button
+            type="button"
+            onClick={openFeedback}
+            className="rpg-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.4rem 0.75rem',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              borderRadius: '8px',
+              backgroundColor: 'rgba(139, 92, 246, 0.12)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              color: '#c084fc',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.22)';
+              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.55)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.12)';
+              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+            }}
+            aria-label="Send Feedback"
+          >
+            <MessageSquarePlus size={16} />
+            <span className="desktop-only">Feedback</span>
+          </button>
           <div
             style={{
               display: 'flex',
