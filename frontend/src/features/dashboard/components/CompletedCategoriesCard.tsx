@@ -84,6 +84,7 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
               fill="transparent"
               stroke="rgba(255, 255, 255, 0.05)"
               strokeWidth={strokeWidth}
+              className="donut-track-circle"
             />
 
             {/* Render Segments based 100% on real completed tasks with entrance animation */}
@@ -107,12 +108,10 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                   transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                  className="donut-segment-animated"
+                  className={`donut-segment-animated donut-segment-slice ${isHovered ? 'is-hovered' : ''}`}
                   style={{
-                    cursor: 'pointer',
-                    transition: 'stroke-width 0.25s ease, opacity 0.25s ease, filter 0.25s ease',
+                    color: cat.color,
                     opacity: hoveredCategory && !isHovered ? 0.45 : 1,
-                    filter: isHovered ? `drop-shadow(0 0 6px ${cat.color})` : undefined,
                   }}
                   onMouseEnter={() => setHoveredCategory(cat.id)}
                   onMouseLeave={() => setHoveredCategory(null)}
@@ -124,12 +123,7 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
           {/* Center Text with entrance fade */}
           <div className="donut-center-text donut-center-fade">
             <span
-              className="donut-total-number"
-              style={{
-                transition: 'color 0.2s ease, filter 0.2s ease',
-                color: hoveredCategory ? '#38bdf8' : '#ffffff',
-                filter: hoveredCategory ? 'drop-shadow(0 0 8px rgba(56, 189, 248, 0.5))' : 'none',
-              }}
+              className={`donut-total-number ${hoveredCategory ? 'is-highlighted' : ''}`}
             >
               {totalCompleted}
             </span>
@@ -140,7 +134,7 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
         {/* Legend List */}
         <div className="category-legend-list">
           {categories.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#64748b', fontSize: '0.82rem', padding: '0.5rem 0' }}>
+            <div className="category-empty-state">
               No completed quests yet.
             </div>
           ) : (
@@ -149,15 +143,7 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
               return (
                 <div
                   key={cat.id}
-                  className="category-legend-row"
-                  style={{
-                    cursor: 'pointer',
-                    padding: '3px 6px',
-                    borderRadius: '6px',
-                    backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.06)' : 'transparent',
-                    transform: isHovered ? 'translateX(3px)' : 'none',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                  }}
+                  className={`category-legend-row ${isHovered ? 'is-hovered' : ''}`}
                   onMouseEnter={() => setHoveredCategory(cat.id)}
                   onMouseLeave={() => setHoveredCategory(null)}
                 >
