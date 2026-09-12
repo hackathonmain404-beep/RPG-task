@@ -708,7 +708,7 @@ export const LandingPage: React.FC = () => {
               {/* CTAs */}
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
                 <Link 
-                  to="/register" 
+                  to="/login" 
                   className="rpg-btn rpg-btn-primary" 
                   style={{ 
                     padding: '0.85rem 1.85rem', 
@@ -1286,7 +1286,7 @@ export const LandingPage: React.FC = () => {
               Join thousands of adventurers translating mundane tasks into epic levels and daily momentum.
             </p>
             <div className="cta-buttons-reveal" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to="/register" className="rpg-btn rpg-btn-primary" style={{ padding: '0.85rem 2.25rem', fontSize: '1.1rem', boxShadow: '0 0 25px rgba(56, 189, 248, 0.4)' }}>
+              <Link to="/login" className="rpg-btn rpg-btn-primary" style={{ padding: '0.85rem 2.25rem', fontSize: '1.1rem', boxShadow: '0 0 25px rgba(56, 189, 248, 0.4)' }}>
                 Forge Character Now <ArrowRight size={18} />
               </Link>
             </div>
