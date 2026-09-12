@@ -662,27 +662,93 @@
   stroke-dasharray: 600;
   animation: chartLineDraw 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 450ms;
+  transition: filter 500ms cubic-bezier(0.16, 1, 0.3, 1),
+              stroke-width 500ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .chart-line-draw-failed {
   stroke-dasharray: 600;
   animation: chartLineDraw 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 550ms;
+  transition: filter 500ms cubic-bezier(0.16, 1, 0.3, 1),
+              stroke-width 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Gliding Hardware-Accelerated Crosshair Group */
+.chart-crosshair-group {
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.chart-crosshair-halo {
+  fill: rgba(56, 189, 248, 0.04);
+  transition: opacity 300ms ease;
+  pointer-events: none;
 }
 
 .chart-vertical-crosshair {
-  stroke: rgba(56, 189, 248, 0.35);
+  stroke: rgba(56, 189, 248, 0.45);
   stroke-dasharray: 4 3;
+  stroke-width: 1.2px;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
 }
 
+.chart-baseline-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1px;
+  transition: stroke 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Smooth Glowing Node Circles */
 .chart-node-glow {
-  transition: r 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+  transition: r 350ms cubic-bezier(0.16, 1, 0.3, 1),
+              stroke-width 350ms cubic-bezier(0.16, 1, 0.3, 1),
+              stroke 350ms ease,
+              filter 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center;
+  pointer-events: none;
 }
 
-.chart-node-glow:hover {
-  filter: drop-shadow(0 0 6px #10b981);
+.chart-node-glow.is-completed {
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.45));
+}
+
+.chart-node-glow.is-completed.is-active {
+  stroke: #ffffff;
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.95)) drop-shadow(0 0 16px rgba(16, 185, 129, 0.5));
+}
+
+.chart-node-glow.is-failed {
+  filter: drop-shadow(0 0 3px rgba(244, 63, 94, 0.45));
+}
+
+.chart-node-glow.is-failed.is-active {
+  stroke: #ffffff;
+  filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.95)) drop-shadow(0 0 16px rgba(244, 63, 94, 0.5));
+}
+
+/* Smooth Day Axis Text Labels */
+.chart-axis-label {
+  fill: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-display, 'Space Grotesk', -apple-system, sans-serif);
+  letter-spacing: 0.02em;
+  transition: fill 350ms cubic-bezier(0.16, 1, 0.3, 1),
+              font-weight 350ms ease,
+              transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: bottom center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.chart-axis-label.is-active {
+  fill: #ffffff;
+  font-weight: 700;
+  transform: translateY(-1.5px);
 }
 
 /* 9. COMPLETED CATEGORIES DONUT ANIMATION */
@@ -719,10 +785,10 @@
 .analytics-card {
   position: relative;
   overflow: hidden;
-  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1),
-              box-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1),
-              border-color 500ms cubic-bezier(0.25, 1, 0.5, 1),
-              background-color 500ms cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 600ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -741,7 +807,7 @@
   );
   opacity: 0;
   pointer-events: none;
-  transition: opacity 500ms cubic-bezier(0.25, 1, 0.5, 1);
+  transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .analytics-card:hover {
@@ -758,7 +824,7 @@
 
 /* Title subtle illumination on card hover */
 .analytics-card-title {
-  transition: text-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1), color 500ms ease;
+  transition: text-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1), color 600ms ease;
 }
 
 .analytics-card:hover .analytics-card-title {
@@ -771,20 +837,60 @@
   --analytics-card-sheen: rgba(56, 189, 248, 0.09);
   --analytics-card-border: rgba(56, 189, 248, 0.35);
   --analytics-card-glow: rgba(56, 189, 248, 0.12);
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 600ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+
+.card-analytics-trends:hover {
+  transform: translate3d(0, -2px, 0);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.62),
+              0 0 24px rgba(56, 189, 248, 0.14);
+}
+
+.card-analytics-trends:hover .chart-line-draw-completed {
+  filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.65));
+}
+
+.card-analytics-trends:hover .chart-line-draw-failed {
+  filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.65));
+}
+
+.card-analytics-trends:hover .chart-baseline-grid {
+  stroke: rgba(255, 255, 255, 0.14);
+}
+
+.trends-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: color 350ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+.trends-legend-item:hover {
+  color: #f8fafc;
+  transform: translateY(-0.5px);
 }
 
 .trends-legend-dot {
-  transition: box-shadow 500ms ease, transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
+  transition: box-shadow 500ms ease, transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.card-analytics-trends:hover .trends-legend-dot.completed {
-  box-shadow: 0 0 8px #10b981;
-  transform: scale(1.1);
+.card-analytics-trends:hover .trends-legend-dot.completed,
+.trends-legend-item:hover .trends-legend-dot.completed {
+  box-shadow: 0 0 10px #10b981;
+  transform: scale(1.18);
 }
 
-.card-analytics-trends:hover .trends-legend-dot.overdue {
-  box-shadow: 0 0 8px #f43f5e;
-  transform: scale(1.1);
+.card-analytics-trends:hover .trends-legend-dot.overdue,
+.trends-legend-item:hover .trends-legend-dot.overdue {
+  box-shadow: 0 0 10px #f43f5e;
+  transform: scale(1.18);
 }
 
 /* Card 2: Completed Categories (Purple / Violet) */
