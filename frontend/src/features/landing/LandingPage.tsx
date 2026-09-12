@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
-import { useCinematicScroll, gsap } from '../../hooks/useCinematicScroll';
+import { useCinematicScroll, gsap, ScrollTrigger } from '../../hooks/useCinematicScroll';
 import { 
   Shield, 
   Flame, 
@@ -27,7 +27,8 @@ export const LandingPage: React.FC = () => {
   useDocumentMetadata('Life RPG — Turn Everyday Tasks Into Epic Progression & Character Growth', { noindex: false });
 
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  const { progress: scrollProgress, stage: adventureStage, prefersReducedMotion, isMobile } = useCinematicScroll();
+  const progressCircleRef = useRef<SVGCircleElement>(null);
+  const { stage: adventureStage, prefersReducedMotion, isMobile } = useCinematicScroll();
 
   // FAQ Accordion Open State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -35,36 +36,6 @@ export const LandingPage: React.FC = () => {
   // Active Section Tracking
   const [activeSection, setActiveSection] = useState<'hero' | 'how-it-works' | 'disciplines' | 'persistence' | 'faq'>('hero');
   const [showScrollTop, setShowScrollTop] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setShowScrollTop(currentScrollY > 400);
-
-      // Viewport Section Detection
-      const sections: Array<'hero' | 'how-it-works' | 'disciplines' | 'persistence' | 'faq'> = [
-        'hero',
-        'how-it-works',
-        'disciplines',
-        'persistence',
-        'faq'
-      ];
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= window.innerHeight * 0.45) {
-            setActiveSection(sections[i]);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // GSAP Cinematic ScrollTrigger System
   useEffect(() => {
@@ -76,22 +47,62 @@ export const LandingPage: React.FC = () => {
           { opacity: 1, y: 0, x: 0, scale: 1, clearProps: 'all' }
         );
         gsap.set('.discipline-progress-bar', {
-          width: (_i: number, target: Element) => (target as HTMLElement).dataset.targetWidth || '50%',
+          scaleX: 1,
+          clearProps: 'transform',
         });
         return;
       }
 
+      // 0. SCROLL STATE TRACKERS (Native to GSAP, zero unthrottled reflow loops)
+      ScrollTrigger.create({
+        trigger: '#hero',
+        start: 'top top',
+        end: 'bottom bottom',
+        onLeave: () => setShowScrollTop(true),
+        onEnterBack: () => setShowScrollTop(false),
+      });
+
+      // Global scroll progress ring updater (direct DOM update via GSAP, no React render cycles)
+      ScrollTrigger.create({
+        start: 'top top',
+        end: 'bottom bottom',
+        onUpdate: (self) => {
+          if (progressCircleRef.current) {
+            progressCircleRef.current.style.strokeDashoffset = `${144.5 - 144.5 * self.progress}`;
+          }
+        },
+      });
+
+      const sectionNavTriggers: Array<{ id: 'hero' | 'how-it-works' | 'disciplines' | 'persistence' | 'faq'; trigger: string }> = [
+        { id: 'hero', trigger: '#hero' },
+        { id: 'how-it-works', trigger: '#how-it-works' },
+        { id: 'disciplines', trigger: '#disciplines' },
+        { id: 'persistence', trigger: '#persistence' },
+        { id: 'faq', trigger: '#faq' },
+      ];
+
+      sectionNavTriggers.forEach(({ id, trigger }) => {
+        ScrollTrigger.create({
+          trigger,
+          start: 'top 45%',
+          end: 'bottom 45%',
+          onEnter: () => setActiveSection(id),
+          onEnterBack: () => setActiveSection(id),
+        });
+      });
+
       // ======================================================================
-      // 1. HERO SCROLL EXIT & PARALLAX (Req. 3, 4, 5)
+      // 1. HERO SCROLL EXIT & PARALLAX — CONTINUOUS REVERSIBLE SCRUB
       // 0-20% stable, 20-50% text rises, video scales back
       // 50-80% gradual fade, 80-100% complete transition
+      // Symmetrical ease 'none' ensures identical 1:1 forward and reverse motion
       // ======================================================================
       const heroTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#hero',
           start: 'top top',
           end: 'bottom top',
-          scrub: 0.8,
+          scrub: 0.3,
         },
       });
 
@@ -109,12 +120,12 @@ export const LandingPage: React.FC = () => {
         .to('.hero-scroll-indicator', {
           opacity: 0,
           y: 12,
-          ease: 'power1.in',
+          ease: 'none',
         }, 0)
         .to('.hero-headline-group', {
           y: isMobile ? -25 : -55,
           opacity: 0,
-          ease: 'power1.in',
+          ease: 'none',
         }, 0.05)
         .to('.hero-content-layer', {
           opacity: 0,
@@ -123,33 +134,33 @@ export const LandingPage: React.FC = () => {
 
       // ======================================================================
       // 2. GAMEPLAY LOOP SECTION — BIDIRECTIONAL SCRUB TIMELINE
-      // Staggered reveal from depth (opacity, translateY, scale, subtle blur)
+      // Staggered reveal from depth (opacity, translateY, scale)
+      // GPU-accelerated: no layout thrashing or blur filters during scroll
       // ======================================================================
       const loopTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#how-it-works',
           start: 'top 85%',
-          end: 'top 30%',
-          scrub: 0.8,
+          end: 'top 25%',
+          scrub: 0.3,
         },
       });
 
       loopTl
         .fromTo('.gameplay-header-reveal',
           { opacity: 0, y: 35 },
-          { opacity: 1, y: 0, ease: 'power2.out' }
+          { opacity: 1, y: 0, ease: 'none' }
         )
         .fromTo('.gameplay-card-wrapper',
-          { opacity: 0, y: 55, scale: 0.96, filter: 'blur(4px)' },
+          { opacity: 0, y: 50, scale: 0.96 },
           {
             opacity: 1,
             y: 0,
             scale: 1,
-            filter: 'blur(0px)',
-            stagger: 0.1,
-            ease: 'power2.out',
+            stagger: 0.08,
+            ease: 'none',
           },
-          '-=0.2'
+          '-=0.15'
         );
 
       // ======================================================================
@@ -161,25 +172,25 @@ export const LandingPage: React.FC = () => {
         scrollTrigger: {
           trigger: '#disciplines',
           start: 'top 85%',
-          end: 'top 25%',
-          scrub: 0.8,
+          end: 'top 20%',
+          scrub: 0.3,
         },
       });
 
       discTl
         .fromTo('.discipline-eyebrow-reveal',
           { opacity: 0, y: -12 },
-          { opacity: 1, y: 0, ease: 'power2.out' }
+          { opacity: 1, y: 0, ease: 'none' }
         )
         .fromTo('.discipline-heading-reveal',
           { opacity: 0, y: 28 },
-          { opacity: 1, y: 0, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, y: 0, ease: 'none' },
+          '-=0.1'
         )
         .fromTo('.discipline-desc-reveal',
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, y: 0, ease: 'none' },
+          '-=0.1'
         );
 
       // Alternating directional vectors for the 5 real-world disciplines
@@ -202,20 +213,19 @@ export const LandingPage: React.FC = () => {
             x: 0,
             y: 0,
             scale: 1,
-            ease: 'power2.out',
+            ease: 'none',
           },
-          index === 0 ? '-=0.15' : '<+=0.08'
+          index === 0 ? '-=0.1' : '<+=0.06'
         );
       });
 
-      // Attribute Progress Bars: animate in same timeline, naturally reversing to 0% on scroll up
+      // Attribute Progress Bars: animate scaleX on GPU (zero layout reflow), reversing to 0 on scroll up
       const progressBars = gsap.utils.toArray<HTMLElement>('.discipline-progress-bar');
       progressBars.forEach((bar, index) => {
-        const targetW = bar.getAttribute('data-target-width') || '50%';
         discTl.fromTo(bar,
-          { width: '0%' },
-          { width: targetW, ease: 'power2.out' },
-          index === 0 ? '<+=0.1' : '<+=0.04'
+          { scaleX: 0 },
+          { scaleX: 1, ease: 'none' },
+          index === 0 ? '<+=0.06' : '<+=0.03'
         );
       });
 
@@ -226,9 +236,9 @@ export const LandingPage: React.FC = () => {
       const persistenceTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#persistence',
-          start: 'top 80%',
-          end: 'top 28%',
-          scrub: 0.8,
+          start: 'top 75%',
+          end: 'top 20%',
+          scrub: 0.3,
         },
       });
 
@@ -238,28 +248,28 @@ export const LandingPage: React.FC = () => {
           {
             boxShadow: '0 0 50px rgba(56, 189, 248, 0.18), 0 20px 50px rgba(0, 0, 0, 0.8)',
             borderColor: 'rgba(56, 189, 248, 0.45)',
-            ease: 'power2.out',
+            ease: 'none',
           }
         )
         .fromTo('.persistence-badge-icon',
           { scale: 0.88, opacity: 0 },
-          { scale: 1, opacity: 1, ease: 'back.out(1.4)' },
-          '-=0.3'
+          { scale: 1, opacity: 1, ease: 'none' },
+          '-=0.2'
         )
         .fromTo('.persistence-heading-reveal',
           { opacity: 0, y: 25 },
-          { opacity: 1, y: 0, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, y: 0, ease: 'none' },
+          '-=0.15'
         )
         .fromTo('.persistence-node-pill',
           { opacity: 0, x: 20 },
-          { opacity: 1, x: 0, stagger: 0.08, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, x: 0, stagger: 0.06, ease: 'none' },
+          '-=0.15'
         )
         .fromTo('.persistence-status-check',
           { opacity: 0, y: 15, scale: 0.95 },
-          { opacity: 1, y: 0, scale: 1, stagger: 0.08, ease: 'power2.out' },
-          '-=0.15'
+          { opacity: 1, y: 0, scale: 1, stagger: 0.06, ease: 'none' },
+          '-=0.1'
         );
 
       // ======================================================================
@@ -269,21 +279,21 @@ export const LandingPage: React.FC = () => {
       const faqTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#faq',
-          start: 'top 82%',
-          end: 'top 35%',
-          scrub: 0.8,
+          start: 'top 78%',
+          end: 'top 25%',
+          scrub: 0.3,
         },
       });
 
       faqTl
         .fromTo('.faq-header-reveal',
           { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, ease: 'power2.out' }
+          { opacity: 1, y: 0, ease: 'none' }
         )
         .fromTo('.faq-item-reveal',
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, stagger: 0.08, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, y: 0, stagger: 0.06, ease: 'none' },
+          '-=0.15'
         );
 
       // ======================================================================
@@ -293,9 +303,9 @@ export const LandingPage: React.FC = () => {
       const ctaTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#final-cta-section',
-          start: 'top 85%',
+          start: 'top 80%',
           end: 'bottom 90%',
-          scrub: 0.8,
+          scrub: 0.3,
         },
       });
 
@@ -306,23 +316,23 @@ export const LandingPage: React.FC = () => {
             scale: 1,
             opacity: 1,
             boxShadow: '0 0 50px rgba(56, 189, 248, 0.25), 0 20px 60px rgba(0, 0, 0, 0.8)',
-            ease: 'power2.out',
+            ease: 'none',
           }
         )
         .fromTo('.cta-headline-reveal',
           { opacity: 0, y: 25 },
-          { opacity: 1, y: 0, ease: 'power2.out' },
-          '-=0.3'
+          { opacity: 1, y: 0, ease: 'none' },
+          '-=0.2'
         )
         .fromTo('.cta-desc-reveal',
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, ease: 'power2.out' },
-          '-=0.2'
+          { opacity: 1, y: 0, ease: 'none' },
+          '-=0.15'
         )
         .fromTo('.cta-buttons-reveal',
           { opacity: 0, y: 15, scale: 0.96 },
-          { opacity: 1, y: 0, scale: 1, ease: 'power2.out' },
-          '-=0.15'
+          { opacity: 1, y: 0, scale: 1, ease: 'none' },
+          '-=0.1'
         );
     }, mainContainerRef);
 
@@ -1048,7 +1058,9 @@ export const LandingPage: React.FC = () => {
                           className="rpg-progress-fill discipline-progress-bar"
                           data-target-width={`${disc.progress}%`}
                           style={{
-                            width: prefersReducedMotion ? `${disc.progress}%` : '0%',
+                            width: `${disc.progress}%`,
+                            transformOrigin: 'left center',
+                            transform: prefersReducedMotion ? 'none' : 'scaleX(0)',
                             backgroundColor: disc.color,
                             boxShadow: `0 0 8px ${disc.color}`,
                           }}
@@ -1653,6 +1665,7 @@ export const LandingPage: React.FC = () => {
               strokeWidth="2.5"
             />
             <circle
+              ref={progressCircleRef}
               cx="27"
               cy="27"
               r="23"
@@ -1660,9 +1673,8 @@ export const LandingPage: React.FC = () => {
               stroke="#38bdf8"
               strokeWidth="2.5"
               strokeDasharray={144.5}
-              strokeDashoffset={144.5 - (144.5 * scrollProgress) / 100}
+              strokeDashoffset={144.5}
               strokeLinecap="round"
-              style={{ transition: 'stroke-dashoffset 0.15s linear' }}
             />
           </svg>
           <ArrowUp size={15} strokeWidth={2.5} color="#38bdf8" />

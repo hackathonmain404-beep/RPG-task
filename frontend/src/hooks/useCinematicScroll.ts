@@ -55,15 +55,20 @@ export function useCinematicScroll(): CinematicScrollState {
     };
     window.addEventListener('resize', checkMobile, { passive: true });
 
-    // Global scroll listener for reactive state updates
+    // Discrete scroll listener: only trigger state re-render when adventure stage changes
+    let lastStage: AdventureStage = 'BEGIN';
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       const currentPct = maxScroll > 0 ? (scrollY / maxScroll) * 100 : 0;
       const clampedPct = Math.min(100, Math.max(0, currentPct));
 
-      setProgress(clampedPct);
-      setStage(getAdventureStage(clampedPct));
+      const newStage = getAdventureStage(clampedPct);
+      if (newStage !== lastStage) {
+        lastStage = newStage;
+        setStage(newStage);
+        setProgress(clampedPct);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
