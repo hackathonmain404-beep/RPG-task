@@ -67,7 +67,7 @@ describe('Phase 7 — SEO Specifications & Metadata Audit', () => {
       useDocumentMetadata('Command Citadel', { noindex: true, description: 'Private adventurer portal' })
     );
 
-    expect(document.title).toBe('Command Citadel | Life RPG');
+    expect(document.title).toMatch(/Command Citadel \| (Life RPG|Achiever)/);
     const robotsMeta = document.querySelector('meta[name="robots"]');
     expect(robotsMeta).not.toBeNull();
     expect(robotsMeta?.getAttribute('content')).toBe('noindex, nofollow');

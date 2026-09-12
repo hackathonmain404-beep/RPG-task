@@ -40,6 +40,7 @@ export interface AuthContextType {
   xpProgress: XpProgress | null;
   recentActivity: ProgressionActivityItem[];
   lastAttributeChange: AttributeChangeNotice | null;
+  checkServerReachability?: () => Promise<boolean>;
   signInWithGoogle: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
   signInAsGuest: () => void;

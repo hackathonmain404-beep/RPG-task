@@ -9,7 +9,8 @@ import {
   ArrowLeft, 
   Check, 
   Loader2, 
-  ShieldCheck 
+  ShieldCheck,
+  RefreshCw
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -18,13 +19,31 @@ export const LoginPage: React.FC = () => {
     noindex: false,
   });
 
-  const { signInWithGoogle, signInWithGithub, signInAsGuest, serverReachable } = useAuth();
+  const { signInWithGoogle, signInWithGithub, signInAsGuest, serverReachable, checkServerReachability } = useAuth();
   const navigate = useNavigate();
 
   const [activeProvider, setActiveProvider] = useState<'google' | 'github' | 'guest' | null>(null);
   const [authStatus, setAuthStatus] = useState<'idle' | 'connecting' | 'granted' | 'denied'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [cardTilt, setCardTilt] = useState({ x: 0, y: 0 });
+  const [isCheckingReachability, setIsCheckingReachability] = useState(false);
+
+  // Auto-probe backend reachability when login page mounts
+  useEffect(() => {
+    if (!serverReachable && checkServerReachability) {
+      void checkServerReachability();
+    }
+  }, [serverReachable, checkServerReachability]);
+
+  const handleRetryReachability = async () => {
+    if (!checkServerReachability) return;
+    setIsCheckingReachability(true);
+    try {
+      await checkServerReachability();
+    } finally {
+      setIsCheckingReachability(false);
+    }
+  };
 
   // Subtle pointer depth parallax on desktop
   useEffect(() => {
@@ -278,16 +297,42 @@ export const LoginPage: React.FC = () => {
                 color: '#fde047',
                 fontSize: '0.82rem',
                 display: 'flex',
-                gap: '0.65rem',
-                alignItems: 'flex-start',
+                gap: '0.75rem',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 lineHeight: 1.45,
               }}
               role="status"
             >
-              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <strong style={{ color: '#fbbf24' }}>Citadel Backend Offline:</strong> The server API is currently unreachable. You can continue as a Guest with full local progression.
+              <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'flex-start' }}>
+                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong style={{ color: '#fbbf24' }}>Citadel Backend Offline:</strong> The server API is currently unreachable. You can continue as a Guest with full local progression.
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={handleRetryReachability}
+                disabled={isCheckingReachability}
+                style={{
+                  flexShrink: 0,
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  background: 'rgba(245, 158, 11, 0.18)',
+                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  color: '#fde047',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: isCheckingReachability ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <RefreshCw size={12} style={{ animation: isCheckingReachability ? 'spin 1s linear infinite' : 'none' }} />
+                {isCheckingReachability ? 'Testing...' : 'Retry'}
+              </button>
             </div>
           )}
 

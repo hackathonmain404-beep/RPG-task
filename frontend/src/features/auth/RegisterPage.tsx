@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
-import { AlertCircle, Sparkles } from 'lucide-react';
+import { AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 
 const ARCHETYPES = [
   { key: 'intellect', label: 'Scholar', discipline: 'Intellect Focus', icon: '🧠', color: 'var(--attr-intellect)' },
@@ -18,11 +18,29 @@ export const RegisterPage: React.FC = () => {
     noindex: false,
   });
 
-  const { signInWithGoogle, signInWithGithub, serverReachable } = useAuth();
+  const { signInWithGoogle, signInWithGithub, serverReachable, checkServerReachability } = useAuth();
 
   const [starterDiscipline, setStarterDiscipline] = useState('intellect');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isCheckingReachability, setIsCheckingReachability] = useState(false);
+
+  // Auto-probe backend reachability when register page mounts
+  useEffect(() => {
+    if (!serverReachable && checkServerReachability) {
+      void checkServerReachability();
+    }
+  }, [serverReachable, checkServerReachability]);
+
+  const handleRetryReachability = async () => {
+    if (!checkServerReachability) return;
+    setIsCheckingReachability(true);
+    try {
+      await checkServerReachability();
+    } finally {
+      setIsCheckingReachability(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setErrorMsg(null);
@@ -136,15 +154,41 @@ export const RegisterPage: React.FC = () => {
               color: '#fde047',
               fontSize: '0.85rem',
               display: 'flex',
-              gap: '0.65rem',
-              alignItems: 'flex-start',
+              gap: '0.75rem',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
             role="status"
           >
-            <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
-            <div>
-              <strong>Citadel Backend Offline:</strong> The backend API is currently not detected.
+            <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'flex-start' }}>
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <strong>Citadel Backend Offline:</strong> The backend API is currently not detected.
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={handleRetryReachability}
+              disabled={isCheckingReachability}
+              style={{
+                flexShrink: 0,
+                padding: '0.35rem 0.75rem',
+                borderRadius: '6px',
+                background: 'rgba(245, 158, 11, 0.18)',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                color: '#fde047',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                cursor: isCheckingReachability ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <RefreshCw size={12} style={{ animation: isCheckingReachability ? 'spin 1s linear infinite' : 'none' }} />
+              {isCheckingReachability ? 'Testing...' : 'Retry'}
+            </button>
           </div>
         )}
 
