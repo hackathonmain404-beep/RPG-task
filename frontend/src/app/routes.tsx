@@ -17,6 +17,8 @@ const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage').t
 const QuestsPage = lazy(() => import('../features/quests/QuestsPage').then(m => ({ default: m.QuestsPage })));
 const CharacterPage = lazy(() => import('../features/character/CharacterPage').then(m => ({ default: m.CharacterPage })));
 const ShopPage = lazy(() => import('../features/shop/ShopPage').then(m => ({ default: m.ShopPage })));
+const ThemeMarketplacePage = lazy(() => import('../features/themes/ThemeMarketplacePage').then(m => ({ default: m.ThemeMarketplacePage })));
+const ThemeCollectionPage = lazy(() => import('../features/themes/ThemeCollectionPage').then(m => ({ default: m.ThemeCollectionPage })));
 const InventoryPage = lazy(() => import('../features/inventory/InventoryPage').then(m => ({ default: m.InventoryPage })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const HistoryPage = lazy(() => import('../features/history/HistoryPage').then(m => ({ default: m.HistoryPage })));
@@ -32,6 +34,9 @@ export const AppRoutes: React.FC = () => {
       <Routes>
         {/* Public Landing Page */}
         <Route path="/" element={<LandingPage />} />
+
+        {/* Public Themes Browse */}
+        <Route path="/themes" element={<ThemeMarketplacePage />} />
 
         {/* Public Legal & Compliance Pages */}
         <Route path="/privacy" element={<PrivacyPage />} />
@@ -68,6 +73,8 @@ export const AppRoutes: React.FC = () => {
             <Route path="character" element={<CharacterPage />} />
             <Route path="shop" element={<ShopPage />} />
             <Route path="armory" element={<ShopPage />} />
+            <Route path="themes" element={<ThemeMarketplacePage />} />
+            <Route path="themes/collection" element={<ThemeCollectionPage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="settings" element={<SettingsPage />} />

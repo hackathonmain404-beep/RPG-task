@@ -8,6 +8,7 @@ import {
   Store, 
   Package, 
   Settings,
+  Palette,
   Sparkles,
   MessageSquarePlus,
   Sliders,
@@ -38,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/app/quests', label: 'Quests', icon: Scroll, iconClass: 'icon-quests' },
   { to: '/app/character', label: 'Character', icon: UserCircle, iconClass: 'icon-character' },
   { to: '/app/shop', label: 'Shop', icon: Store, iconClass: 'icon-shop' },
+  { to: '/app/themes', label: 'Themes', icon: Palette, iconClass: 'icon-themes' },
   { to: '/app/inventory', label: 'Inventory', icon: Package, iconClass: 'icon-inventory' },
   { to: '/app/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
 ];
