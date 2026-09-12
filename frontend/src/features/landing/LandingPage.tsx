@@ -386,9 +386,10 @@ export const LandingPage: React.FC = () => {
           position: 'sticky',
           top: 0,
           zIndex: 50,
-          backgroundColor: 'rgba(9, 12, 16, 0.88)',
+          backgroundColor: 'rgba(9, 12, 16, 0.75)',
           backdropFilter: 'blur(16px)',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          marginBottom: '-76px',
         }}
       >
         <div
@@ -556,12 +557,17 @@ export const LandingPage: React.FC = () => {
         {/* HERO SECTION WITH CINEMATIC BACKGROUND VIDEO */}
         <section
           id="hero"
+          className="hero-fullscreen"
           style={{
             position: 'relative',
             overflow: 'hidden',
             width: '100%',
-            minHeight: 'clamp(620px, calc(100vh - 72px), 880px)',
-            padding: 'clamp(3rem, 6vh, 4.5rem) 1.5rem clamp(1.5rem, 3vh, 2.5rem)',
+            minHeight: '100dvh',
+            boxSizing: 'border-box',
+            paddingTop: 'calc(76px + clamp(1.5rem, 4vh, 3rem))',
+            paddingBottom: 'clamp(1.5rem, 3vh, 2.5rem)',
+            paddingLeft: '1.5rem',
+            paddingRight: '1.5rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

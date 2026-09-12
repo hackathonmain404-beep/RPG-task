@@ -756,3 +756,11 @@ textarea:focus-visible,
     padding: 1rem 0.75rem !important;
   }
 }
+
+/* Full-Screen Hero on Laptops, Desktops, and Mobile Devices */
+.hero-fullscreen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
