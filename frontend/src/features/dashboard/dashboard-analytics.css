@@ -263,31 +263,68 @@
 .heatmap-cell {
   width: 14px;
   height: 14px;
-  border-radius: 3px;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  border-radius: 3.5px;
   cursor: pointer;
   position: relative;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform-origin: center center;
 }
 
-.heatmap-cell:hover {
-  transform: scale(1.25);
+/* Invisible hit-target expansion bridges 5px gap for continuous fluid hover sweeping */
+.heatmap-cell::before {
+  content: '';
+  position: absolute;
+  inset: -2.5px;
+  z-index: 1;
+}
+
+.heatmap-cell:hover,
+.heatmap-cell.is-active {
+  transform: scale(1.24);
   z-index: 10;
-  filter: brightness(1.2);
 }
 
 .heatmap-cell.empty {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.heatmap-cell.empty:hover,
+.heatmap-cell.empty.is-active {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.22), 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 .heatmap-cell.success {
   background-color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.5);
   box-shadow: 0 0 5px rgba(16, 185, 129, 0.4);
 }
 
+.heatmap-cell.success:hover,
+.heatmap-cell.success.is-active {
+  border-color: #34d399;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.85), 0 0 22px rgba(16, 185, 129, 0.45);
+  filter: brightness(1.2);
+}
+
 .heatmap-cell.failed {
-  background-color: #ef4444;
-  box-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+  background-color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  box-shadow: 0 0 5px rgba(244, 63, 94, 0.4);
+}
+
+.heatmap-cell.failed:hover,
+.heatmap-cell.failed.is-active {
+  border-color: #fb7185;
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.85), 0 0 22px rgba(244, 63, 94, 0.45);
+  filter: brightness(1.2);
 }
 
 /* ==========================================================================
@@ -462,31 +499,49 @@
 /* Floating Chart & Heatmap Tooltips */
 .analytics-tooltip {
   position: absolute;
-  background-color: rgba(15, 23, 42, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 0.8rem;
   font-size: 0.75rem;
   color: #f8fafc;
   pointer-events: none;
   z-index: 50;
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.65), 0 0 14px rgba(56, 189, 248, 0.12);
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.7), 0 0 16px rgba(16, 185, 129, 0.12);
   white-space: nowrap;
-  transform: translate(-50%, -92%) scale(0.96);
+  transform: translate(-50%, -85%) scale(0.95);
   margin-top: -8px;
   opacity: 0;
-  transition: left 380ms cubic-bezier(0.16, 1, 0.3, 1),
-              top 380ms cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 240ms cubic-bezier(0.16, 1, 0.3, 1),
-              transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: left, top, opacity, transform;
 }
 
 .analytics-tooltip.visible {
   opacity: 1;
   transform: translate(-50%, -100%) scale(1);
+}
+
+.analytics-tooltip.gliding {
+  transition: left 240ms cubic-bezier(0.16, 1, 0.3, 1),
+              top 240ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.analytics-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(15, 23, 42, 0.95);
 }
 
 /* ==========================================================================

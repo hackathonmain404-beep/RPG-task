@@ -16,8 +16,11 @@ interface HeatmapDay {
 }
 
 export const ConsistencyHeatmapCard: React.FC<ConsistencyHeatmapCardProps> = ({ tasks = [] }) => {
-  const [hoveredDay, setHoveredDay] = useState<HeatmapDay | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+  const [activeDay, setActiveDay] = useState<HeatmapDay | null>(null);
+  const [displayDay, setDisplayDay] = useState<HeatmapDay | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+  const [isGliding, setIsGliding] = useState(false);
 
   // Generate 35 days (Day 0 = 34 days ago, Day 34 = Today)
   // Derived 100% from user's actual tasks — ZERO hardcoded cells
@@ -80,6 +83,29 @@ export const ConsistencyHeatmapCard: React.FC<ConsistencyHeatmapCardProps> = ({ 
     });
   }, [tasks]);
 
+  const handleCellHover = (day: HeatmapDay, e: React.MouseEvent<HTMLDivElement> | React.FocusEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const parentRect = e.currentTarget.closest('.analytics-card')?.getBoundingClientRect();
+    if (parentRect) {
+      setTooltipPos({
+        x: rect.left - parentRect.left + rect.width / 2,
+        y: rect.top - parentRect.top - 8,
+      });
+    }
+    setActiveDay(day);
+    setDisplayDay(day);
+    setIsHovered(true);
+    setIsGliding(true);
+  };
+
+  const handleMouseLeave = () => {
+    setActiveDay(null);
+    setIsHovered(false);
+    setTimeout(() => {
+      setIsGliding(false);
+    }, 260);
+  };
+
   return (
     <div className="analytics-card card-analytics-heatmap anim-entrance-8" style={{ position: 'relative' }}>
       <div className="heatmap-header">
@@ -88,71 +114,55 @@ export const ConsistencyHeatmapCard: React.FC<ConsistencyHeatmapCardProps> = ({ 
         </h3>
       </div>
 
-      {hoveredDay && tooltipPos && (
-        <div
-          className="analytics-tooltip"
-          style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
-        >
-          <div style={{ fontWeight: 700, color: '#ffffff', marginBottom: '2px' }}>
-            {hoveredDay.fullDateStr || hoveredDay.dateStr}
-          </div>
-          {hoveredDay.status === 'success' && (
-            <div style={{ color: '#10b981', fontWeight: 600 }}>
-              ✓ {hoveredDay.tasksCompleted} {hoveredDay.tasksCompleted === 1 ? 'task' : 'tasks'} completed (+{hoveredDay.xpEarned} XP)
+      {/* Floating tooltip with smooth gliding and fade transitions */}
+      <div
+        className={`analytics-tooltip ${isHovered ? 'visible' : ''} ${isGliding ? 'gliding' : ''}`}
+        style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
+        aria-hidden={!isHovered}
+      >
+        {displayDay && (
+          <>
+            <div style={{ fontWeight: 700, color: '#ffffff', marginBottom: '2px' }}>
+              {displayDay.fullDateStr || displayDay.dateStr}
             </div>
-          )}
-          {hoveredDay.status === 'failed' && (
-            <div style={{ color: '#f43f5e', fontWeight: 600 }}>
-              ✕ Overdue deadline (-5 Vibe)
-            </div>
-          )}
-          {hoveredDay.status === 'empty' && (
-            <div style={{ color: '#64748b' }}>No activity logged</div>
-          )}
-        </div>
-      )}
+            {displayDay.status === 'success' && (
+              <div style={{ color: '#10b981', fontWeight: 600 }}>
+                ✓ {displayDay.tasksCompleted} {displayDay.tasksCompleted === 1 ? 'task' : 'tasks'} completed (+{displayDay.xpEarned} XP)
+              </div>
+            )}
+            {displayDay.status === 'failed' && (
+              <div style={{ color: '#f43f5e', fontWeight: 600 }}>
+                ✕ Overdue deadline (-5 Vibe)
+              </div>
+            )}
+            {displayDay.status === 'empty' && (
+              <div style={{ color: '#64748b' }}>No activity logged</div>
+            )}
+          </>
+        )}
+      </div>
 
       <div
         className="heatmap-grid"
-        onMouseLeave={() => {
-          setHoveredDay(null);
-          setTooltipPos(null);
-        }}
+        onMouseLeave={handleMouseLeave}
       >
-        {heatmapDays.map((day) => (
-          <div
-            key={day.id}
-            className={`heatmap-cell ${day.status} intensity-${day.intensity}`}
-            style={{
-              animationDelay: `${day.id * 10}ms`,
-            }}
-            tabIndex={0}
-            role="gridcell"
-            aria-label={`${day.dateStr}: ${day.tasksCompleted} tasks completed`}
-            onMouseEnter={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const parentRect = e.currentTarget.closest('.analytics-card')?.getBoundingClientRect();
-              if (parentRect) {
-                setTooltipPos({
-                  x: rect.left - parentRect.left + rect.width / 2,
-                  y: rect.top - parentRect.top - 6,
-                });
-              }
-              setHoveredDay(day);
-            }}
-            onFocus={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const parentRect = e.currentTarget.closest('.analytics-card')?.getBoundingClientRect();
-              if (parentRect) {
-                setTooltipPos({
-                  x: rect.left - parentRect.left + rect.width / 2,
-                  y: rect.top - parentRect.top - 6,
-                });
-              }
-              setHoveredDay(day);
-            }}
-          />
-        ))}
+        {heatmapDays.map((day) => {
+          const isCellActive = activeDay?.id === day.id;
+          return (
+            <div
+              key={day.id}
+              className={`heatmap-cell ${day.status} intensity-${day.intensity} ${isCellActive ? 'is-active' : ''}`}
+              style={{
+                animationDelay: `${day.id * 10}ms`,
+              }}
+              tabIndex={0}
+              role="gridcell"
+              aria-label={`${day.dateStr}: ${day.tasksCompleted} tasks completed`}
+              onMouseEnter={(e) => handleCellHover(day, e)}
+              onFocus={(e) => handleCellHover(day, e)}
+            />
+          );
+        })}
       </div>
     </div>
   );
