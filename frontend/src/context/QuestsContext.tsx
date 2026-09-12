@@ -149,7 +149,8 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       );
 
       // Reconcile character progression on AuthContext
-      reconcileCompletion(res);
+      const completedTask = tasks.find(t => t.id === id);
+      reconcileCompletion(res, completedTask?.title);
 
       // Trigger temporary reward notification
       if (res.rewards) {

@@ -1,323 +1,357 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/useAuth';
-import { characterApi, type CharacterResponse } from '../../services/api/character';
-import type { Attribute } from '../../types/contract';
+import { AttributeCard } from './AttributeCard';
+import { RecentActivityFeed } from './RecentActivityFeed';
 import { 
+  User, 
+  Sparkles, 
   Flame, 
   Coins, 
-  Brain, 
-  Dumbbell, 
-  BookOpen, 
-  Sparkles, 
-  Heart, 
-  User, 
-  Award,
-  Loader2,
-  AlertCircle
+  RotateCw, 
+  AlertCircle, 
+  ShieldCheck,
+  TrendingUp
 } from 'lucide-react';
 
-// Map attribute keys to their display configuration
-const ATTRIBUTE_CONFIG: Record<string, { icon: React.FC<{ size?: number; color?: string }>; color: string; desc: string }> = {
-  intellect: { icon: Brain, color: 'var(--attr-intellect)', desc: 'Coding, logic, technical problem-solving' },
-  strength: { icon: Dumbbell, color: 'var(--attr-strength)', desc: 'Gym, physical conditioning, fitness' },
-  wisdom: { icon: BookOpen, color: 'var(--attr-wisdom)', desc: 'Reading, research, deep reflection' },
-  charisma: { icon: Sparkles, color: 'var(--attr-charisma)', desc: 'Public speaking, teamwork, mentorship' },
-  vitality: { icon: Heart, color: 'var(--attr-vitality)', desc: 'Sleep hygiene, nutrition, mindfulness' },
-};
-
-// Default attributes shown when the server hasn't returned attribute data yet
-const DEFAULT_ATTRIBUTES: Attribute[] = [
-  { key: 'intellect', displayName: 'Intellect', value: 0 },
-  { key: 'strength', displayName: 'Strength', value: 0 },
-  { key: 'wisdom', displayName: 'Wisdom', value: 0 },
-  { key: 'charisma', displayName: 'Charisma', value: 0 },
-  { key: 'vitality', displayName: 'Vitality', value: 0 },
-];
-
 export const CharacterPage: React.FC = () => {
-  const { user, character, xpProgress } = useAuth();
-  const [charData, setCharData] = useState<CharacterResponse | null>(null);
-  const [isLoadingChar, setIsLoadingChar] = useState(true);
-  const [charError, setCharError] = useState<string | null>(null);
+  const { 
+    user, 
+    character, 
+    xpProgress, 
+    recentActivity, 
+    lastAttributeChange, 
+    refreshCharacter,
+    isLoading: authLoading,
+    serverReachable
+  } = useAuth();
 
-  const level = character?.level || 1;
-  const totalXp = character?.totalXp || 0;
-  const gold = character?.gold || 0;
-  const streakCurrent = character?.streakCurrent || 0;
-  const streakBest = character?.streakBest || 0;
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
 
-  // Fetch full character data including attributes from GET /api/character
-  useEffect(() => {
-    let ignore = false;
+  const level = character?.level ?? 1;
+  const totalXp = character?.totalXp ?? 0;
+  const gold = character?.gold ?? 0;
+  const streakCurrent = character?.streakCurrent ?? 0;
+  const streakBest = character?.streakBest ?? 0;
+  const attributes = character?.attributes ?? [];
 
-    const fetchCharacter = async () => {
-      setIsLoadingChar(true);
-      setCharError(null);
-      try {
-        const data = await characterApi.getCharacter();
-        if (!ignore) {
-          setCharData(data);
-        }
-      } catch (err) {
-        if (!ignore) {
-          setCharError(err instanceof Error ? err.message : 'Failed to load character data.');
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoadingChar(false);
-        }
-      }
-    };
+  // Server-authoritative XP progress percentage
+  const xpPercent = Math.min(100, Math.max(0, Math.round(xpProgress?.progressPercent ?? ((totalXp % 500) / 500) * 100)));
 
-    void fetchCharacter();
-    return () => { ignore = true; };
-  }, []);
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    setRefreshError(null);
+    try {
+      await refreshCharacter();
+    } catch (err) {
+      setRefreshError(err instanceof Error ? err.message : 'Failed to synchronize character sheet with Citadel database.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
-  // Use server attributes if available, otherwise show defaults
-  const attributes: Attribute[] = charData?.attributes && charData.attributes.length > 0
-    ? charData.attributes
-    : (character?.attributes && character.attributes.length > 0)
-      ? character.attributes
-      : DEFAULT_ATTRIBUTES;
-
-  // XP progress from server-authoritative data
-  const xpPercent = xpProgress?.progressPercent ?? 0;
+  // Streak milestone indicator based on authoritative numbers
+  const nextMilestone = streakCurrent < 7 ? 7 : streakCurrent < 14 ? 14 : streakCurrent < 30 ? 30 : 60;
+  const daysToMilestone = Math.max(0, nextMilestone - streakCurrent);
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Header Profile Banner */}
-      <div
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      {/* 1. Character Hero Header */}
+      <header
         className="rpg-card"
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '1.75rem',
+          justifyContent: 'space-between',
+          gap: '1.5rem',
           flexWrap: 'wrap',
           background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-elevated) 100%)',
           border: '1px solid var(--border-strong)',
+          position: 'relative',
         }}
       >
-        <div
-          style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '16px',
-            backgroundColor: 'rgba(56, 189, 248, 0.15)',
-            border: '2px solid var(--border-focus)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(56, 189, 248, 0.25)',
-          }}
-        >
-          <User size={44} color="#38bdf8" />
-        </div>
-
-        <div style={{ flex: 1, minWidth: '240px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-            <h1 style={{ fontSize: '1.75rem' }}>{user?.displayName || 'Adventurer'}</h1>
-            <span className="rpg-badge" style={{ backgroundColor: 'rgba(168, 85, 247, 0.2)', color: 'var(--color-xp)' }}>
-              Level {level}
-            </span>
-          </div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.75rem' }}>
-            {user?.email} · Citadel Verified Session
-          </p>
-
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-xp)' }}>
-              <Sparkles size={16} />
-              <span className="mono-numbers" style={{ fontWeight: 700 }}>{totalXp.toLocaleString()}</span> Total XP
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-gold)' }}>
-              <Coins size={16} />
-              <span className="mono-numbers" style={{ fontWeight: 700 }}>{gold.toLocaleString()}</span> Gold
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-streak)' }}>
-              <Flame size={16} />
-              <span className="mono-numbers" style={{ fontWeight: 700 }}>{streakCurrent}</span> Day Streak
-            </div>
-          </div>
-
-          {/* XP Progress Bar */}
-          <div style={{ marginTop: '0.85rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-tertiary)', marginBottom: '0.25rem' }}>
-              <span style={{ fontWeight: 600 }}>Level {level} Progress</span>
-              <span className="mono-numbers">{Math.round(xpPercent)}%</span>
-            </div>
-            <div
-              role="progressbar"
-              aria-valuenow={xpPercent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Level ${level} progress: ${Math.round(xpPercent)}%`}
-              className="rpg-progress-track"
-              style={{ height: '8px' }}
-            >
-              <div
-                className="rpg-progress-fill"
-                style={{
-                  width: `${Math.max(2, Math.min(100, xpPercent))}%`,
-                  background: 'linear-gradient(90deg, #a855f7, #c084fc)',
-                  transition: 'width 0.8s var(--ease-spring)',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Attributes & Disciplines */}
-      <div>
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.35rem' }}>Character Attributes</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Server-authoritative progression across the 5 core human performance domains.
-          </p>
-        </div>
-
-        {/* Loading State */}
-        {isLoadingChar && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', gap: '0.75rem', color: 'var(--text-secondary)' }}>
-            <Loader2 size={22} className="animate-spin" color="#38bdf8" />
-            <span>Fetching character attributes from server...</span>
-          </div>
-        )}
-
-        {/* Error State */}
-        {charError && !isLoadingChar && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+          {/* Avatar frame */}
           <div
-            className="rpg-card"
             style={{
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              padding: '1.25rem',
+              width: '76px',
+              height: '76px',
+              borderRadius: '16px',
+              backgroundColor: 'rgba(56, 189, 248, 0.12)',
+              border: '2px solid var(--border-focus)',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
+              justifyContent: 'center',
+              boxShadow: '0 0 24px rgba(56, 189, 248, 0.25)',
+              flexShrink: 0,
             }}
           >
-            <AlertCircle size={20} color="#ef4444" />
+            <User size={40} color="#38bdf8" />
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem' }}>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                {user?.displayName || 'Valiant Adventurer'}
+              </h1>
+              <span
+                className="rpg-badge"
+                style={{
+                  backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                  color: 'var(--color-xp)',
+                  fontSize: '0.85rem',
+                  padding: '0.2rem 0.6rem',
+                  fontWeight: 800,
+                }}
+              >
+                Level {level}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              <span>{user?.email}</span>
+              <span>·</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--status-success)' }}>
+                <ShieldCheck size={15} />
+                Authoritative PostgreSQL Session
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Sync / Refresh Action */}
+        <button
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+          className="rpg-button secondary"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.55rem 1rem',
+            fontSize: '0.85rem',
+          }}
+          aria-label="Synchronize character data with server"
+        >
+          <RotateCw size={15} className={isRefreshing ? 'animate-spin' : ''} />
+          <span>{isRefreshing ? 'Syncing...' : 'Sync Sheet'}</span>
+        </button>
+      </header>
+
+      {/* Recoverable Error Banner */}
+      {(!serverReachable || refreshError) && (
+        <div
+          role="alert"
+          className="rpg-card"
+          style={{
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <AlertCircle size={22} color="var(--status-danger)" />
             <div>
-              <div style={{ fontWeight: 600, color: '#fca5a5', marginBottom: '0.25rem' }}>
-                Character Data Unavailable
+              <div style={{ fontWeight: 700, color: '#fca5a5' }}>
+                Citadel Synchronization Warning
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                {charError}. Showing default attribute layout.
+                {refreshError || 'Unable to connect to live Citadel server. Character sheet reflects cached session.'}
               </div>
             </div>
           </div>
-        )}
+          <button
+            onClick={handleManualRefresh}
+            className="rpg-button secondary"
+            style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
-        {/* Attribute List */}
-        {!isLoadingChar && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {attributes.map(attr => {
-              const config = ATTRIBUTE_CONFIG[attr.key.toLowerCase()] || {
-                icon: Brain,
-                color: 'var(--text-secondary)',
-                desc: attr.displayName,
-              };
-              const Icon = config.icon;
-              return (
+      {/* 2. Core Vitals Grid (Immediately Visible: LEVEL, XP, STREAK, GOLD) */}
+      <section aria-label="Core Character Metrics">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '1.25rem',
+          }}
+        >
+          {/* Vitals Card 1: Level & XP Progression */}
+          <div className="rpg-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-xp)' }}>
+                <Sparkles size={18} />
+                <span style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase' }}>Ascension Tier</span>
+              </div>
+              <span className="mono-numbers" style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-xp)' }}>
+                Lvl {level}
+              </span>
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: '0.35rem' }}>
+                <span>Level {level} Progress</span>
+                <span className="mono-numbers">{xpPercent}%</span>
+              </div>
+              <div
+                role="progressbar"
+                aria-valuenow={xpPercent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Level ${level} experience progress: ${xpPercent}%`}
+                className="rpg-progress-track"
+                style={{ height: '10px' }}
+              >
                 <div
-                  key={attr.key}
-                  className="rpg-card"
+                  className="rpg-progress-fill"
                   style={{
-                    padding: '1.25rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '1.5rem',
-                    flexWrap: 'wrap',
+                    width: `${Math.max(3, xpPercent)}%`,
+                    background: 'linear-gradient(90deg, #a855f7, #c084fc)',
+                    boxShadow: '0 0 10px rgba(168, 85, 247, 0.5)',
                   }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '220px' }}>
-                    <div
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        backgroundColor: `${config.color}18`,
-                        border: `1px solid ${config.color}40`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Icon size={20} color={config.color} />
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '1rem', color: config.color }}>
-                        {attr.displayName}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                        {config.desc}
-                      </div>
-                    </div>
-                  </div>
+                />
+              </div>
+            </div>
 
-                  <div style={{ flex: 1, minWidth: '180px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className="rpg-progress-track" style={{ height: '8px' }}>
-                      <div
-                        className="rpg-progress-fill"
-                        style={{
-                          width: `${Math.min(100, attr.value * 5)}%`,
-                          backgroundColor: config.color,
-                          transition: 'width 0.6s var(--ease-spring)',
-                        }}
-                      />
-                    </div>
-                    <span className="mono-numbers" style={{ fontWeight: 700, minWidth: '40px', textAlign: 'right', fontSize: '0.9rem' }}>
-                      Lvl {attr.value}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              <span>Total Experience:</span>
+              <span className="mono-numbers" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                {totalXp.toLocaleString()} XP
+              </span>
+            </div>
+          </div>
+
+          {/* Vitals Card 2: Streak System UI */}
+          <div className="rpg-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-streak)' }}>
+                <Flame size={18} />
+                <span style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase' }}>Momentum Streak</span>
+              </div>
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                  color: 'var(--color-streak)',
+                }}
+              >
+                Authoritative
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
+              <span className="mono-numbers" style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-streak)', lineHeight: 1 }}>
+                🔥 {streakCurrent}
+              </span>
+              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {streakCurrent === 1 ? 'Day Streak' : 'Days Streak'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', paddingTop: '0.25rem', borderTop: '1px solid var(--border-subtle)' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>
+                Best Record: <strong className="mono-numbers" style={{ color: 'var(--text-primary)' }}>🔥 {streakBest} {streakBest === 1 ? 'Day' : 'Days'}</strong>
+              </span>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem' }}>
+                {daysToMilestone > 0 ? `${daysToMilestone}d to Tier ${nextMilestone}` : 'Milestone Achieved!'}
+              </span>
+            </div>
+          </div>
+
+          {/* Vitals Card 3: Citadel Gold & Wealth */}
+          <div className="rpg-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-gold)' }}>
+                <Coins size={18} />
+                <span style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase' }}>Citadel Treasury</span>
+              </div>
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                  color: 'var(--color-gold)',
+                }}
+              >
+                Economy
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+              <span className="mono-numbers" style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-gold)', lineHeight: 1 }}>
+                {gold.toLocaleString()}
+              </span>
+              <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                Gold
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', paddingTop: '0.25rem', borderTop: '1px solid var(--border-subtle)' }}>
+              <span>Armory Purchasing Power:</span>
+              <span style={{ color: 'var(--status-success)', fontWeight: 600 }}>Active Balance</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Five Core Attributes Section */}
+      <section aria-labelledby="attributes-heading">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div>
+            <h2 id="attributes-heading" style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0 }}>
+              Character Attributes
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0.25rem 0 0' }}>
+              Five foundational human disciplines verified and synchronized with the Citadel RPG engine.
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+            <TrendingUp size={16} />
+            <span>Increases awarded strictly by server completion responses</span>
+          </div>
+        </div>
+
+        {/* Loading Skeletons */}
+        {authLoading && attributes.length === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {[1, 2, 3, 4, 5].map(idx => (
+              <div key={idx} className="rpg-skeleton" style={{ height: '90px', borderRadius: '12px' }} />
+            ))}
           </div>
         )}
-      </div>
 
-      {/* Relics & Badges Showcase */}
-      <div className="rpg-card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
-          <Award size={20} color="#f59e0b" />
-          <h2 style={{ fontSize: '1.25rem' }}>Relics &amp; Badges</h2>
-        </div>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
-          Milestone honors unlocked through streak longevity, quest mastery, and discipline devotion.
-        </p>
+        {/* 5 Attribute Cards */}
+        {attributes.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {attributes.map(attr => (
+              <AttributeCard
+                key={attr.key}
+                attribute={attr}
+                changeNotice={lastAttributeChange}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          {[
-            { title: 'First Quest', desc: 'Forge your inaugural quest in the Citadel', unlocked: true },
-            { title: 'Flame Keeper', desc: 'Maintain a 7-day momentum streak', unlocked: streakBest >= 7 },
-            { title: 'Archmage of Code', desc: 'Attain Level 20 in Intellect', unlocked: false },
-            { title: 'Century Scribe', desc: 'Complete 100 authenticated quests', unlocked: false },
-          ].map(badge => (
-            <div
-              key={badge.title}
-              style={{
-                padding: '1rem',
-                borderRadius: '8px',
-                backgroundColor: badge.unlocked ? 'rgba(245, 158, 11, 0.08)' : 'var(--bg-surface-elevated)',
-                border: badge.unlocked ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border-subtle)',
-                opacity: badge.unlocked ? 1 : 0.6,
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                <span style={{ fontWeight: 700, fontSize: '0.9rem', color: badge.unlocked ? '#fef08a' : 'var(--text-primary)' }}>
-                  {badge.title}
-                </span>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: badge.unlocked ? '#f59e0b' : 'var(--text-tertiary)' }}>
-                  {badge.unlocked ? 'CLAIMED' : 'LOCKED'}
-                </span>
-              </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{badge.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* 4. Recent Progression & Activity Section */}
+      <section aria-label="Progression Activity History">
+        <RecentActivityFeed
+          activity={recentActivity}
+          isLoading={authLoading}
+        />
+      </section>
     </div>
   );
 };

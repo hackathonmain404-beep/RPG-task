@@ -16,6 +16,22 @@ export interface CharacterResponse {
   attributes: Attribute[];
 }
 
+export interface HistoryItem {
+  id: string;
+  type: string;
+  title: string;
+  timestamp: string;
+  xpGained?: number;
+  goldGained?: number;
+  attributeGained?: {
+    key: string;
+    amount: number;
+  };
+  levelBefore?: number;
+  levelAfter?: number;
+  streakCurrent?: number;
+}
+
 const API_BASE = '/api';
 
 export const characterApi = {
@@ -48,4 +64,36 @@ export const characterApi = {
 
     return res.json();
   },
+
+  /**
+   * GET /api/character/history
+   * Returns progression/activity history from the backend.
+   */
+  async getHistory(): Promise<HistoryItem[]> {
+    const res = await fetch(`${API_BASE}/character/history`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      let errorData: { error?: { code?: string; message?: string } } = {};
+      try {
+        errorData = await res.json();
+      } catch {
+        // Response body may not be JSON
+      }
+      throw new ApiError(
+        errorData.error?.code || 'HISTORY_ERROR',
+        errorData.error?.message || `HTTP ${res.status}`,
+        res.status
+      );
+    }
+
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.history || []);
+  },
 };
+
