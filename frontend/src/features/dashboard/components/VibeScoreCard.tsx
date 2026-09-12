@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Sparkles, Flame } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import type { Task } from '../../../types/contract';
 
 interface VibeScoreCardProps {
@@ -43,18 +43,9 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
     };
   }, [tasks]);
 
-  // Game rank tier title based on score
-  const rankTier = useMemo(() => {
-    if (score >= 110) return 'LEGENDARY MOMENTUM';
-    if (score >= 95) return 'LEGENDARY MOMENTUM';
-    if (score >= 80) return 'HIGH VELOCITY';
-    if (score >= 60) return 'STEADY CADENCE';
-    return 'RECOVERING FOCUS';
-  }, [score]);
-
   // Circular ring settings
-  const ringSize = 88;
-  const strokeWidth = 8;
+  const ringSize = 78;
+  const strokeWidth = 7;
   const radius = (ringSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
@@ -63,7 +54,7 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
   const strokeDashoffset = circumference * (1 - fillPercent);
 
   return (
-    <div className="analytics-card vibe-score-command-card">
+    <div className="analytics-card anim-entrance-7" style={{ display: 'flex', alignItems: 'center' }}>
       <div className="vibe-card-inner">
         {/* Glowing Circular Ring with Score */}
         <div className="vibe-ring-container">
@@ -71,11 +62,11 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
             <defs>
               <linearGradient id="vibeRingGrad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#38bdf8" />
-                <stop offset="50%" stopColor="#a855f7" />
-                <stop offset="100%" stopColor="#c084fc" />
+                <stop offset="50%" stopColor="#9333ea" />
+                <stop offset="100%" stopColor="#a855f7" />
               </linearGradient>
               <filter id="vibeGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#a855f7" floodOpacity="0.5" />
+                <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#a855f7" floodOpacity="0.5" />
               </filter>
             </defs>
 
@@ -85,11 +76,11 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
               cy={ringSize / 2}
               r={radius}
               fill="transparent"
-              stroke="rgba(255, 255, 255, 0.08)"
+              stroke="rgba(255, 255, 255, 0.06)"
               strokeWidth={strokeWidth}
             />
 
-            {/* Glowing Active Ring */}
+            {/* Glowing Active Ring with load entrance animation */}
             <circle
               cx={ringSize / 2}
               cy={ringSize / 2}
@@ -102,6 +93,11 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
               strokeLinecap="round"
               transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
               filter="url(#vibeGlow)"
+              className="vibe-ring-animated"
+              style={{
+                ['--target-vibe-offset' as string]: `${strokeDashoffset}`,
+                transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
             />
           </svg>
 
@@ -109,26 +105,17 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
           <span className="vibe-score-value mono-numbers">{score}</span>
         </div>
 
-        {/* Supporting Game Rank & Explanations */}
+        {/* Supporting Text */}
         <div className="vibe-text-content">
           <div className="vibe-header">
-            <Sparkles size={16} className="vibe-header-sparkle" />
-            <span className="vibe-title-label">✨ VIBE SCORE</span>
-            <span className="sr-only">Vibe Score</span>
+            <Sparkles size={16} color="#fbbf24" />
+            <span>Vibe Score</span>
           </div>
-
-          <div className="vibe-rank-badge">
-            <span>{rankTier}</span>
-          </div>
-
-          <p className="vibe-subtext">
+          <p className="vibe-subtext welcome-desc-animated">
             +10 for on-time finishes ({onTimeCount}), -5 for missed deadlines ({missedCount}).
+            <br />
+            Keep it up!
           </p>
-
-          <div className="vibe-momentum-status">
-            <Flame size={14} className="vibe-flame-icon" />
-            <span>You&apos;re on fire.</span>
-          </div>
         </div>
       </div>
     </div>

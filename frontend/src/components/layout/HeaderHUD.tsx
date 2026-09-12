@@ -52,7 +52,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="rpg-btn rpg-btn-secondary"
+              className="rpg-btn rpg-btn-secondary hud-hamburger-btn"
               style={{ padding: '0.4rem', display: 'flex', border: 'none' }}
               aria-label={isSidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
               aria-expanded={isSidebarOpen}
@@ -62,7 +62,8 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           )}
 
           <Link
-            to="/dashboard"
+            to="/app/dashboard"
+            className="hud-brand-link"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -74,27 +75,10 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             <img
               src="/achiever-logo.png"
               alt="Achiever Logo"
-              style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '8px',
-                objectFit: 'cover',
-                boxShadow: '0 0 12px rgba(56, 189, 248, 0.35)',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-              }}
+              className="hud-brand-logo"
             />
             <div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 800,
-                  fontSize: '1.15rem',
-                  letterSpacing: '0.04em',
-                  background: 'linear-gradient(90deg, #f8fafc, #38bdf8)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
+              <span className="hud-brand-name">
                 Achiever
               </span>
             </div>
@@ -136,6 +120,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             <span className="desktop-only">Feedback</span>
           </button>
           <div
+            className="hud-profile-btn"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -157,7 +142,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                 justifyContent: 'center',
               }}
             >
-              <User size={14} color="#38bdf8" />
+              <User size={14} color="#38bdf8" className="hud-user-icon" />
             </div>
             <span
               style={{
@@ -179,11 +164,11 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="rpg-btn rpg-btn-danger"
+            className="rpg-btn rpg-btn-danger hud-signout-btn"
             style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
             aria-label="Sign out of Achiever"
           >
-            <LogOut size={16} />
+            <LogOut size={16} className="signout-icon" />
             <span className="desktop-only">{isLoggingOut ? 'Leaving...' : 'Sign Out'}</span>
           </button>
         </div>

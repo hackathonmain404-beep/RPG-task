@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { HeaderHUD } from './HeaderHUD';
 import { 
   LayoutDashboard, 
@@ -9,30 +9,34 @@ import {
   Package, 
   Settings,
   Sparkles,
-  MessageSquarePlus
+  MessageSquarePlus,
+  Sliders
 } from 'lucide-react';
 import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal';
+import '../../features/dashboard/dashboard-interactions.css';
 
 interface NavItem {
   to: string;
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
+  iconClass: string;
   badge?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/app/quests', label: 'Quests', icon: Scroll },
-  { to: '/app/character', label: 'Character', icon: UserCircle },
-  { to: '/app/shop', label: 'Shop', icon: Store },
-  { to: '/app/inventory', label: 'Inventory', icon: Package },
-  { to: '/app/settings', label: 'Settings', icon: Settings },
+  { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard, iconClass: 'icon-dashboard' },
+  { to: '/app/quests', label: 'Quests', icon: Scroll, iconClass: 'icon-quests' },
+  { to: '/app/character', label: 'Character', icon: UserCircle, iconClass: 'icon-character' },
+  { to: '/app/shop', label: 'Shop', icon: Store, iconClass: 'icon-shop' },
+  { to: '/app/inventory', label: 'Inventory', icon: Package, iconClass: 'icon-inventory' },
+  { to: '/app/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
 ];
 
 const AppShellInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
@@ -46,6 +50,17 @@ const AppShellInner: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-canvas)' }}>
       {/* Top HUD Bar */}
       <HeaderHUD onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+
+      {/* Floating System / Accessibility Control on Right Edge */}
+      <button
+        type="button"
+        className="floating-system-control"
+        aria-label="System & Accessibility Controls"
+        title="Citadel System & Accessibility"
+        onClick={() => navigate('/app/settings')}
+      >
+        <Sliders size={16} />
+      </button>
 
       {/* Main Content Area with Sidebar */}
       <div
@@ -68,7 +83,7 @@ const AppShellInner: React.FC = () => {
             gap: '0.4rem',
             flexShrink: 0,
           }}
-          className="desktop-sidebar"
+          className="desktop-sidebar anim-entrance-2"
         >
           <div
             style={{
@@ -90,26 +105,11 @@ const AppShellInner: React.FC = () => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                style={({ isActive }) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.7rem 0.85rem',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  fontFamily: 'var(--font-display)',
-                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                  backgroundColor: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                  border: isActive ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
-                  boxShadow: isActive ? '0 0 12px rgba(56, 189, 248, 0.15)' : 'none',
-                  transition: 'all var(--duration-fast) ease',
-                })}
+                className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  <Icon size={18} />
-                  <span>{item.label}</span>
+                  <Icon size={18} className={`nav-icon ${item.iconClass}`} />
+                  <span className="nav-label-text">{item.label}</span>
                 </div>
                 {item.badge && (
                   <span

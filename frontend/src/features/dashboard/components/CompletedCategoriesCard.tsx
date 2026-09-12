@@ -67,7 +67,7 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
   let cumulativePercent = 0;
 
   return (
-    <div className="analytics-card">
+    <div className="analytics-card anim-entrance-6">
       <h3 className="analytics-card-title" style={{ marginBottom: '1.25rem' }}>
         Completed Categories
       </h3>
@@ -86,7 +86,7 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
               strokeWidth={strokeWidth}
             />
 
-            {/* Render Segments based 100% on real completed tasks */}
+            {/* Render Segments based 100% on real completed tasks with entrance animation */}
             {categories.map((cat) => {
               const strokeDasharray = `${(cat.percentage / 100) * circumference} ${circumference}`;
               const strokeDashoffset = -((cumulativePercent / 100) * circumference);
@@ -107,10 +107,12 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                   transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                  className="donut-segment-animated"
                   style={{
                     cursor: 'pointer',
-                    transition: 'stroke-width 0.2s ease, opacity 0.2s ease',
-                    opacity: hoveredCategory && !isHovered ? 0.6 : 1,
+                    transition: 'stroke-width 0.25s ease, opacity 0.25s ease, filter 0.25s ease',
+                    opacity: hoveredCategory && !isHovered ? 0.45 : 1,
+                    filter: isHovered ? `drop-shadow(0 0 6px ${cat.color})` : undefined,
                   }}
                   onMouseEnter={() => setHoveredCategory(cat.id)}
                   onMouseLeave={() => setHoveredCategory(null)}
@@ -119,9 +121,18 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
             })}
           </svg>
 
-          {/* Center Text */}
-          <div className="donut-center-text">
-            <span className="donut-total-number">{totalCompleted}</span>
+          {/* Center Text with entrance fade */}
+          <div className="donut-center-text donut-center-fade">
+            <span
+              className="donut-total-number"
+              style={{
+                transition: 'color 0.2s ease, filter 0.2s ease',
+                color: hoveredCategory ? '#38bdf8' : '#ffffff',
+                filter: hoveredCategory ? 'drop-shadow(0 0 8px rgba(56, 189, 248, 0.5))' : 'none',
+              }}
+            >
+              {totalCompleted}
+            </span>
             <span className="donut-total-label">TOTAL</span>
           </div>
         </div>
@@ -141,10 +152,11 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                   className="category-legend-row"
                   style={{
                     cursor: 'pointer',
-                    padding: '2px 4px',
-                    borderRadius: '4px',
-                    backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
-                    transition: 'background-color 0.15s ease',
+                    padding: '3px 6px',
+                    borderRadius: '6px',
+                    backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.06)' : 'transparent',
+                    transform: isHovered ? 'translateX(3px)' : 'none',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                   onMouseEnter={() => setHoveredCategory(cat.id)}
                   onMouseLeave={() => setHoveredCategory(null)}
@@ -156,11 +168,11 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                     >
                       <Folder size={14} fill={cat.color} stroke={cat.color} />
                     </span>
-                    <span style={{ color: isHovered ? '#ffffff' : '#cbd5e1', fontWeight: 500 }}>
+                    <span style={{ color: isHovered ? '#ffffff' : '#cbd5e1', fontWeight: isHovered ? 600 : 500 }}>
                       {cat.name} ({cat.count})
                     </span>
                   </div>
-                  <span className="category-percentage" style={{ color: isHovered ? cat.color : '#f1f5f9' }}>
+                  <span className="category-percentage mono-numbers" style={{ color: isHovered ? cat.color : '#f1f5f9' }}>
                     {cat.percentage}%
                   </span>
                 </div>
