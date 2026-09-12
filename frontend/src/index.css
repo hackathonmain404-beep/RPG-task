@@ -631,6 +631,83 @@ h1, h2, h3, h4, h5, h6 {
   transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ==========================================================================
+   CINEMATIC SCROLL MOTION SYSTEM UTILITIES
+   ========================================================================== */
+.cinematic-depth-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.cinematic-layer {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+.cinematic-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(9, 14, 31, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cinematic-stage-badge .stage-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: hudGlowPulse 2s infinite ease-in-out;
+}
+
+/* Persistence Section Cinematic Line & Node Animations */
+@keyframes beamScan {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.persistence-glow-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+  animation: beamScan 3s infinite linear;
+}
+
+/* Smooth Accordion Content Animation */
+.faq-content-enter {
+  animation: faqOpen 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes faqOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 /* Accessible High-Contrast Focus Ring */
 button:focus-visible,
