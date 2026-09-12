@@ -7,7 +7,7 @@ import rateLimit from 'express-rate-limit';
  */
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'test' ? 1000 : 20, // 20 attempts in prod/dev, 1000 in test
+  max: process.env.NODE_ENV === 'test' ? 1000 : 100, // 100 attempts in prod/dev, 1000 in test
   standardHeaders: true, // Return RateLimit headers
   legacyHeaders: false,
   statusCode: 429,

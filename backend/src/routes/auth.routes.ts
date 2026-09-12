@@ -10,6 +10,6 @@ authRouter.post('/register', authRateLimiter, authController.register);
 authRouter.post('/login', authRateLimiter, authController.login);
 
 // Supabase-native auth endpoints
-authRouter.post('/sync', authRateLimiter, requireAuth, authController.sync);
+authRouter.post('/sync', requireAuth, authController.sync);
 authRouter.post('/logout', authController.logout);
 authRouter.get('/me', requireAuth, authController.getMe);
