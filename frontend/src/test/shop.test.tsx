@@ -382,5 +382,70 @@ describe('Phase 5 — Shop, Inventory & Rewards System', () => {
 
     expect(screen.getByText('Neon Outpost Theme')).toBeInTheDocument();
   });
+
+  // 20. Displays real item images with object-fit: contain
+  it('20. displays real item image for each card with object-fit: contain', () => {
+    renderShopPage();
+    const neonImg = screen.getByRole('img', { name: /Neon Outpost Theme/i });
+    expect(neonImg).toBeInTheDocument();
+    expect(neonImg).toHaveAttribute('src', '/assets/items/theme_neon.svg');
+    expect(neonImg).toHaveStyle({ objectFit: 'contain' });
+
+    const mysticImg = screen.getByRole('img', { name: /Mystic Forest Theme/i });
+    expect(mysticImg).toBeInTheDocument();
+    expect(mysticImg).toHaveAttribute('src', '/assets/items/theme_mystic.svg');
+    expect(mysticImg).toHaveStyle({ objectFit: 'contain' });
+
+    const bastionImg = screen.getByRole('img', { name: /Midnight Bastion Frame/i });
+    expect(bastionImg).toBeInTheDocument();
+    expect(bastionImg).toHaveAttribute('src', '/assets/items/frame_bastion.svg');
+    expect(bastionImg).toHaveStyle({ objectFit: 'contain' });
+  });
+
+  // 21. No fake placeholder text in the image area
+  it('21. does not contain fake placeholder text like "COSMETIC RELIC" or "UI_PALETTE"', () => {
+    renderShopPage();
+    expect(screen.queryByText(/COSMETIC RELIC/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/UI_PALETTE/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/CITADEL TITLE/i)).not.toBeInTheDocument();
+  });
+
+  // 22. Dynamic image from item data (imageUrl) and fallback handling
+  it('22. dynamically displays custom imageUrl from item data and falls back gracefully when image is absent', () => {
+    const customItems: ShopItem[] = [
+      {
+        id: 'item_custom',
+        sku: 'CUSTOM-01',
+        name: 'Dragon Blade',
+        description: 'Forged in magma.',
+        itemType: 'weapon',
+        price: 999,
+        rarity: 'legendary',
+        imageUrl: 'https://images.example.com/dragon-blade.png',
+        active: true,
+      },
+      {
+        id: 'item_no_img',
+        sku: 'UNKNOWN-01',
+        name: 'Mystery Orb',
+        description: 'An unknown artifact.',
+        itemType: 'relic',
+        price: 50,
+        rarity: 'common',
+        active: true,
+      },
+    ];
+
+    renderShopPage({ shopItems: customItems });
+
+    const customImg = screen.getByRole('img', { name: /Dragon Blade/i });
+    expect(customImg).toBeInTheDocument();
+    expect(customImg).toHaveAttribute('src', 'https://images.example.com/dragon-blade.png');
+    expect(customImg).toHaveStyle({ objectFit: 'contain' });
+
+    // Mystery Orb has no image and no known asset, so it renders the fallback container (no img tag, no fake text)
+    expect(screen.queryByRole('img', { name: /Mystery Orb/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/COSMETIC RELIC/i)).not.toBeInTheDocument();
+  });
 });
 

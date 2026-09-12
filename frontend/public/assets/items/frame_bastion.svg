@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bf-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a0d14"/>
+      <stop offset="100%" stop-color="#141924"/>
+    </linearGradient>
+    <linearGradient id="bf-steel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="50%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#bf-bg)" rx="10"/>
+
+  <!-- Fortress Bastion Frame Border -->
+  <g transform="translate(160, 90)">
+    <!-- Outer Bastion Plate -->
+    <rect x="-85" y="-65" width="170" height="130" rx="14" fill="none" stroke="url(#bf-steel)" stroke-width="6"/>
+    <rect x="-78" y="-58" width="156" height="116" rx="8" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+
+    <!-- Fortress Battlements Corners -->
+    <rect x="-88" y="-68" width="16" height="16" fill="#475569" stroke="#38bdf8" stroke-width="1"/>
+    <rect x="72" y="-68" width="16" height="16" fill="#475569" stroke="#38bdf8" stroke-width="1"/>
+    <rect x="-88" y="52" width="16" height="16" fill="#475569" stroke="#38bdf8" stroke-width="1"/>
+    <rect x="72" y="52" width="16" height="16" fill="#475569" stroke="#38bdf8" stroke-width="1"/>
+
+    <!-- Rivets -->
+    <circle cx="-80" cy="-60" r="2.5" fill="#94a3b8"/>
+    <circle cx="80" cy="-60" r="2.5" fill="#94a3b8"/>
+    <circle cx="-80" cy="60" r="2.5" fill="#94a3b8"/>
+    <circle cx="80" cy="60" r="2.5" fill="#94a3b8"/>
+
+    <!-- Center Portal -->
+    <circle cx="0" cy="0" r="42" fill="#0c111a" stroke="#475569" stroke-width="2"/>
+    <circle cx="0" cy="0" r="38" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+  </g>
+</svg>

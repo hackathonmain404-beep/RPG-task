@@ -124,12 +124,10 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
-                flexShrink: 0,
+                padding: '4px',
               }}
             >
-              <div style={{ transform: 'scale(0.55)' }}>
-                <ItemVisualPreview item={item} />
-              </div>
+              <ItemVisualPreview item={item} />
             </div>
 
             <div style={{ flex: 1 }}>

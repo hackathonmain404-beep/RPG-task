@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090514"/>
+      <stop offset="50%" stop-color="#120a2a"/>
+      <stop offset="100%" stop-color="#050814"/>
+    </linearGradient>
+    <linearGradient id="cp-cyan-pink" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="50%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="cp-sun" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="cp-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="320" height="180" fill="url(#cp-bg)" rx="10"/>
+
+  <!-- Synthwave Neon Sun Horizon -->
+  <circle cx="160" cy="95" r="42" fill="url(#cp-sun)" opacity="0.85"/>
+  <!-- Sun horizontal blind cutouts -->
+  <rect x="110" y="86" width="100" height="2" fill="#120a2a"/>
+  <rect x="110" y="91" width="100" height="3" fill="#120a2a"/>
+  <rect x="110" y="97" width="100" height="4" fill="#120a2a"/>
+  <rect x="110" y="104" width="100" height="5" fill="#120a2a"/>
+
+  <!-- City Skyline Silhouette -->
+  <path d="M40 115 L40 100 L55 100 L55 115 L70 115 L70 92 L80 92 L80 82 L90 82 L90 115 L110 115 L110 105 L125 105 L125 115 L195 115 L195 98 L205 98 L205 115 L225 115 L225 88 L235 88 L235 78 L245 78 L245 115 L260 115 L260 104 L275 104 L275 115 Z" fill="#0c071e"/>
+
+  <!-- Neon Horizon Line -->
+  <line x1="20" y1="115" x2="300" y2="115" stroke="#00f0ff" stroke-width="2" filter="url(#cp-glow)"/>
+
+  <!-- Perspective 3D Grid Floor -->
+  <g stroke="#ec4899" stroke-width="0.8" opacity="0.65">
+    <line x1="160" y1="115" x2="10" y2="175"/>
+    <line x1="160" y1="115" x2="55" y2="175"/>
+    <line x1="160" y1="115" x2="105" y2="175"/>
+    <line x1="160" y1="115" x2="160" y2="175"/>
+    <line x1="160" y1="115" x2="215" y2="175"/>
+    <line x1="160" y1="115" x2="265" y2="175"/>
+    <line x1="160" y1="115" x2="310" y2="175"/>
+
+    <line x1="130" y1="122" x2="190" y2="122"/>
+    <line x1="100" y1="132" x2="220" y2="132"/>
+    <line x1="65" y1="146" x2="255" y2="146"/>
+    <line x1="25" y1="164" x2="295" y2="164"/>
+  </g>
+
+  <!-- Cyber HUD Elements -->
+  <g opacity="0.75" filter="url(#cp-glow)">
+    <path d="M25 35 L50 35 L55 42 L85 42" stroke="#00f0ff" stroke-width="1.5" fill="none"/>
+    <circle cx="25" cy="35" r="2" fill="#00f0ff"/>
+    <circle cx="85" cy="42" r="2" fill="#00f0ff"/>
+    <path d="M295 35 L270 35 L265 42 L235 42" stroke="#ec4899" stroke-width="1.5" fill="none"/>
+    <circle cx="295" cy="35" r="2" fill="#ec4899"/>
+    <circle cx="235" cy="42" r="2" fill="#ec4899"/>
+  </g>
+
+  <!-- Glowing HUD Brackets -->
+  <path d="M30 65 L24 65 L24 85" stroke="#00f0ff" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M290 65 L296 65 L296 85" stroke="#ec4899" stroke-width="1.5" fill="none" opacity="0.5"/>
+</svg>

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sb-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#08070d"/>
+      <stop offset="100%" stop-color="#110d1f"/>
+    </linearGradient>
+    <linearGradient id="sb-shield-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#332a4d"/>
+      <stop offset="50%" stop-color="#1b152b"/>
+      <stop offset="100%" stop-color="#0d0a17"/>
+    </linearGradient>
+    <linearGradient id="sb-violet-rim" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="50%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <radialGradient id="sb-void-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="sb-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Background -->
+  <rect width="320" height="180" fill="url(#sb-bg)" rx="10"/>
+
+  <!-- Void Purple Aura -->
+  <circle cx="160" cy="90" r="70" fill="url(#sb-void-glow)"/>
+
+  <!-- Heraldic Shadow Shield Crest -->
+  <g filter="url(#sb-glow)">
+    <!-- Outer Shield Contour -->
+    <path d="M160 22 C205 22 218 35 218 72 C218 118 182 145 160 158 C138 145 102 118 102 72 C102 35 115 22 160 22 Z" fill="url(#sb-shield-metal)" stroke="url(#sb-violet-rim)" stroke-width="3"/>
+    <!-- Inner Inset Shield -->
+    <path d="M160 32 C196 32 206 44 206 74 C206 110 177 134 160 144 C143 134 114 110 114 74 C114 44 124 32 160 32 Z" fill="#130d22" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1.5"/>
+  </g>
+
+  <!-- Shadow Assassin Sigil (Crossed Daggers / Wings) -->
+  <g transform="translate(160, 85)" fill="none" stroke="url(#sb-violet-rim)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Center Mystic Rune Diamond -->
+    <polygon points="0,-28 16,-6 0,16 -16,-6" fill="rgba(139, 92, 246, 0.25)" stroke="#c084fc"/>
+    <circle cx="0" cy="-6" r="3" fill="#c084fc"/>
+    <!-- Winged Blade Extensions -->
+    <path d="M-16 -6 Q-36 -18 -42 4 Q-28 6 -16 -6"/>
+    <path d="M16 -6 Q36 -18 42 4 Q28 6 16 -6"/>
+    <!-- Lower Tail Points -->
+    <path d="M0 16 L0 38"/>
+    <path d="M-6 24 L0 38 L6 24"/>
+  </g>
+
+  <!-- Ethereal Particle Orbs -->
+  <g fill="#c084fc" opacity="0.6">
+    <circle cx="85" cy="55" r="1.5"/>
+    <circle cx="235" cy="55" r="1.5"/>
+    <circle cx="75" cy="115" r="1.2"/>
+    <circle cx="245" cy="115" r="1.2"/>
+    <circle cx="160" cy="168" r="2"/>
+  </g>
+</svg>

@@ -575,9 +575,38 @@
   border: 1px solid rgba(245, 158, 11, 0.45);
 }
 
-/* 9. Procedural Category Previews */
+/* 9. Real Item Image Presentation */
+.armory-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+}
 
-/* Theme Preview: Cyber Terminal Window */
+.armory-card:hover .armory-item-image {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.35));
+}
+
+.armory-card.rarity-legendary:hover .armory-item-image {
+  filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.5));
+}
+
+.armory-card.rarity-epic:hover .armory-item-image {
+  filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.5));
+}
+
+.armory-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #080c14;
+}
+
+/* Legacy / Procedural Previews */
 .preview-theme-terminal {
   width: 82%;
   height: 75%;

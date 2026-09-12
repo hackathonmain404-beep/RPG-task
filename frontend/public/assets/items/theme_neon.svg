@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="neon-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#05050f"/>
+      <stop offset="100%" stop-color="#0f0a1c"/>
+    </linearGradient>
+    <linearGradient id="neon-cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#neon-bg)" rx="10"/>
+
+  <!-- Outpost Radar / Dome -->
+  <g transform="translate(160, 95)" stroke="#00f0ff" stroke-width="1.5" fill="none" opacity="0.8">
+    <ellipse cx="0" cy="20" rx="90" ry="25"/>
+    <ellipse cx="0" cy="20" rx="60" ry="16"/>
+    <ellipse cx="0" cy="20" rx="30" ry="8"/>
+    <!-- Dome Arches -->
+    <path d="M-60 20 Q-30 -40 0 -45 Q30 -40 60 20"/>
+    <path d="M-40 20 Q-20 -30 0 -35 Q20 -30 40 20"/>
+    <line x1="0" y1="-45" x2="0" y2="-65" stroke="#f43f5e" stroke-width="2"/>
+    <circle cx="0" cy="-65" r="3" fill="#f43f5e"/>
+  </g>
+
+  <!-- Distant Neon Pillars -->
+  <line x1="40" y1="60" x2="40" y2="140" stroke="#f43f5e" stroke-width="2" opacity="0.6"/>
+  <circle cx="40" cy="60" r="3" fill="#f43f5e"/>
+  <line x1="280" y1="60" x2="280" y2="140" stroke="#00f0ff" stroke-width="2" opacity="0.6"/>
+  <circle cx="280" cy="60" r="3" fill="#00f0ff"/>
+
+  <!-- Laser horizon -->
+  <line x1="20" y1="120" x2="300" y2="120" stroke="url(#neon-cyan-glow)" stroke-width="2"/>
+</svg>

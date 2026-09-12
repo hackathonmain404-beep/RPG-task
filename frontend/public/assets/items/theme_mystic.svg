@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mystic-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#061a14"/>
+      <stop offset="100%" stop-color="#040e0b"/>
+    </linearGradient>
+    <radialGradient id="mystic-tree-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#mystic-bg)" rx="10"/>
+
+  <circle cx="160" cy="85" r="70" fill="url(#mystic-tree-glow)"/>
+
+  <!-- Ancient World Tree Silhouette -->
+  <g fill="#022c22" stroke="#10b981" stroke-width="1.2">
+    <!-- Trunk -->
+    <path d="M152 145 C154 110 148 95 140 80 C130 65 110 55 90 50 C110 65 130 80 148 95 L148 145 Z"/>
+    <path d="M168 145 C166 110 172 95 180 80 C190 65 210 55 230 50 C210 65 190 80 172 95 L172 145 Z"/>
+    <path d="M152 95 L160 65 L168 95 Z"/>
+    <path d="M160 65 C155 45 140 30 130 20 C145 35 155 50 160 65 Z"/>
+    <path d="M160 65 C165 45 180 30 190 20 C175 35 165 50 160 65 Z"/>
+  </g>
+
+  <!-- Glowing Runes & Spores -->
+  <g fill="#34d399">
+    <circle cx="105" cy="45" r="2"/>
+    <circle cx="215" cy="45" r="2"/>
+    <circle cx="160" cy="30" r="2.5"/>
+    <circle cx="135" cy="70" r="1.5"/>
+    <circle cx="185" cy="70" r="1.5"/>
+    <circle cx="80" cy="80" r="1.2"/>
+    <circle cx="240" cy="80" r="1.2"/>
+    <circle cx="160" cy="115" r="3" fill="#6ee7b7"/>
+  </g>
+</svg>
