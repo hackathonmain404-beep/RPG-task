@@ -194,11 +194,11 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <h1 className="welcome-headline-animated" style={{ fontSize: '2.1rem', marginBottom: '0.5rem', fontWeight: 800 }}>
-            Welcome, Adventurer {user?.displayName || 'Hero'}!
+            Welcome back, Achiever!
           </h1>
 
           <p className="welcome-desc-animated" style={{ color: 'var(--text-secondary)', maxWidth: '600px', fontSize: '1rem', lineHeight: 1.55 }}>
-            Your character session is securely verified with the server. Today&apos;s momentum awaits your command.
+            Your journey continues. Make your next move count.
           </p>
         </div>
 
