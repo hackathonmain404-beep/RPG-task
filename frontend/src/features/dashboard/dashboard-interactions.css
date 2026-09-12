@@ -402,10 +402,13 @@
   flex-direction: column;
   overflow: hidden;
   cursor: default;
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.28s ease,
-              box-shadow 0.28s ease;
-  will-change: transform;
+  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }
 
 /* Local cursor-following radial lighting */
@@ -421,7 +424,7 @@
   );
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .interactive-stat-card:hover::before {
@@ -429,7 +432,7 @@
 }
 
 .interactive-stat-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px) scale(1.01) translateZ(0);
 }
 
 /* Card 1: Player Level (Purple) */
@@ -438,7 +441,7 @@
 }
 .card-player-level:hover {
   border-color: rgba(168, 85, 247, 0.45);
-  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(168, 85, 247, 0.25);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.55), 0 0 22px rgba(168, 85, 247, 0.25);
 }
 .card-player-level:hover .stat-icon-shield {
   transform: scale(1.15);
@@ -451,7 +454,7 @@
 }
 .card-auth-xp:hover {
   border-color: rgba(56, 189, 248, 0.45);
-  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.55), 0 0 22px rgba(56, 189, 248, 0.25);
 }
 .card-auth-xp:hover .stat-icon-sparkles {
   transform: rotate(18deg) scale(1.12);
@@ -464,7 +467,7 @@
 }
 .card-armory-gold:hover {
   border-color: rgba(245, 158, 11, 0.45);
-  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.55), 0 0 22px rgba(245, 158, 11, 0.25);
 }
 .card-armory-gold:hover .stat-icon-coins {
   transform: rotate(-15deg) scale(1.12);
@@ -477,11 +480,154 @@
 }
 .card-momentum-streak:hover {
   border-color: rgba(239, 68, 68, 0.45);
-  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.55), 0 0 22px rgba(239, 68, 68, 0.25);
 }
 .card-momentum-streak:hover .stat-icon-flame {
   transform: scale(1.15);
   filter: drop-shadow(0 0 6px #ef4444);
+}
+
+/* ==========================================================================
+   CHARACTER DISCIPLINES — ULTRA-SMOOTH HOVER & AMBIENT AURA
+   ========================================================================== */
+
+.discipline-stat-card {
+  position: relative;
+  background-color: #111726;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  overflow: hidden;
+  will-change: transform, box-shadow, border-color;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.discipline-stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 50% 0%,
+    var(--discipline-glow, rgba(56, 189, 248, 0.12)) 0%,
+    transparent 75%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.discipline-stat-card:hover {
+  transform: translateY(-3px) scale(1.015) translateZ(0);
+  border-color: var(--discipline-border, rgba(56, 189, 248, 0.45));
+  box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.65),
+              0 0 22px var(--discipline-shadow-glow, rgba(56, 189, 248, 0.2)),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background-color: #141b2c;
+}
+
+.discipline-stat-card:hover::before {
+  opacity: 1;
+}
+
+.discipline-stat-card:active {
+  transform: translateY(0) scale(0.99) translateZ(0);
+  transition: transform 120ms ease;
+}
+
+/* Internal Icon Smooth Spring */
+.discipline-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 380ms ease;
+}
+
+.discipline-stat-card:hover .discipline-icon-wrapper {
+  transform: scale(1.15) translateY(-1px);
+  filter: drop-shadow(0 0 8px var(--discipline-color));
+}
+
+/* Discipline Title Smooth Brightness */
+.discipline-card-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: color 380ms ease,
+              text-shadow 380ms ease,
+              filter 380ms ease;
+}
+
+.discipline-stat-card:hover .discipline-card-title {
+  filter: brightness(1.2);
+  text-shadow: 0 0 12px var(--discipline-color);
+}
+
+/* Discipline Progress Fill Glow */
+.discipline-stat-card:hover .rpg-progress-fill {
+  box-shadow: 0 0 10px var(--discipline-color);
+  filter: brightness(1.15);
+}
+
+/* Discipline Mono Number Pop */
+.discipline-card-number {
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: right;
+  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 380ms ease,
+              text-shadow 380ms ease;
+}
+
+.discipline-stat-card:hover .discipline-card-number {
+  transform: scale(1.08);
+  filter: brightness(1.22);
+  text-shadow: 0 0 8px var(--discipline-color);
+}
+
+/* Color definitions per discipline */
+.discipline-card-intellect {
+  --discipline-color: #3b82f6;
+  --discipline-border: rgba(59, 130, 246, 0.45);
+  --discipline-glow: rgba(59, 130, 246, 0.16);
+  --discipline-shadow-glow: rgba(59, 130, 246, 0.22);
+}
+
+.discipline-card-strength {
+  --discipline-color: #ef4444;
+  --discipline-border: rgba(239, 68, 68, 0.45);
+  --discipline-glow: rgba(239, 68, 68, 0.16);
+  --discipline-shadow-glow: rgba(239, 68, 68, 0.22);
+}
+
+.discipline-card-wisdom {
+  --discipline-color: #10b981;
+  --discipline-border: rgba(16, 185, 129, 0.45);
+  --discipline-glow: rgba(16, 185, 129, 0.16);
+  --discipline-shadow-glow: rgba(16, 185, 129, 0.22);
+}
+
+.discipline-card-charisma {
+  --discipline-color: #a855f7;
+  --discipline-border: rgba(168, 85, 247, 0.45);
+  --discipline-glow: rgba(168, 85, 247, 0.16);
+  --discipline-shadow-glow: rgba(168, 85, 247, 0.22);
+}
+
+.discipline-card-vitality {
+  --discipline-color: #22c55e;
+  --discipline-border: rgba(34, 197, 94, 0.45);
+  --discipline-glow: rgba(34, 197, 94, 0.16);
+  --discipline-shadow-glow: rgba(34, 197, 94, 0.22);
 }
 
 .stat-icon-box {
