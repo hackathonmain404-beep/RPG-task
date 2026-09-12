@@ -114,7 +114,26 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
   const email = input.email.toLowerCase().trim();
   const isTestAccount = (email === 'adventurer@liferpg.app' || email === 'test@liferpg.app') && input.password === 'password123';
 
-  // 1. Try database authentication
+  // 1. Instant response for test account (zero DB latency, 100% reliable offline/online)
+  if (isTestAccount) {
+    const token = jwt.sign(
+      { userId: TEST_USER.id, email: TEST_USER.email },
+      getJwtSecret(),
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    return {
+      user: {
+        id: TEST_USER.id,
+        email: TEST_USER.email,
+        displayName: TEST_USER.displayName,
+      },
+      character: TEST_USER.character,
+      token,
+    };
+  }
+
+  // 2. Standard database authentication for registered users
   try {
     let user = await prisma.user.findUnique({
       where: { email },
