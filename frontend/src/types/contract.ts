@@ -43,6 +43,77 @@ export interface LoginRequest {
   password: string;
 }
 
+/* ==========================================================================
+   TASK / QUEST TYPES
+   ========================================================================== */
+
+export type DisciplineKey = 'intellect' | 'strength' | 'wisdom' | 'charisma' | 'vitality' | string;
+export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'epic' | string;
+
+export interface Task {
+  id: string;
+  userId?: string;
+  title: string;
+  description?: string | null;
+  categoryKey: DisciplineKey;
+  difficulty: DifficultyLevel;
+  dueDate?: string | null;
+  completed: boolean;
+  completedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  xpReward?: number;
+  goldReward?: number;
+}
+
+export interface CreateTaskRequest {
+  title: string;
+  description?: string;
+  categoryKey: DisciplineKey;
+  difficulty: DifficultyLevel;
+  dueDate?: string;
+}
+
+export interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  categoryKey?: DisciplineKey;
+  difficulty?: DifficultyLevel;
+  dueDate?: string;
+}
+
+export interface CompleteTaskResponse {
+  task: {
+    id: string;
+    completed: boolean;
+    completedAt?: string;
+  };
+  rewards?: {
+    xp?: number;
+    gold?: number;
+    attribute?: {
+      key: string;
+      amount: number;
+    };
+  };
+  progression?: {
+    levelBefore?: number;
+    levelAfter?: number;
+    totalXp?: number;
+    currentLevelXp?: number;
+    nextLevelXp?: number;
+    progressPercent?: number;
+  };
+  streak?: {
+    current?: number;
+    best?: number;
+  };
+}
+
+/* ==========================================================================
+   API ERROR CONTRACT
+   ========================================================================== */
+
 export interface ApiErrorDetail {
   code: string;
   message: string;

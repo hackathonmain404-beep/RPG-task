@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { useQuests } from '../../context/useQuests';
 import { 
   Shield, 
   Flame, 
@@ -11,11 +12,16 @@ import {
   Brain, 
   Dumbbell, 
   BookOpen, 
-  Heart 
+  Heart,
+  Scroll,
+  Plus,
+  Loader2,
+  Check
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user, character } = useAuth();
+  const { tasks, isLoading, pendingTaskIds, completeTask } = useQuests();
 
   const level = character?.level || 1;
   const totalXp = character?.totalXp || 0;
@@ -156,7 +162,177 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Phase 1 Completion & Roadmap Status */}
+      {/* Active Quests Preview */}
+      <div className="rpg-card" style={{ padding: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Scroll size={20} color="#38bdf8" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Active Daily Trials</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+                High-priority quests awaiting your conquest
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <Link
+              to="/app/quests"
+              className="rpg-btn rpg-btn-primary"
+              style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem' }}
+            >
+              <Plus size={15} /> Add Quest
+            </Link>
+            <Link
+              to="/app/quests"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                color: '#38bdf8',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              View All Quests <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', gap: '0.75rem', color: 'var(--text-secondary)' }}>
+            <Loader2 size={22} className="animate-spin" color="#38bdf8" />
+            <span>Consulting citadel task registry...</span>
+          </div>
+        ) : tasks.filter(t => !t.completed).length === 0 ? (
+          <div
+            style={{
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              backgroundColor: 'var(--bg-surface-elevated)',
+              borderRadius: '12px',
+              border: '1px dashed var(--border-subtle)',
+            }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+              <CheckCircle2 size={26} color="#10b981" />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.35rem' }}>All Active Quests Slain!</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '400px', margin: '0 auto 1.25rem' }}>
+              Your task ledger is clear. Formulate new daily objectives to sustain your momentum and earn XP.
+            </p>
+            <Link to="/app/quests" className="rpg-btn rpg-btn-primary" style={{ padding: '0.5rem 1.25rem' }}>
+              <Plus size={16} /> Formulate New Quest
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {tasks
+              .filter(t => !t.completed)
+              .slice(0, 4)
+              .map(task => {
+                const isPending = pendingTaskIds.has(task.id);
+                return (
+                  <div
+                    key={task.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.9rem 1.1rem',
+                      backgroundColor: 'var(--bg-surface-elevated)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '8px',
+                      gap: '1rem',
+                      transition: 'border-color 0.2s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => void completeTask(task.id)}
+                        disabled={isPending}
+                        aria-label={`Complete quest ${task.title}`}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          border: '2px solid rgba(56, 189, 248, 0.4)',
+                          backgroundColor: 'transparent',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: isPending ? 'not-allowed' : 'pointer',
+                          flexShrink: 0,
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {isPending ? (
+                          <Loader2 size={13} className="animate-spin" color="#38bdf8" />
+                        ) : (
+                          <Check size={14} style={{ opacity: 0 }} />
+                        )}
+                      </button>
+
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {task.title}
+                        </div>
+                        {task.description && (
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {task.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                      <span
+                        className="rpg-badge"
+                        style={{
+                          backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                          color: '#38bdf8',
+                          borderColor: 'rgba(56, 189, 248, 0.3)',
+                          textTransform: 'capitalize',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {task.categoryKey}
+                      </span>
+                      <span
+                        className="rpg-badge"
+                        style={{
+                          backgroundColor: 'rgba(168, 85, 247, 0.12)',
+                          color: '#c084fc',
+                          borderColor: 'rgba(168, 85, 247, 0.3)',
+                          textTransform: 'capitalize',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {task.difficulty}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        )}
+      </div>
+
+      {/* Systems Status */}
       <div className="rpg-card" style={{ border: '1px solid rgba(16, 185, 129, 0.3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
           <div
@@ -173,9 +349,9 @@ export const DashboardPage: React.FC = () => {
             <CheckCircle2 size={20} color="#10b981" />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.25rem' }}>Phase 1 Foundation Complete</h2>
+            <h2 style={{ fontSize: '1.25rem' }}>Phase 1 &amp; Phase 2 Systems Online</h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              App Shell, Authentic Auth Session &amp; Navigation Ready
+              App Shell, Authentication, and Authoritative Quest Engine Active
             </p>
           </div>
         </div>
@@ -191,29 +367,29 @@ export const DashboardPage: React.FC = () => {
           }}
         >
           <div style={{ padding: '0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-surface-elevated)' }}>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.35rem', color: '#38bdf8' }}>
-              ✅ Active Systems
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.35rem', color: '#10b981' }}>
+              ✅ Active Phase 2 Quest Systems
             </div>
             <ul style={{ paddingLeft: '1.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              <li>React 18 + TypeScript + Vite architecture</li>
-              <li>Authoritative session auth via <code>/api/auth/me</code></li>
-              <li>Responsive Header HUD with Level, XP, Gold, Streak</li>
-              <li>Zero fake client persistence; server-driven truth</li>
+              <li>Complete Quest CRUD with optimistic server sync</li>
+              <li>Authoritative completion via <code>POST /api/tasks/:id/complete</code></li>
+              <li>Duplicate-click prevention &amp; atomic mutations</li>
+              <li>Discipline categorization (5 domains) &amp; 4 difficulty tiers</li>
             </ul>
           </div>
 
           <div style={{ padding: '0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-surface-elevated)' }}>
             <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.35rem', color: '#f59e0b' }}>
-              ⏳ Upcoming Phase 2 (Quest CRUD)
+              ⏳ Upcoming Phase 3 (History &amp; Analytics)
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              Task creation, editing, category discipline mapping, and atomic completion transactions will be connected in Phase 2.
+              Historical progression charts, daily XP breakdown, streak heatmaps, and audit records will arrive in Phase 3.
             </p>
             <Link
               to="/app/quests"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.5rem', color: '#38bdf8', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}
             >
-              Inspect Quest Roadmap <ArrowRight size={14} />
+              Conquer Quests Now <ArrowRight size={14} />
             </Link>
           </div>
         </div>

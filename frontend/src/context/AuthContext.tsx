@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import type { User, Character, LoginRequest, RegisterRequest } from '../types/contract';
+import type { User, Character, LoginRequest, RegisterRequest, CompleteTaskResponse } from '../types/contract';
 import { ApiError } from '../types/contract';
 import { authApi } from '../services/api/auth';
 import { AuthContext } from './authContextDef';
@@ -41,6 +41,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  // Reconciles authoritative rewards and progression returned by completion endpoint
+  const reconcileCompletion = useCallback((res: CompleteTaskResponse) => {
+    setCharacter(prev => {
+      if (!prev) return prev;
+      const updated: Character = {
+        ...prev,
+        level: res.progression?.levelAfter ?? prev.level,
+        totalXp: res.progression?.totalXp ?? (res.rewards?.xp ? prev.totalXp + res.rewards.xp : prev.totalXp),
+        gold: res.rewards?.gold ? prev.gold + res.rewards.gold : prev.gold,
+        streakCurrent: res.streak?.current ?? prev.streakCurrent,
+        streakBest: res.streak?.best ?? prev.streakBest,
+      };
+      return updated;
+    });
   }, []);
 
   useEffect(() => {
@@ -111,6 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         refreshSession,
+        reconcileCompletion,
       }}
     >
       {children}

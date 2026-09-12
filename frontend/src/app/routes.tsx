@@ -6,10 +6,11 @@ import { RegisterPage } from '../features/auth/RegisterPage';
 import { ProtectedRoute, GuestOnlyRoute } from '../components/auth/ProtectedRoute';
 import { AppShell } from '../components/layout/AppShell';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
+import { QuestsPage } from '../features/quests/QuestsPage';
 import { CharacterPage } from '../features/character/CharacterPage';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { PlaceholderPage } from '../features/placeholder/PlaceholderPage';
-import { Scroll, Store, History } from 'lucide-react';
+import { Store, History } from 'lucide-react';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -28,24 +29,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/app" element={<AppShell />}>
           <Route index element={<Navigate to="/app/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route
-            path="quests"
-            element={
-              <PlaceholderPage
-                title="Quest Board & Task Engine"
-                phase="Phase 2"
-                description="The core task loop where adventurers formulate, edit, and conquer daily quests with real-world category mappings."
-                icon={Scroll}
-                upcomingFeatures={[
-                  'Full Task CRUD (Create, Read, Update, Delete)',
-                  'Discipline categorization (Intellect, Strength, Wisdom, Charisma, Vitality)',
-                  'Difficulty tiering (Easy, Medium, Hard, Epic)',
-                  'Atomic completion transactions with backend reward calculations',
-                  'Optimistic UI checkmarks with authoritative server reconciliation',
-                ]}
-              />
-            }
-          />
+          <Route path="quests" element={<QuestsPage />} />
           <Route path="character" element={<CharacterPage />} />
           <Route
             path="armory"

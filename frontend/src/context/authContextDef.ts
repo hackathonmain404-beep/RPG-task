@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { User, Character, LoginRequest, RegisterRequest } from '../types/contract';
+import type { User, Character, LoginRequest, RegisterRequest, CompleteTaskResponse } from '../types/contract';
 
 export interface AuthContextType {
   user: User | null;
@@ -10,6 +10,7 @@ export interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  reconcileCompletion: (res: CompleteTaskResponse) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
