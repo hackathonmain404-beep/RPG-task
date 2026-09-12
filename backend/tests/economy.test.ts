@@ -253,7 +253,7 @@ describe('Economy & Inventory — Integration', () => {
 
       expect(meRes.status).toBe(200);
       // User A started with 50 gold, spent 10
-      expect(meRes.body.user.character.gold).toBe(40);
+      expect(meRes.body.character.gold).toBe(40);
     });
 
     it('should persist inventory ownership across API calls', async () => {
