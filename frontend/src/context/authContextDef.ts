@@ -35,12 +35,14 @@ export interface AuthContextType {
   user: User | null;
   character: Character | null;
   isLoading: boolean;
+  isGuest: boolean;
   serverReachable: boolean;
   xpProgress: XpProgress | null;
   recentActivity: ProgressionActivityItem[];
   lastAttributeChange: AttributeChangeNotice | null;
   signInWithGoogle: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
+  signInAsGuest: () => void;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
   refreshCharacter: () => Promise<void>;

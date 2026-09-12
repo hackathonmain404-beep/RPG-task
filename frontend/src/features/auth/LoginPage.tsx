@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
-import { Shield, AlertCircle, Mail } from 'lucide-react';
+import { Shield, AlertCircle, UserX, AlertTriangle } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   useDocumentMetadata('Citadel Login', {
@@ -10,7 +10,8 @@ export const LoginPage: React.FC = () => {
     noindex: false,
   });
 
-  const { signInWithGoogle, signInWithGithub, serverReachable } = useAuth();
+  const { signInWithGoogle, signInWithGithub, signInAsGuest, serverReachable } = useAuth();
+  const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -228,46 +229,58 @@ export const LoginPage: React.FC = () => {
           }}
         >
           <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <Mail size={12} /> sign in with your account
-          </span>
+          <span>or</span>
           <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }} />
         </div>
 
-        {/* Info box */}
-        <div
+        {/* Guest Mode Button */}
+        <button
+          type="button"
+          onClick={() => {
+            signInAsGuest();
+            navigate('/app/dashboard');
+          }}
+          className="rpg-btn"
+          id="login-guest"
           style={{
-            padding: '1rem 1.25rem',
+            width: '100%',
+            padding: '0.85rem',
+            marginBottom: '0.75rem',
+            fontSize: '0.95rem',
+            fontWeight: 600,
+            backgroundColor: 'rgba(139, 92, 246, 0.12)',
+            border: '1px solid rgba(139, 92, 246, 0.35)',
+            color: '#c4b5fd',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.65rem',
             borderRadius: '8px',
-            backgroundColor: 'rgba(56, 189, 248, 0.06)',
-            border: '1px solid rgba(56, 189, 248, 0.2)',
-            textAlign: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            transition: 'all 0.2s ease',
           }}
         >
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: 1.6 }}>
-            Choose <strong style={{ color: '#38bdf8' }}>Google</strong> or <strong style={{ color: '#f0f6fc' }}>GitHub</strong> to sign in.
-            <br />
-            Your account is created automatically on first sign-in.
-          </p>
-        </div>
+          <UserX size={20} />
+          <span>Use as a Guest</span>
+        </button>
 
+        {/* Guest Warning */}
         <div
           style={{
-            marginTop: '1.5rem',
-            paddingTop: '1.25rem',
-            borderTop: '1px solid var(--border-subtle)',
+            padding: '0.75rem 1rem',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
             textAlign: 'center',
-            fontSize: '0.9rem',
-            color: 'var(--text-secondary)',
           }}
         >
-          New to the realm?{' '}
-          <Link
-            to="/register"
-            style={{ color: '#38bdf8', fontWeight: 600, textDecoration: 'none' }}
-          >
-            Forge a New Character
-          </Link>
+          <p style={{ color: '#fbbf24', fontSize: '0.8rem', margin: 0, lineHeight: 1.6 }}>
+            <AlertTriangle size={14} style={{ verticalAlign: 'middle', marginRight: '0.35rem' }} />
+            Guest progress <strong>won't be saved</strong> to the database.
+            <br />
+            <span style={{ color: 'var(--text-tertiary)' }}>Sign in with Google or GitHub to persist your data.</span>
+          </p>
         </div>
 
         {/* Legal Links */}

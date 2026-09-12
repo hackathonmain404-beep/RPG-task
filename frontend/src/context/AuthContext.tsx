@@ -36,6 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [character, setCharacter] = useState<Character | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isGuest, setIsGuest] = useState<boolean>(false);
   const [serverReachable, setServerReachable] = useState<boolean>(true);
   const [xpProgress, setXpProgress] = useState<XpProgress | null>(null);
   const [recentActivity, setRecentActivity] = useState<ProgressionActivityItem[]>([]);
@@ -303,8 +304,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   }, []);
 
+  // Sign in as guest — entirely local, no database persistence
+  const signInAsGuest = useCallback(() => {
+    const guestUser: User = {
+      id: `guest_${Date.now()}`,
+      email: 'guest@liferpg.local',
+      displayName: 'Wandering Traveler',
+    };
+    const guestCharacter: Character = {
+      level: 1,
+      totalXp: 0,
+      gold: 50,
+      streakCurrent: 0,
+      streakBest: 0,
+      attributes: [...DEFAULT_ATTRIBUTES],
+    };
+    setUser(guestUser);
+    setCharacter(guestCharacter);
+    setIsGuest(true);
+    setServerReachable(true);
+    setIsLoading(false);
+  }, []);
+
   // Sign out
   const logout = useCallback(async () => {
+    if (isGuest) {
+      setUser(null);
+      setCharacter(null);
+      setIsGuest(false);
+      setXpProgress(null);
+      setRecentActivity([]);
+      setLastAttributeChange(null);
+      return;
+    }
     try {
       await authApi.logout();
     } catch {
@@ -316,7 +348,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setXpProgress(null);
     setRecentActivity([]);
     setLastAttributeChange(null);
-  }, []);
+  }, [isGuest]);
 
   return (
     <AuthContext.Provider
@@ -324,12 +356,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         character,
         isLoading,
+        isGuest,
         serverReachable,
         xpProgress,
         recentActivity,
         lastAttributeChange,
         signInWithGoogle,
         signInWithGithub,
+        signInAsGuest,
         logout,
         refreshSession,
         refreshCharacter,

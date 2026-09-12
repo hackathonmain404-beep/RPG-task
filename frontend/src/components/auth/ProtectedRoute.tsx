@@ -4,7 +4,7 @@ import { useAuth } from '../../context/useAuth';
 import { Shield } from 'lucide-react';
 
 export const ProtectedRoute: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isGuest } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -33,7 +33,7 @@ export const ProtectedRoute: React.FC = () => {
     );
   }
 
-  if (!user) {
+  if (!user && !isGuest) {
     // Preserve intended destination after authentication
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
@@ -42,13 +42,13 @@ export const ProtectedRoute: React.FC = () => {
 };
 
 export const GuestOnlyRoute: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isGuest } = useAuth();
 
   if (isLoading) {
     return null;
   }
 
-  if (user) {
+  if (user || isGuest) {
     return <Navigate to="/app/dashboard" replace />;
   }
 
