@@ -139,6 +139,10 @@ export interface ShopItem {
   rarity: ItemRarity;
   metadataJson?: string | Record<string, unknown>;
   active?: boolean;
+  image?: string;
+  assetPath?: string;
+  iconUrl?: string;
+  icon?: string;
 }
 
 export interface InventoryItem {

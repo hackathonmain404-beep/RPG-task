@@ -241,7 +241,7 @@ export const ShopPage: React.FC = () => {
         )}
 
         {processedItems.length > 0 && (
-          <div className="armory-grid">
+          <div key={`${selectedCategory}-${sortBy}`} className="armory-grid">
             {processedItems.map((item, index) => (
               <ShopItemCard
                 key={item.id}

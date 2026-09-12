@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="def-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#080c14"/>
+      <stop offset="100%" stop-color="#0d1420"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#def-bg)" rx="10"/>
+
+  <!-- Minimalist Citadel Crest Silhouette -->
+  <g transform="translate(160, 90)" opacity="0.25">
+    <path d="M0 -45 L35 -15 L35 25 L0 45 L-35 25 L-35 -15 Z" fill="none" stroke="#38bdf8" stroke-width="2"/>
+    <path d="M0 -30 L22 -10 L22 18 L0 30 L-22 18 L-22 -10 Z" fill="none" stroke="#38bdf8" stroke-width="1"/>
+    <circle cx="0" cy="0" r="8" fill="#38bdf8"/>
+  </g>
+</svg>
