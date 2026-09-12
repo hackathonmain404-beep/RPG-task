@@ -8,7 +8,7 @@ import type {
 import { ApiError } from '../types/contract';
 import { tasksApi } from '../services/api/tasks';
 import { useAuth } from './useAuth';
-import { QuestsContext, type RewardNotice } from './questsContextDef';
+import { QuestsContext, type RewardNotice, type LevelUpEvent } from './questsContextDef';
 
 export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, reconcileCompletion } = useAuth();
@@ -17,6 +17,7 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [error, setError] = useState<string | null>(null);
   const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
   const [lastRewardNotice, setLastRewardNotice] = useState<RewardNotice | null>(null);
+  const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
 
   const loadTasks = useCallback(async () => {
     if (!user) {
@@ -160,6 +161,18 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
       }
 
+      // Check for level-up event from server-authoritative progression
+      if (
+        res.progression?.levelBefore != null &&
+        res.progression?.levelAfter != null &&
+        res.progression.levelAfter > res.progression.levelBefore
+      ) {
+        setLevelUpEvent({
+          levelBefore: res.progression.levelBefore,
+          levelAfter: res.progression.levelAfter,
+        });
+      }
+
       return res;
     } catch (err) {
       // 4. Rollback on failure
@@ -192,6 +205,10 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setLastRewardNotice(null);
   };
 
+  const clearLevelUpEvent = () => {
+    setLevelUpEvent(null);
+  };
+
   return (
     <QuestsContext.Provider
       value={{
@@ -206,9 +223,12 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         completeTask,
         lastRewardNotice,
         clearRewardNotice,
+        levelUpEvent,
+        clearLevelUpEvent,
       }}
     >
       {children}
     </QuestsContext.Provider>
   );
+};
 };

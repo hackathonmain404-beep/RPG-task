@@ -4,6 +4,8 @@ import type { Task, CreateTaskRequest } from '../../types/contract';
 import { QuestList } from './QuestList';
 import { QuestComposerModal } from './QuestComposerModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { RewardToast } from '../../components/common/RewardToast';
+import { LevelUpOverlay } from '../../components/common/LevelUpOverlay';
 import { 
   Scroll, 
   Plus, 
@@ -20,6 +22,9 @@ export const QuestsPage: React.FC = () => {
     error,
     pendingTaskIds,
     lastRewardNotice,
+    clearRewardNotice,
+    levelUpEvent,
+    clearLevelUpEvent,
     loadTasks,
     createTask,
     updateTask,
@@ -73,6 +78,17 @@ export const QuestsPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      {/* Reward Toast */}
+      {lastRewardNotice && (
+        <div className="reward-toast-container">
+          <RewardToast reward={lastRewardNotice} onDismiss={clearRewardNotice} />
+        </div>
+      )}
+
+      {/* Level-Up Overlay */}
+      {levelUpEvent && (
+        <LevelUpOverlay event={levelUpEvent} onDismiss={clearLevelUpEvent} />
+      )}
       {/* Top Banner & Header */}
       <div
         style={{

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import type { User, Character, LoginRequest, RegisterRequest, CompleteTaskResponse } from '../types/contract';
+import type { XpProgress } from './authContextDef';
 import { ApiError } from '../types/contract';
 import { authApi } from '../services/api/auth';
 import { AuthContext } from './authContextDef';
@@ -9,6 +10,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [character, setCharacter] = useState<Character | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [serverReachable, setServerReachable] = useState<boolean>(true);
+  const [xpProgress, setXpProgress] = useState<XpProgress | null>(null);
 
   // Authenticate session from backend on initial mount
   const refreshSession = useCallback(async () => {
@@ -57,6 +59,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       return updated;
     });
+
+    // Update XP progress from server-authoritative progression data
+    if (res.progression) {
+      setXpProgress({
+        currentLevelXp: res.progression.currentLevelXp ?? 0,
+        nextLevelXp: res.progression.nextLevelXp ?? 100,
+        progressPercent: res.progression.progressPercent ?? 0,
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -113,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setUser(null);
       setCharacter(null);
+      setXpProgress(null);
     }
   };
 
@@ -123,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         character,
         isLoading,
         serverReachable,
+        xpProgress,
         login,
         register,
         logout,
@@ -134,3 +147,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+

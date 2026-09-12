@@ -16,6 +16,11 @@ export interface RewardNotice {
   };
 }
 
+export interface LevelUpEvent {
+  levelBefore: number;
+  levelAfter: number;
+}
+
 export interface QuestsContextType {
   tasks: Task[];
   isLoading: boolean;
@@ -28,6 +33,9 @@ export interface QuestsContextType {
   completeTask: (id: string) => Promise<CompleteTaskResponse>;
   lastRewardNotice: RewardNotice | null;
   clearRewardNotice: () => void;
+  levelUpEvent: LevelUpEvent | null;
+  clearLevelUpEvent: () => void;
 }
 
 export const QuestsContext = createContext<QuestsContextType | undefined>(undefined);
+

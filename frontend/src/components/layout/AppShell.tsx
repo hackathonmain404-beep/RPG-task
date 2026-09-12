@@ -132,11 +132,11 @@ export const AppShell: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
               <Sparkles size={16} color="#f59e0b" />
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                Phase 1 Active
+                Phase 3 Active
               </span>
             </div>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              Frontend foundation initialized with authoritative auth session.
+              RPG progression with server-authoritative XP, level-up celebrations, and reward feedback.
             </p>
           </div>
         </aside>

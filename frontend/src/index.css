@@ -335,6 +335,198 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ==========================================================================
+   PHASE 3 — RPG PROGRESSION ANIMATIONS
+   ========================================================================== */
+
+/* Reward numbers floating upward after quest completion */
+@keyframes rewardFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.85);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+  25% {
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+/* Level-up celebration glow pulse */
+@keyframes levelUpPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(168, 85, 247, 0.7), 0 0 60px rgba(168, 85, 247, 0.35), 0 0 80px rgba(245, 158, 11, 0.2);
+  }
+}
+
+/* XP bar shimmer after gaining XP */
+@keyframes xpBarShimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Toast slide in from bottom-right */
+@keyframes toastSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(40px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Toast slide out */
+@keyframes toastSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(40px) scale(0.9);
+  }
+}
+
+/* Fade in upward entrance */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Fade in generic */
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Spin for loading */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Count-up number scale pop */
+@keyframes numberPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Level-up shield entrance */
+@keyframes shieldEntrance {
+  0% {
+    transform: scale(0) rotate(-30deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Utility animation classes */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-reward-float {
+  animation: rewardFloat 3.5s var(--ease-spring) forwards;
+}
+
+.animate-toast-in {
+  animation: toastSlideIn 0.35s var(--ease-spring) forwards;
+}
+
+.animate-toast-out {
+  animation: toastSlideOut 0.25s var(--ease-out) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s var(--ease-spring) forwards;
+}
+
+.animate-number-pop {
+  animation: numberPop 0.5s var(--ease-spring) forwards;
+}
+
+.animate-level-up-pulse {
+  animation: levelUpPulse 2s ease-in-out infinite;
+}
+
+.animate-shield-entrance {
+  animation: shieldEntrance 0.6s var(--ease-spring) forwards;
+}
+
+/* XP bar shimmer effect after gaining XP */
+.xp-bar-shimmer {
+  background-size: 200% 100%;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  animation: xpBarShimmer 1.5s ease-in-out;
+}
+
+/* Reward toast container fixed positioning */
+.reward-toast-container {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.reward-toast-container > * {
+  pointer-events: auto;
+}
+
+/* Level-up overlay backdrop */
+.level-up-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease forwards;
+}
+
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useQuests } from '../../context/useQuests';
+import { characterApi, type CharacterResponse } from '../../services/api/character';
+import { RewardToast } from '../../components/common/RewardToast';
+import { LevelUpOverlay } from '../../components/common/LevelUpOverlay';
+import type { Attribute } from '../../types/contract';
 import { 
   Shield, 
   Flame, 
@@ -19,17 +23,67 @@ import {
   Check
 } from 'lucide-react';
 
+// Attribute icon/color map
+const ATTR_CONFIG: Record<string, { icon: React.FC<{ size?: number; color?: string }>; color: string; focus: string }> = {
+  intellect: { icon: Brain, color: 'var(--attr-intellect)', focus: 'Technical & Logic' },
+  strength: { icon: Dumbbell, color: 'var(--attr-strength)', focus: 'Physical Fitness' },
+  wisdom: { icon: BookOpen, color: 'var(--attr-wisdom)', focus: 'Study & Reading' },
+  charisma: { icon: Sparkles, color: 'var(--attr-charisma)', focus: 'Social & Team' },
+  vitality: { icon: Heart, color: 'var(--attr-vitality)', focus: 'Sleep & Health' },
+};
+
+const DEFAULT_ATTRIBUTES: Attribute[] = [
+  { key: 'intellect', displayName: 'Intellect', value: 0 },
+  { key: 'strength', displayName: 'Strength', value: 0 },
+  { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+  { key: 'charisma', displayName: 'Charisma', value: 0 },
+  { key: 'vitality', displayName: 'Vitality', value: 0 },
+];
+
 export const DashboardPage: React.FC = () => {
-  const { user, character } = useAuth();
-  const { tasks, isLoading, pendingTaskIds, completeTask } = useQuests();
+  const { user, character, xpProgress } = useAuth();
+  const { tasks, isLoading, pendingTaskIds, completeTask, lastRewardNotice, clearRewardNotice, levelUpEvent, clearLevelUpEvent } = useQuests();
+
+  const [charData, setCharData] = useState<CharacterResponse | null>(null);
 
   const level = character?.level || 1;
   const totalXp = character?.totalXp || 0;
   const gold = character?.gold || 0;
   const streak = character?.streakCurrent || 0;
 
+  // Server-authoritative XP progress
+  const xpPercent = xpProgress?.progressPercent ?? 0;
+
+  // Fetch character attributes
+  useEffect(() => {
+    let ignore = false;
+    characterApi.getCharacter()
+      .then(data => { if (!ignore) setCharData(data); })
+      .catch(() => { /* silently fail for dashboard — attributes are supplementary */ });
+    return () => { ignore = true; };
+  }, []);
+
+  // Use server attributes if available
+  const attributes: Attribute[] = charData?.attributes && charData.attributes.length > 0
+    ? charData.attributes
+    : (character?.attributes && character.attributes.length > 0)
+      ? character.attributes
+      : DEFAULT_ATTRIBUTES;
+
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      {/* Reward Toast */}
+      {lastRewardNotice && (
+        <div className="reward-toast-container">
+          <RewardToast reward={lastRewardNotice} onDismiss={clearRewardNotice} />
+        </div>
+      )}
+
+      {/* Level-Up Overlay */}
+      {levelUpEvent && (
+        <LevelUpOverlay event={levelUpEvent} onDismiss={clearLevelUpEvent} />
+      )}
+
       {/* Welcome Banner */}
       <div
         style={{
@@ -85,7 +139,7 @@ export const DashboardPage: React.FC = () => {
           gap: '1.25rem',
         }}
       >
-        {/* Metric 1: Level */}
+        {/* Metric 1: Level + XP Progress */}
         <div className="rpg-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
             <span className="rpg-label">Player Level</span>
@@ -97,11 +151,21 @@ export const DashboardPage: React.FC = () => {
             <span className="mono-numbers" style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff' }}>
               {level}
             </span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--color-xp)', fontWeight: 600 }}>Rank I</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--color-xp)', fontWeight: 600 }}>
+              {Math.round(xpPercent)}% to next
+            </span>
           </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '0.4rem' }}>
-            Next ascension at {(level * 100).toLocaleString()} XP
-          </p>
+          {/* Mini XP progress bar */}
+          <div className="rpg-progress-track" style={{ height: '4px', marginTop: '0.5rem' }}>
+            <div
+              className="rpg-progress-fill"
+              style={{
+                width: `${Math.max(2, Math.min(100, xpPercent))}%`,
+                background: 'linear-gradient(90deg, #a855f7, #c084fc)',
+                transition: 'width 0.8s var(--ease-spring)',
+              }}
+            />
+          </div>
         </div>
 
         {/* Metric 2: Total XP */}
@@ -349,9 +413,9 @@ export const DashboardPage: React.FC = () => {
             <CheckCircle2 size={20} color="#10b981" />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.25rem' }}>Phase 1 &amp; Phase 2 Systems Online</h2>
+            <h2 style={{ fontSize: '1.25rem' }}>Phase 1–3 Systems Online</h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              App Shell, Authentication, and Authoritative Quest Engine Active
+              App Shell, Authentication, Quest Engine &amp; RPG Progression Active
             </p>
           </div>
         </div>
@@ -368,22 +432,22 @@ export const DashboardPage: React.FC = () => {
         >
           <div style={{ padding: '0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-surface-elevated)' }}>
             <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.35rem', color: '#10b981' }}>
-              ✅ Active Phase 2 Quest Systems
+              ✅ Phase 3 RPG Progression
             </div>
             <ul style={{ paddingLeft: '1.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              <li>Complete Quest CRUD with optimistic server sync</li>
-              <li>Authoritative completion via <code>POST /api/tasks/:id/complete</code></li>
-              <li>Duplicate-click prevention &amp; atomic mutations</li>
-              <li>Discipline categorization (5 domains) &amp; 4 difficulty tiers</li>
+              <li>Server-authoritative XP bar with real progression data</li>
+              <li>Reward toast feedback on quest completion</li>
+              <li>Level-up celebration overlay</li>
+              <li>Real character attributes from <code>GET /api/character</code></li>
             </ul>
           </div>
 
           <div style={{ padding: '0.75rem', borderRadius: '8px', backgroundColor: 'var(--bg-surface-elevated)' }}>
             <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.35rem', color: '#f59e0b' }}>
-              ⏳ Upcoming Phase 3 (History &amp; Analytics)
+              ⏳ Upcoming Phase 4+
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              Historical progression charts, daily XP breakdown, streak heatmaps, and audit records will arrive in Phase 3.
+              Historical progression charts, streak heatmaps, shop/armory, and inventory system.
             </p>
             <Link
               to="/app/quests"
@@ -395,33 +459,49 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Disciplines Snapshot */}
+      {/* Disciplines Snapshot — Real Attribute Data */}
       <div>
         <div style={{ marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem' }}>Character Disciplines</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Completing quests in Phase 2 will allocate attribute gains to these 5 domains.
+            Server-authoritative attribute progression across the 5 core domains.
           </p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-          {[
-            { key: 'intellect', label: 'Intellect', icon: Brain, color: 'var(--attr-intellect)', focus: 'Technical & Logic' },
-            { key: 'strength', label: 'Strength', icon: Dumbbell, color: 'var(--attr-strength)', focus: 'Physical Fitness' },
-            { key: 'wisdom', label: 'Wisdom', icon: BookOpen, color: 'var(--attr-wisdom)', focus: 'Study & Reading' },
-            { key: 'charisma', label: 'Charisma', icon: Sparkles, color: 'var(--attr-charisma)', focus: 'Social & Team' },
-            { key: 'vitality', label: 'Vitality', icon: Heart, color: 'var(--attr-vitality)', focus: 'Sleep & Health' },
-          ].map(d => {
-            const Icon = d.icon;
+          {attributes.map(attr => {
+            const config = ATTR_CONFIG[attr.key.toLowerCase()] || {
+              icon: Brain,
+              color: 'var(--text-secondary)',
+              focus: attr.displayName,
+            };
+            const Icon = config.icon;
             return (
-              <div key={d.key} className="rpg-card" style={{ padding: '1rem' }}>
+              <div key={attr.key} className="rpg-card" style={{ padding: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <Icon size={18} color={d.color} />
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem', color: d.color }}>{d.label}</span>
+                  <Icon size={18} color={config.color} />
+                  <span style={{ fontWeight: 700, fontSize: '0.95rem', color: config.color }}>
+                    {attr.displayName}
+                  </span>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{d.focus}</div>
-                <div style={{ marginTop: '0.75rem', height: '6px' }} className="rpg-progress-track">
-                  <div className="rpg-progress-fill" style={{ width: '20%', backgroundColor: d.color }} />
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{config.focus}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem' }}>
+                  <div className="rpg-progress-track" style={{ height: '6px', flex: 1 }}>
+                    <div
+                      className="rpg-progress-fill"
+                      style={{
+                        width: `${Math.min(100, attr.value * 5)}%`,
+                        backgroundColor: config.color,
+                        transition: 'width 0.6s var(--ease-spring)',
+                      }}
+                    />
+                  </div>
+                  <span
+                    className="mono-numbers"
+                    style={{ fontSize: '0.75rem', fontWeight: 700, color: config.color, minWidth: '24px', textAlign: 'right' }}
+                  >
+                    {attr.value}
+                  </span>
                 </div>
               </div>
             );

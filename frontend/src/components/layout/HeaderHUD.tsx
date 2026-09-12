@@ -9,7 +9,7 @@ interface HeaderHUDProps {
 }
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
-  const { user, character, logout } = useAuth();
+  const { user, character, logout, xpProgress } = useAuth();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -27,6 +27,12 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
   const totalXp = character?.totalXp || 0;
   const gold = character?.gold || 0;
   const streak = character?.streakCurrent || 0;
+
+  // Server-authoritative XP progress: use cached progression from last completion,
+  // fallback to a reasonable default when no completion data is available yet
+  const xpProgressPercent = xpProgress?.progressPercent ?? 0;
+  const xpBarWidth = Math.max(2, Math.min(100, xpProgressPercent));
+  const hasXpData = xpProgress !== null;
 
   return (
     <header
@@ -137,7 +143,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             </span>
           </div>
 
-          {/* XP Bar */}
+          {/* XP Bar — Server-authoritative progress */}
           <div
             style={{
               display: 'flex',
@@ -161,17 +167,19 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             </div>
             <div
               role="progressbar"
-              aria-valuenow={totalXp}
+              aria-valuenow={xpProgressPercent}
               aria-valuemin={0}
-              aria-label={`Player Level ${level} Experience`}
+              aria-valuemax={100}
+              aria-label={`Level ${level} XP Progress: ${Math.round(xpProgressPercent)}%`}
               className="rpg-progress-track"
               style={{ height: '6px' }}
             >
               <div
-                className="rpg-progress-fill"
+                className={`rpg-progress-fill${hasXpData ? ' xp-bar-shimmer' : ''}`}
                 style={{
-                  width: `${Math.min(100, Math.max(10, (totalXp % 500) / 5))}%`,
+                  width: `${xpBarWidth}%`,
                   background: 'linear-gradient(90deg, #a855f7, #c084fc)',
+                  transition: 'width 0.8s var(--ease-spring)',
                 }}
               />
             </div>
