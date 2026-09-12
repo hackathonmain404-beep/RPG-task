@@ -81,7 +81,7 @@ export const ConsistencyHeatmapCard: React.FC<ConsistencyHeatmapCardProps> = ({ 
   }, [tasks]);
 
   return (
-    <div className="analytics-card anim-entrance-8" style={{ position: 'relative' }}>
+    <div className="analytics-card card-analytics-heatmap anim-entrance-8" style={{ position: 'relative' }}>
       <div className="heatmap-header">
         <h3 className="analytics-card-title" style={{ fontSize: '1rem' }}>
           35-Day Consistency Heatmap

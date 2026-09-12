@@ -67,7 +67,7 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
   let cumulativePercent = 0;
 
   return (
-    <div className="analytics-card anim-entrance-6">
+    <div className="analytics-card card-analytics-categories anim-entrance-6">
       <h3 className="analytics-card-title" style={{ marginBottom: '1.25rem' }}>
         Completed Categories
       </h3>
