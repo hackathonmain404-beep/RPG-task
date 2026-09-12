@@ -29,12 +29,6 @@ export const LandingPage: React.FC = () => {
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const { progress: scrollProgress, stage: adventureStage, prefersReducedMotion, isMobile } = useCinematicScroll();
 
-  // Sandboxed Interactive Hero Quest Demo state
-  const [isDemoCompleted, setIsDemoCompleted] = useState(false);
-  const [demoXp, setDemoXp] = useState(340);
-  const [demoGold, setDemoGold] = useState(120);
-  const [showCelebration, setShowCelebration] = useState(false);
-
   // FAQ Accordion Open State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -89,7 +83,7 @@ export const LandingPage: React.FC = () => {
 
       // ======================================================================
       // 1. HERO SCROLL EXIT & PARALLAX (Req. 3, 4, 5)
-      // 0-20% stable, 20-50% text rises, simulator descends, video scales back
+      // 0-20% stable, 20-50% text rises, video scales back
       // 50-80% gradual fade, 80-100% complete transition
       // ======================================================================
       const heroTl = gsap.timeline({
@@ -114,12 +108,6 @@ export const LandingPage: React.FC = () => {
         .to('.hero-headline-group', {
           y: isMobile ? -20 : -45,
           opacity: 0.25,
-          ease: 'none',
-        }, 0.2)
-        .to('.hero-simulator-wrapper', {
-          y: isMobile ? 25 : 55,
-          scale: 0.97,
-          opacity: 0.35,
           ease: 'none',
         }, 0.2)
         .to('.hero-scroll-indicator', {
@@ -356,19 +344,6 @@ export const LandingPage: React.FC = () => {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const handleDemoComplete = () => {
-    if (isDemoCompleted) return;
-    setIsDemoCompleted(true);
-    setDemoXp(prev => prev + 65);
-    setDemoGold(prev => prev + 18);
-    setShowCelebration(true);
-  };
-
-  const resetDemo = () => {
-    setIsDemoCompleted(false);
-    setShowCelebration(false);
   };
 
   const toggleFaq = (index: number) => {
@@ -712,7 +687,7 @@ export const LandingPage: React.FC = () => {
               </p>
 
               {/* CTAs */}
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '3.5rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
                 <Link 
                   to="/register" 
                   className="rpg-btn rpg-btn-primary" 
@@ -739,156 +714,11 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Layer 2: INTERACTIVE HERO QUEST SIMULATOR */}
-            <div className="hero-simulator-wrapper cinematic-layer" style={{ width: '100%', maxWidth: '680px' }}>
-              <div
-                style={{
-                  width: '100%',
-                  backgroundColor: '#0f141c',
-                  border: '1px solid rgba(56, 189, 248, 0.35)',
-                  borderRadius: '16px',
-                  padding: '1.75rem',
-                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.12)',
-                  position: 'relative',
-                  textAlign: 'left',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1.25rem',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                    paddingBottom: '0.75rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Interactive Simulator Preview
-                    </span>
-                    <span className="rpg-badge" style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-                      Live Demo
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.85rem' }}>
-                    <span className="rpg-badge" style={{ backgroundColor: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.3)', fontWeight: 700 }}>
-                      <Sparkles size={12} /> {demoXp} XP
-                    </span>
-                    <span className="rpg-badge" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)', fontWeight: 700 }}>
-                      <Coins size={12} /> {demoGold} Gold
-                    </span>
-                  </div>
-                </div>
-
-                {/* Simulating Quest Card */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '1.25rem',
-                    borderRadius: '12px',
-                    backgroundColor: isDemoCompleted ? 'rgba(16, 185, 129, 0.08)' : '#161d28',
-                    border: isDemoCompleted ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button
-                      type="button"
-                      onClick={handleDemoComplete}
-                      disabled={isDemoCompleted}
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        backgroundColor: isDemoCompleted ? '#10b981' : '#06080b',
-                        border: isDemoCompleted ? '1px solid #10b981' : '2px solid rgba(255, 255, 255, 0.25)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: isDemoCompleted ? 'default' : 'pointer',
-                        transition: 'all 0.2s ease',
-                        boxShadow: isDemoCompleted ? '0 0 14px rgba(16, 185, 129, 0.5)' : 'none',
-                      }}
-                      aria-label="Complete Demo Quest"
-                    >
-                      {isDemoCompleted ? <Check size={18} color="#090c10" strokeWidth={3} /> : null}
-                    </button>
-                    <div>
-                      <h3
-                        style={{
-                          fontSize: '1rem',
-                          fontWeight: 600,
-                          color: isDemoCompleted ? 'var(--text-tertiary)' : 'var(--text-primary)',
-                          textDecoration: isDemoCompleted ? 'line-through' : 'none',
-                        }}
-                      >
-                        Complete 45-Minute Deep Coding Session
-                      </h3>
-                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.35rem', alignItems: 'center' }}>
-                        <span className="rpg-badge" style={{ backgroundColor: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                          🧠 Intellect
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Difficulty: Medium</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="rpg-badge rpg-btn-gold" style={{ fontSize: '0.8rem', padding: '0.35rem 0.65rem' }}>
-                      +65 XP
-                    </span>
-                  </div>
-                </div>
-
-                {/* Micro Feedback celebration message */}
-                {showCelebration ? (
-                  <div
-                    style={{
-                      marginTop: '1rem',
-                      padding: '0.75rem 1rem',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    <span style={{ color: '#38bdf8', fontWeight: 600 }}>
-                      ✨ Quest Claimed! +65 XP and +18 Gold added. Try it with your real tasks!
-                    </span>
-                    <button
-                      type="button"
-                      onClick={resetDemo}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--text-secondary)',
-                        textDecoration: 'underline',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Reset Demo
-                    </button>
-                  </div>
-                ) : (
-                  <p style={{ marginTop: '0.85rem', fontSize: '0.8rem', color: 'var(--text-tertiary)', textAlign: 'center' }}>
-                    👆 Click the checkbox above to test the tactile dopamine loop.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Layer 3: THEME-BASED SCROLL DOWN TRIGGER INDICATOR */}
+            {/* Layer 2: THEME-BASED SCROLL DOWN TRIGGER INDICATOR */}
             <div
               className="hero-scroll-indicator cinematic-layer"
               style={{
-                marginTop: '3.5rem',
+                marginTop: '2.5rem',
                 display: 'inline-flex',
                 flexDirection: 'column',
                 alignItems: 'center',
