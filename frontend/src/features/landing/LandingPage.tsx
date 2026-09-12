@@ -985,10 +985,9 @@ export const LandingPage: React.FC = () => {
               Legal
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
-              <li><a href="#privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><a href="#terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Security Integrity <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><a href="#accessibility" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Accessibility <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><Link to="/privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><Link to="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><Link to="/accessibility" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Accessibility Statement <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
             </ul>
           </div>
         </div>
@@ -1111,11 +1110,11 @@ export const LandingPage: React.FC = () => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-tertiary)' }}>
-              <a href="#privacy" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Privacy</a>
+              <Link to="/privacy" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Privacy</Link>
               <span>·</span>
-              <a href="#terms" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Terms</a>
+              <Link to="/terms" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Terms</Link>
               <span>·</span>
-              <a href="#accessibility" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Accessibility</a>
+              <Link to="/accessibility" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Accessibility</Link>
             </div>
 
             <div

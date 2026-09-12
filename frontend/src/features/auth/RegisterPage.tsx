@@ -315,6 +315,33 @@ export const RegisterPage: React.FC = () => {
             Enter Citadel
           </Link>
         </div>
+
+        {/* Legal Links */}
+        <div
+          style={{
+            marginTop: '1.25rem',
+            textAlign: 'center',
+            fontSize: '0.75rem',
+            fontFamily: 'var(--font-mono)',
+            color: 'var(--text-tertiary)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '0.75rem',
+          }}
+        >
+          <Link to="/privacy" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>
+            Privacy
+          </Link>
+          <span>·</span>
+          <Link to="/terms" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>
+            Terms
+          </Link>
+          <span>·</span>
+          <Link to="/accessibility" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>
+            Accessibility
+          </Link>
+        </div>
       </div>
     </div>
   );

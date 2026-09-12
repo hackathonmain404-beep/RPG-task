@@ -16,6 +16,9 @@ const CharacterPage = lazy(() => import('../features/character/CharacterPage').t
 const ShopPage = lazy(() => import('../features/shop/ShopPage').then(m => ({ default: m.ShopPage })));
 const InventoryPage = lazy(() => import('../features/inventory/InventoryPage').then(m => ({ default: m.InventoryPage })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const PrivacyPage = lazy(() => import('../features/legal/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const TermsPage = lazy(() => import('../features/legal/TermsPage').then(m => ({ default: m.TermsPage })));
+const AccessibilityPage = lazy(() => import('../features/legal/AccessibilityPage').then(m => ({ default: m.AccessibilityPage })));
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -23,6 +26,11 @@ export const AppRoutes: React.FC = () => {
       <Routes>
         {/* Public Landing Page */}
         <Route path="/" element={<LandingPage />} />
+
+        {/* Public Legal & Compliance Pages */}
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/accessibility" element={<AccessibilityPage />} />
 
         {/* Guest-only Auth routes (redirects to /app/dashboard if already authenticated) */}
         <Route element={<GuestOnlyRoute />}>
