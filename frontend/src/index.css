@@ -1027,3 +1027,106 @@ textarea:focus-visible,
     transform: none !important;
   }
 }
+
+/* ==========================================================================
+   HERO LIVE PROGRESSION HUD
+   ========================================================================== */
+
+.hero-hud-energy-connector {
+  width: 1px;
+  height: 12px;
+  background: linear-gradient(to bottom, rgba(56, 189, 248, 0.45), rgba(56, 189, 248, 0.12));
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-hud-energy-connector::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.hero-progression-hud-card {
+  width: 100%;
+  max-width: 580px;
+  background: rgba(13, 19, 30, 0.86);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 12px;
+  padding: 0.75rem 1.15rem;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.65),
+    0 0 25px rgba(56, 189, 248, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-sizing: border-box;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
+  user-select: none;
+}
+
+.hero-progression-hud-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 
+    0 20px 45px rgba(0, 0, 0, 0.75),
+    0 0 35px rgba(56, 189, 248, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.hero-hud-quest-pill {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.hero-hud-quest-pill:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  background-color: rgba(56, 189, 248, 0.12);
+}
+
+.hero-hud-xp-badge {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.hero-hud-xp-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.hero-hud-attr-pill {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.hero-hud-attr-pill:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  background-color: rgba(59, 130, 246, 0.18);
+}
+
+/* Reduced Motion Override for Hero HUD */
+@media (prefers-reduced-motion: reduce) {
+  .hero-progression-hud-card {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  .hero-progression-hud-card {
+    max-width: 380px;
+    padding: 0.75rem 0.95rem;
+  }
+}
+
