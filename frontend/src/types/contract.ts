@@ -139,7 +139,6 @@ export interface ShopItem {
   rarity: ItemRarity;
   metadataJson?: string | Record<string, unknown>;
   active?: boolean;
-  imageUrl?: string;
   image?: string;
   assetPath?: string;
   iconUrl?: string;
