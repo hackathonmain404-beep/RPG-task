@@ -10,9 +10,7 @@
  * Strict server-authority: Frontend does NOT pass price in purchase request.
  */
 import type { ShopItem, InventoryItem, PurchaseResponse, EquipResponse } from '../../types/contract';
-import { ApiError } from '../../types/contract';
-
-const API_BASE = '/api';
+import { request } from './client';
 
 export const shopApi = {
   /**
@@ -20,30 +18,13 @@ export const shopApi = {
    * Retrieves current active catalog from backend.
    */
   async getShopItems(): Promise<ShopItem[]> {
-    const res = await fetch(`${API_BASE}/shop`, {
+    const data = await request<ShopItem[] | { items: ShopItem[] } | { shopItems: ShopItem[] }>('/shop', {
       method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
-
-    if (!res.ok) {
-      let errorData: { error?: { code?: string; message?: string } } = {};
-      try {
-        errorData = await res.json();
-      } catch {
-        // Non-JSON response
-      }
-      throw new ApiError(
-        errorData.error?.code || 'SHOP_FETCH_ERROR',
-        errorData.error?.message || `HTTP ${res.status}: Failed to fetch shop catalog`,
-        res.status
-      );
-    }
-
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data.items || data.shopItems || []);
+    if (Array.isArray(data)) return data;
+    if (data && 'items' in data && Array.isArray(data.items)) return data.items;
+    if (data && 'shopItems' in data && Array.isArray(data.shopItems)) return data.shopItems;
+    return [];
   },
 
   /**
@@ -51,30 +32,10 @@ export const shopApi = {
    * Purchases an item. Authoritative price is determined exclusively on server.
    */
   async purchaseItem(itemId: string): Promise<PurchaseResponse> {
-    const res = await fetch(`${API_BASE}/shop/${encodeURIComponent(itemId)}/purchase`, {
+    return request<PurchaseResponse>(`/shop/${encodeURIComponent(itemId)}/purchase`, {
       method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({}),
+      data: {},
     });
-
-    if (!res.ok) {
-      let errorData: { error?: { code?: string; message?: string } } = {};
-      try {
-        errorData = await res.json();
-      } catch {
-        // Non-JSON response
-      }
-      throw new ApiError(
-        errorData.error?.code || 'PURCHASE_FAILED',
-        errorData.error?.message || `HTTP ${res.status}: Purchase transaction rejected`,
-        res.status
-      );
-    }
-
-    return res.json();
   },
 
   /**
@@ -82,30 +43,13 @@ export const shopApi = {
    * Retrieves authenticated user's owned inventory items.
    */
   async getInventory(): Promise<InventoryItem[]> {
-    const res = await fetch(`${API_BASE}/inventory`, {
+    const data = await request<InventoryItem[] | { items: InventoryItem[] } | { inventory: InventoryItem[] }>('/inventory', {
       method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
-
-    if (!res.ok) {
-      let errorData: { error?: { code?: string; message?: string } } = {};
-      try {
-        errorData = await res.json();
-      } catch {
-        // Non-JSON response
-      }
-      throw new ApiError(
-        errorData.error?.code || 'INVENTORY_FETCH_ERROR',
-        errorData.error?.message || `HTTP ${res.status}: Failed to fetch inventory`,
-        res.status
-      );
-    }
-
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data.inventory || data.items || []);
+    if (Array.isArray(data)) return data;
+    if (data && 'inventory' in data && Array.isArray(data.inventory)) return data.inventory;
+    if (data && 'items' in data && Array.isArray(data.items)) return data.items;
+    return [];
   },
 
   /**
@@ -113,30 +57,10 @@ export const shopApi = {
    * Equips an owned theme or cosmetic. Server verifies ownership before equipping.
    */
   async equipItem(itemId: string): Promise<EquipResponse> {
-    const res = await fetch(`${API_BASE}/inventory/${encodeURIComponent(itemId)}/equip`, {
+    const data = await request<EquipResponse>(`/inventory/${encodeURIComponent(itemId)}/equip`, {
       method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({}),
+      data: {},
     });
-
-    if (!res.ok) {
-      let errorData: { error?: { code?: string; message?: string } } = {};
-      try {
-        errorData = await res.json();
-      } catch {
-        // Non-JSON response
-      }
-      throw new ApiError(
-        errorData.error?.code || 'EQUIP_FAILED',
-        errorData.error?.message || `HTTP ${res.status}: Failed to equip item`,
-        res.status
-      );
-    }
-
-    const data = await res.json();
     return data || { success: true, equippedItemId: itemId };
   },
 };

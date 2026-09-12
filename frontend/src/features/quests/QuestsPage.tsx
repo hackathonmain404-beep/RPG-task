@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuests } from '../../context/useQuests';
+import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import type { Task, CreateTaskRequest } from '../../types/contract';
 import { QuestList } from './QuestList';
@@ -19,6 +20,7 @@ import {
 export const QuestsPage: React.FC = () => {
   useDocumentMetadata('Quest Board', { noindex: true });
 
+  const { isGuest } = useAuth();
   const {
     tasks,
     isLoading,
@@ -51,11 +53,11 @@ export const QuestsPage: React.FC = () => {
     setIsComposerOpen(true);
   };
 
-  // Shortcut 'N': open composer when not typing in an input
+  // Global hotkey: "C" opens quest composer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
-        (e.key === 'n' || e.key === 'N') &&
+        (e.key === 'c' || e.key === 'C') &&
         !isComposerOpen &&
         !deletingTask &&
         !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement)
@@ -109,6 +111,30 @@ export const QuestsPage: React.FC = () => {
       {levelUpEvent && (
         <LevelUpOverlay event={levelUpEvent} onDismiss={clearLevelUpEvent} />
       )}
+
+      {/* Guest Mode Notice */}
+      {isGuest && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.85rem 1.25rem',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(245, 158, 11, 0.12)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            color: '#fef08a',
+            fontSize: '0.875rem',
+            lineHeight: 1.4,
+          }}
+        >
+          <Sparkles size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
+          <div>
+            <strong>Guest Mode:</strong> You are exploring as a guest traveler. Your quests and RPG stats are stored locally in your browser and will not be saved to the database.
+          </div>
+        </div>
+      )}
+
       {/* Top Banner & Header */}
       <div
         style={{

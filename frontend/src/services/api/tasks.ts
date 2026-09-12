@@ -12,9 +12,14 @@ export const tasksApi = {
    * Dispatches GET /api/tasks
    */
   async getTasks(): Promise<Task[]> {
-    return request<Task[]>('/tasks', {
+    const res = await request<{ tasks: Task[] } | Task[]>('/tasks', {
       method: 'GET',
     });
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray((res as { tasks: Task[] }).tasks)) {
+      return (res as { tasks: Task[] }).tasks;
+    }
+    return [];
   },
 
   /**
@@ -23,10 +28,14 @@ export const tasksApi = {
    * Note: The client does NOT provide authoritative rewards; server calculates rewards.
    */
   async createTask(data: CreateTaskRequest): Promise<Task> {
-    return request<Task>('/tasks', {
+    const res = await request<{ task: Task } | Task>('/tasks', {
       method: 'POST',
       data,
     });
+    if (res && typeof res === 'object' && 'task' in res && (res as { task: Task }).task) {
+      return (res as { task: Task }).task;
+    }
+    return res as Task;
   },
 
   /**
@@ -34,10 +43,14 @@ export const tasksApi = {
    * Dispatches PATCH /api/tasks/:id
    */
   async updateTask(id: string, data: UpdateTaskRequest): Promise<Task> {
-    return request<Task>(`/tasks/${id}`, {
+    const res = await request<{ task: Task } | Task>(`/tasks/${id}`, {
       method: 'PATCH',
       data,
     });
+    if (res && typeof res === 'object' && 'task' in res && (res as { task: Task }).task) {
+      return (res as { task: Task }).task;
+    }
+    return res as Task;
   },
 
   /**

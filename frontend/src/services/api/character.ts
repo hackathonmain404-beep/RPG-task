@@ -5,7 +5,7 @@
  * including server-authoritative attribute values.
  */
 import type { Attribute } from '../../types/contract';
-import { ApiError } from '../../types/contract';
+import { request } from './client';
 
 export interface CharacterResponse {
   level: number;
@@ -32,37 +32,15 @@ export interface HistoryItem {
   streakCurrent?: number;
 }
 
-const API_BASE = '/api';
-
 export const characterApi = {
   /**
    * GET /api/character
    * Returns the full character sheet with attributes from the server.
    */
   async getCharacter(): Promise<CharacterResponse> {
-    const res = await fetch(`${API_BASE}/character`, {
+    return request<CharacterResponse>('/character', {
       method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
-
-    if (!res.ok) {
-      let errorData: { error?: { code?: string; message?: string } } = {};
-      try {
-        errorData = await res.json();
-      } catch {
-        // Response body may not be JSON
-      }
-      throw new ApiError(
-        errorData.error?.code || 'UNKNOWN_ERROR',
-        errorData.error?.message || `HTTP ${res.status}`,
-        res.status
-      );
-    }
-
-    return res.json();
   },
 
   /**
@@ -70,29 +48,9 @@ export const characterApi = {
    * Returns progression/activity history from the backend.
    */
   async getHistory(): Promise<HistoryItem[]> {
-    const res = await fetch(`${API_BASE}/character/history`, {
+    const data = await request<HistoryItem[] | { history: HistoryItem[] }>('/character/history', {
       method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
-
-    if (!res.ok) {
-      let errorData: { error?: { code?: string; message?: string } } = {};
-      try {
-        errorData = await res.json();
-      } catch {
-        // Response body may not be JSON
-      }
-      throw new ApiError(
-        errorData.error?.code || 'HISTORY_ERROR',
-        errorData.error?.message || `HTTP ${res.status}`,
-        res.status
-      );
-    }
-
-    const data = await res.json();
     return Array.isArray(data) ? data : (data.history || []);
   },
 };

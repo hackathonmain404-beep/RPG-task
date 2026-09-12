@@ -25,6 +25,7 @@ const REWARD_MATRIX: Record<string, { xp: number; gold: number; attribute: numbe
   easy:   { xp: 35,  gold: 10, attribute: 4  },
   medium: { xp: 70,  gold: 18, attribute: 8  },
   hard:   { xp: 140, gold: 40, attribute: 16 },
+  epic:   { xp: 280, gold: 80, attribute: 32 },
 };
 
 // ─── Timezone Policy (GAMIFICATION.md §1) ─────────────────────────────────────

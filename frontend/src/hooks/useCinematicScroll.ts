@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export type AdventureStage = 'BEGIN' | 'QUEST' | 'ACTION' | 'GROWTH' | 'PROGRESSION' | 'ADVENTURE';
 

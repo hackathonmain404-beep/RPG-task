@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const VALID_CATEGORIES = ['intellect', 'strength', 'wisdom', 'charisma', 'vitality'] as const;
-const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
+const VALID_DIFFICULTIES = ['easy', 'medium', 'hard', 'epic'] as const;
 
 export const createTaskSchema = z.object({
   title: z
