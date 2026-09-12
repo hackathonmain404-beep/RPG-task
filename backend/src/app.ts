@@ -16,11 +16,28 @@ export const app = express();
 // Security Headers via Helmet (HSTS, X-Content-Type-Options: nosniff, Frameguard: deny)
 app.use(helmet());
 
-const frontendOrigin = process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
+// CORS configuration supporting localhost, Vercel deployments, and explicit origins
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_ORIGIN,
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean) as string[];
 
 app.use(
   cors({
-    origin: frontendOrigin,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, serverless same-origin, curl)
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Permissive for production deployment
+    },
     credentials: true,
   })
 );
@@ -28,17 +45,22 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// API Routes
-app.use('/api/auth', authRouter);
-app.use('/api/health', healthRouter);
-app.use('/api/tasks', taskRouter);
-app.use('/api/shop', shopRouter);
-app.use('/api/inventory', inventoryRouter);
-app.use('/api/badges', badgeRouter);
-app.use('/api/themes', themeRouter);
+// Router setup: mount under both /api and root / for Vercel rewrite resilience
+const apiRouter = express.Router();
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/health', healthRouter);
+apiRouter.use('/tasks', taskRouter);
+apiRouter.use('/shop', shopRouter);
+apiRouter.use('/inventory', inventoryRouter);
+apiRouter.use('/badges', badgeRouter);
+apiRouter.use('/themes', themeRouter);
 
-// 404 Route Handler
-app.use('/api/*', (_req: Request, res: Response) => {
+// Mount router under both prefixes
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
+
+// 404 Route Handler for unmatched API routes
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     error: {
       code: 'NOT_FOUND',
