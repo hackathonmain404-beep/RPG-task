@@ -757,32 +757,6 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateZ(0);
 }
 
-.cinematic-stage-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
-  background: rgba(9, 14, 31, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #38bdf8;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cinematic-stage-badge .stage-pulse {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #38bdf8;
-  box-shadow: 0 0 8px #38bdf8;
-  animation: hudGlowPulse 2s infinite ease-in-out;
-}
-
 /* Persistence Section Cinematic Line & Node Animations */
 @keyframes beamScan {
   0% {

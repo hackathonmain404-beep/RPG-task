@@ -535,12 +535,6 @@ export const LandingPage: React.FC = () => {
                 LIFE RPG
               </span>
             </Link>
-
-            {/* Subtle Adventure Journey Stage Badge */}
-            <div className="cinematic-stage-badge desktop-only" aria-label={`Current Journey Stage: ${adventureStage}`}>
-              <span className="stage-pulse" />
-              <span>STAGE: {adventureStage}</span>
-            </div>
           </div>
 
           <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="desktop-only" aria-label="Public sections">
