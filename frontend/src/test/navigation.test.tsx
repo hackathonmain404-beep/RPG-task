@@ -1,0 +1,66 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { HeaderHUD } from '../components/layout/HeaderHUD';
+import { SettingsPage } from '../features/settings/SettingsPage';
+import { AuthContext } from '../context/authContextDef';
+import type { AuthContextType } from '../context/authContextDef';
+
+const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthContextType => ({
+  user: { id: 'usr_1', email: 'test@citadel.com', displayName: 'ValiantCoder' },
+  character: { level: 5, totalXp: 1840, gold: 430, streakCurrent: 7, streakBest: 12 },
+  isLoading: false,
+  serverReachable: true,
+  login: vi.fn(),
+  register: vi.fn(),
+  logout: vi.fn(),
+  refreshSession: vi.fn(),
+  ...overrides,
+});
+
+describe('HeaderHUD', () => {
+  it('renders authoritative character metrics (Level, XP, Gold, Streak)', () => {
+    const mockAuth = createMockAuthContext();
+    render(
+      <AuthContext.Provider value={mockAuth}>
+        <BrowserRouter>
+          <HeaderHUD />
+        </BrowserRouter>
+      </AuthContext.Provider>
+    );
+
+    expect(screen.getByText('5')).toBeInTheDocument(); // Level
+    expect(screen.getByText('1,840 XP')).toBeInTheDocument(); // Total XP
+    expect(screen.getByText('430')).toBeInTheDocument(); // Gold
+    expect(screen.getByText('7d')).toBeInTheDocument(); // Streak
+    expect(screen.getByText('ValiantCoder')).toBeInTheDocument(); // Display name
+    expect(screen.getByRole('button', { name: /Sign out of Life RPG/i })).toBeInTheDocument();
+  });
+});
+
+describe('SettingsPage (Theme Switcher & Account)', () => {
+  it('renders user details and theme switcher presets', () => {
+    const mockAuth = createMockAuthContext();
+    render(
+      <AuthContext.Provider value={mockAuth}>
+        <BrowserRouter>
+          <SettingsPage />
+        </BrowserRouter>
+      </AuthContext.Provider>
+    );
+
+    expect(screen.getByText('ValiantCoder')).toBeInTheDocument();
+    expect(screen.getByText('test@citadel.com')).toBeInTheDocument();
+    expect(screen.getByText('Dark Citadel')).toBeInTheDocument();
+    expect(screen.getByText('Neon Outpost')).toBeInTheDocument();
+    expect(screen.getByText('Mystic Forest')).toBeInTheDocument();
+    expect(screen.getByText('Solaris Gold')).toBeInTheDocument();
+
+    // Click Neon Outpost theme
+    const neonThemeBtn = screen.getByRole('button', { name: /Neon Outpost/i });
+    fireEvent.click(neonThemeBtn);
+
+    // Verify data-theme attribute set on document.documentElement
+    expect(document.documentElement.getAttribute('data-theme')).toBe('neon_outpost');
+  });
+});
