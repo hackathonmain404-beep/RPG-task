@@ -201,7 +201,7 @@ export async function completeTask(userId: string, taskId: string) {
       },
     });
 
-    // 9. Update attribute value
+    // 9. Update attribute value and record AttributeEvent
     const targetAttribute = character.attributes.find(
       (attr) => attr.key === reward.attribute.key
     );
@@ -211,6 +211,17 @@ export async function completeTask(userId: string, taskId: string) {
         where: { id: targetAttribute.id },
         data: {
           value: targetAttribute.value + reward.attribute.amount,
+        },
+      });
+
+      // 10. Record AttributeEvent for progression history
+      await tx.attributeEvent.create({
+        data: {
+          userId,
+          attributeKey: reward.attribute.key,
+          amount: reward.attribute.amount,
+          sourceType: 'task_completion',
+          sourceId: taskId,
         },
       });
     }
