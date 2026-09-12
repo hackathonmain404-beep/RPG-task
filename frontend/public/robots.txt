@@ -1,0 +1,8 @@
+﻿User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Disallow: /app/
+Disallow: /api/
+
+Sitemap: https://liferpg.app/sitemap.xml

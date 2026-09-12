@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/shield.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#090c10" />
+
+    <link rel="canonical" href="https://liferpg.app/" />
+
+    <!-- Primary Meta Tags -->
+    <title>Life RPG — Turn Everyday Tasks Into Epic Progression &amp; Character Growth</title>
+    <meta name="title" content="Life RPG — Turn Everyday Tasks Into Epic Progression &amp; Character Growth" />
+    <meta name="description" content="Transform daily habits, study, and workouts into a real RPG adventure. Level up attributes, build streaks, earn gold, and unlock gear with verified database persistence." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://liferpg.app/" />
+    <meta property="og:title" content="Life RPG — Turn Everyday Tasks Into Epic Progression" />
+    <meta property="og:description" content="Gamify your real-life productivity. Level up attributes, maintain streaks, and spend earned gold in a persistent RPG productivity platform." />
+    <meta property="og:image" content="https://liferpg.app/og-image.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Life RPG Command Citadel HUD showing character level, streak flame, and today's quests." />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://liferpg.app/" />
+    <meta name="twitter:title" content="Life RPG — Turn Everyday Tasks Into Epic Progression" />
+    <meta name="twitter:description" content="Gamify your real-life productivity. Level up attributes, maintain streaks, and spend earned gold in a persistent RPG productivity platform." />
+    <meta name="twitter:image" content="https://liferpg.app/og-image.webp" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Life RPG",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A gamified productivity web application translating real-world daily tasks into RPG progression with non-linear leveling, streaks, attributes, and virtual economy.",
+      "screenshot": "https://liferpg.app/og-image.webp",
+      "url": "https://liferpg.app/"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Life RPG",
+      "url": "https://liferpg.app/",
+      "description": "Turn everyday tasks into RPG character growth."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Life RPG?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Life RPG is a full-stack gamified productivity web application that transforms daily tasks into RPG quests. You earn verified XP, level up across 5 real-world attributes, maintain streaks, and unlock cosmetic gear."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the XP and leveling system work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Progression uses a non-linear mathematical curve where each subsequent level requires progressively more XP. XP thresholds are computed securely on the server."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is progress saved across devices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. All character progression, quest history, streaks, and inventory are persisted in a secure PostgreSQL database."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Typography Fonts: Space Grotesk (Display), Inter (Body), JetBrains Mono (Stats) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
