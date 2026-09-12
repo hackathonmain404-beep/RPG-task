@@ -10,6 +10,7 @@ export interface User {
   email: string;
   displayName: string;
   role?: 'USER' | 'ADMIN' | string;
+  title?: string | null;
 }
 
 export interface Attribute {
@@ -24,6 +25,7 @@ export interface Character {
   gold: number;
   streakCurrent: number;
   streakBest: number;
+  title?: string | null;
   attributes?: Attribute[];
 }
 
@@ -273,12 +275,20 @@ export interface AdminUserListItem {
   displayName: string;
   role: 'USER' | 'ADMIN' | string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  title?: string | null;
+  level?: number;
+  totalXp?: number;
+  coins?: number;
+  gold?: number;
+  streakCurrent?: number;
   character: {
     level: number;
     totalXp: number;
     gold: number;
     streakCurrent: number;
+    streakBest?: number;
+    title?: string | null;
   } | null;
 }
 

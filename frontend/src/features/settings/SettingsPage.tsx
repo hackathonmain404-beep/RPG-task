@@ -8,7 +8,10 @@ import {
   User, 
   LogOut, 
   Check, 
-  Shield 
+  Shield,
+  Award,
+  Zap,
+  Coins
 } from 'lucide-react';
 
 const THEMES = [
@@ -21,7 +24,7 @@ const THEMES = [
 export const SettingsPage: React.FC = () => {
   useDocumentMetadata('Citadel Settings', { noindex: true });
 
-  const { user, logout } = useAuth();
+  const { user, character, logout } = useAuth();
   const navigate = useNavigate();
 
   const [activeTheme, setActiveTheme] = useState(() => {
@@ -108,6 +111,50 @@ export const SettingsPage: React.FC = () => {
               }}
             >
               {user?.email || 'user@example.com'}
+            </div>
+          </div>
+
+          <div>
+            <span className="rpg-label">Hero Title / Bestowed Honor</span>
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                backgroundColor: (user?.title || character?.title) ? 'rgba(245, 158, 11, 0.08)' : 'var(--bg-surface-sunken)',
+                border: (user?.title || character?.title) ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: (user?.title || character?.title) ? '#fbbf24' : 'var(--text-secondary)',
+                fontWeight: (user?.title || character?.title) ? 700 : 500,
+              }}
+            >
+              <Award size={16} color={(user?.title || character?.title) ? '#fbbf24' : '#64748b'} />
+              <span>{user?.title || character?.title || 'Novice Adventurer'}</span>
+            </div>
+          </div>
+
+          <div>
+            <span className="rpg-label">Citadel Economy & Progression</span>
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-surface-sunken)',
+                border: '1px solid var(--border-subtle)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#38bdf8', fontWeight: 700, fontSize: '0.88rem' }}>
+                <Zap size={14} color="#38bdf8" />
+                Level {character?.level || 1} ({character?.totalXp || 0} XP)
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#fbbf24', fontWeight: 700, fontSize: '0.88rem' }}>
+                <Coins size={14} color="#fbbf24" />
+                {character?.gold ?? 0} Coins
+              </span>
             </div>
           </div>
         </div>

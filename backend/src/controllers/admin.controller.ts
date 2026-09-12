@@ -9,7 +9,7 @@ import { sseHub } from '../utils/sseHub.js';
 
 export async function getUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const query = req.query.q as string | undefined;
+    const query = (req.query.q || req.query.search) as string | undefined;
     const users = await adminService.listRegisteredUsers(query);
     res.status(200).json({ users, total: users.length });
   } catch (err) {
@@ -25,6 +25,12 @@ export async function grantEconomy(req: Request, res: Response, next: NextFuncti
     const targetUserId = req.params.userId;
     const result = await adminService.grantUserEconomy(adminId, targetUserId, req.body);
     res.status(200).json(result);
+
+    // Push real-time economy & title update to connected clients
+    sseHub.sendToUser(targetUserId, 'economy:update', {
+      user: result.user,
+      character: result.character,
+    });
   } catch (err) {
     next(err);
   }

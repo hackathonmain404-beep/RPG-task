@@ -81,16 +81,45 @@ export const UsersEconomyTab: React.FC = () => {
         title: grantTitle.trim() || undefined,
       });
 
-      setGrantSuccessMsg(res.message);
+      setGrantSuccessMsg(res.message || 'Treasury grant successfully dispatched!');
 
       // Optimistically update list
+      const updatedUser = res.user;
+      const updatedChar = updatedUser?.character || (res as any).character;
+
       setUsers(prev =>
-        prev.map(u => (u.id === selectedUser.id ? { ...u, ...res.user } : u))
+        prev.map(u => {
+          if (u.id !== selectedUser.id) return u;
+          const newLevel = updatedChar?.level ?? updatedUser?.level ?? u.character?.level ?? u.level ?? 1;
+          const newTotalXp = updatedChar?.totalXp ?? updatedUser?.totalXp ?? ((u.character?.totalXp ?? u.totalXp ?? 0) + Number(grantXp));
+          const newGold = updatedChar?.gold ?? updatedUser?.coins ?? updatedUser?.gold ?? ((u.character?.gold ?? u.coins ?? u.gold ?? 0) + Number(grantGold));
+          const newStreak = updatedChar?.streakCurrent ?? updatedUser?.streakCurrent ?? u.character?.streakCurrent ?? u.streakCurrent ?? 0;
+          const newTitle = grantTitle.trim() || updatedUser?.title || u.title || updatedChar?.title || null;
+
+          return {
+            ...u,
+            ...(updatedUser || {}),
+            title: newTitle,
+            level: newLevel,
+            totalXp: newTotalXp,
+            coins: newGold,
+            gold: newGold,
+            streakCurrent: newStreak,
+            character: {
+              level: newLevel,
+              totalXp: newTotalXp,
+              gold: newGold,
+              streakCurrent: newStreak,
+              title: newTitle,
+            },
+          };
+        })
       );
 
       setTimeout(() => {
         handleCloseGrantModal();
-      }, 1200);
+        void fetchUsers(searchQuery);
+      }, 1000);
     } catch (err: any) {
       setErrorText(err?.message || 'Failed to grant rewards to user.');
     } finally {
@@ -217,7 +246,7 @@ export const UsersEconomyTab: React.FC = () => {
                 {/* User Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 700, fontSize: '1.05rem', color: '#f8fafc' }}>
                         {u.displayName || 'Anonymous Hero'}
                       </span>
@@ -242,6 +271,28 @@ export const UsersEconomyTab: React.FC = () => {
                         </span>
                       )}
                     </div>
+                    {/* Hero Title Badge */}
+                    {(u.title || char?.title) && (
+                      <div
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          marginTop: '0.35rem',
+                          padding: '0.15rem 0.55rem',
+                          borderRadius: '6px',
+                          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(168, 85, 247, 0.15))',
+                          border: '1px solid rgba(245, 158, 11, 0.45)',
+                          color: '#fbbf24',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        <Award size={12} color="#fbbf24" />
+                        <span>{u.title || char?.title}</span>
+                      </div>
+                    )}
                     <div style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '0.2rem', fontFamily: 'var(--font-mono)' }}>
                       {u.email}
                     </div>
@@ -276,19 +327,19 @@ export const UsersEconomyTab: React.FC = () => {
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ color: '#94a3b8', fontSize: '0.7rem', textTransform: 'uppercase' }}>Level</div>
                     <div style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1.15rem' }}>
-                      {char ? char.level : 1}
+                      {char?.level ?? u.level ?? 1}
                     </div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ color: '#94a3b8', fontSize: '0.7rem', textTransform: 'uppercase' }}>Total XP</div>
                     <div style={{ color: '#a855f7', fontWeight: 800, fontSize: '1.15rem' }}>
-                      {char ? char.totalXp : 0}
+                      {char?.totalXp ?? u.totalXp ?? 0}
                     </div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ color: '#94a3b8', fontSize: '0.7rem', textTransform: 'uppercase' }}>Coins</div>
                     <div style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1.15rem' }}>
-                      {char ? char.gold : 0}
+                      {char?.gold ?? u.coins ?? u.gold ?? 0}
                     </div>
                   </div>
                 </div>
@@ -297,7 +348,7 @@ export const UsersEconomyTab: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.5rem' }}>
                   <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                     <Calendar size={13} />
-                    <span>Streak: {char ? char.streakCurrent : 0}d</span>
+                    <span>Streak: {char?.streakCurrent ?? u.streakCurrent ?? 0}d</span>
                   </span>
 
                   <button
@@ -422,7 +473,7 @@ export const UsersEconomyTab: React.FC = () => {
                       <Zap size={14} color="#a855f7" />
                       <span>Experience Points (XP)</span>
                     </label>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current: {selectedUser.character?.totalXp || 0}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current: {selectedUser.character?.totalXp ?? (selectedUser as any).totalXp ?? 0}</span>
                   </div>
                   <input
                     type="number"
@@ -471,7 +522,7 @@ export const UsersEconomyTab: React.FC = () => {
                       <Coins size={14} color="#fbbf24" />
                       <span>Gold Coins</span>
                     </label>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current: {selectedUser.character?.gold || 0}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current: {selectedUser.character?.gold ?? (selectedUser as any).coins ?? (selectedUser as any).gold ?? 0}</span>
                   </div>
                   <input
                     type="number"
@@ -515,11 +566,16 @@ export const UsersEconomyTab: React.FC = () => {
 
                 {/* Optional Custom Title */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.4rem' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <Award size={14} color="#38bdf8" />
-                      <span>Optional Title / Audit Reason</span>
+                      <span>Bestow Hero Title / Honor</span>
                     </span>
+                    {(selectedUser.title || selectedUser.character?.title) && (
+                      <span style={{ fontSize: '0.75rem', color: '#fbbf24' }}>
+                        Current: {selectedUser.title || selectedUser.character?.title}
+                      </span>
+                    )}
                   </label>
                   <input
                     type="text"

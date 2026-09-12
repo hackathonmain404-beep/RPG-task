@@ -22,6 +22,37 @@ export interface CreateShopItemInput {
 }
 
 // --------------------------------------------------
+// --------------------------------------------------
+// 0. TITLE HELPER
+// --------------------------------------------------
+
+export async function getUserLatestTitle(userId: string): Promise<string | null> {
+  try {
+    const logs = await (prisma as any).activityLog.findMany({
+      where: {
+        userId,
+        OR: [
+          { eventType: 'TITLE_GRANT' },
+          { eventType: 'ADMIN_GRANT' },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    for (const log of logs) {
+      const t = (log.metadataJson as any)?.title;
+      if (t && typeof t === 'string' && t.trim().length > 0) {
+        return t.trim();
+      }
+    }
+  } catch (err) {
+    console.error('Failed to get user title:', err);
+  }
+  return null;
+}
+
+// --------------------------------------------------
 // 1. USERS & ECONOMY
 // --------------------------------------------------
 
@@ -52,6 +83,7 @@ export async function listRegisteredUsers(query?: string) {
       lastActiveAt: true,
       character: {
         select: {
+          id: true,
           level: true,
           totalXp: true,
           gold: true,
@@ -62,21 +94,81 @@ export async function listRegisteredUsers(query?: string) {
     },
   });
 
-  return users.map((u: any) => ({
-    id: u.id,
-    email: u.email,
-    displayName: u.displayName,
-    avatarUrl: u.avatarUrl,
-    githubUsername: u.githubUsername,
-    role: u.role || 'USER',
-    createdAt: u.createdAt,
-    lastActiveAt: u.lastActiveAt,
-    level: u.character?.level ?? 1,
-    totalXp: u.character?.totalXp ?? 0,
-    coins: u.character?.gold ?? 0,
-    streakCurrent: u.character?.streakCurrent ?? 0,
-    streakBest: u.character?.streakBest ?? 0,
-  }));
+  // Ensure every real user has a character row in database
+  for (const u of users) {
+    if (!u.character) {
+      try {
+        u.character = await (prisma as any).character.create({
+          data: {
+            userId: u.id,
+            level: 1,
+            totalXp: 0,
+            gold: 50,
+            streakCurrent: 0,
+            streakBest: 0,
+          },
+        });
+      } catch {
+        // Character might have been concurrently created
+      }
+    }
+  }
+
+  // Fetch all recent title logs for these users
+  const userIds = users.map((u: any) => u.id);
+  const titleLogs = await (prisma as any).activityLog.findMany({
+    where: {
+      userId: { in: userIds },
+      OR: [
+        { eventType: 'TITLE_GRANT' },
+        { eventType: 'ADMIN_GRANT' },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const userTitleMap = new Map<string, string>();
+  for (const log of titleLogs) {
+    const t = (log.metadataJson as any)?.title;
+    if (t && typeof t === 'string' && t.trim().length > 0 && !userTitleMap.has(log.userId)) {
+      userTitleMap.set(log.userId, t.trim());
+    }
+  }
+
+  return users.map((u: any) => {
+    const title = userTitleMap.get(u.id) || null;
+    const level = u.character?.level ?? 1;
+    const totalXp = u.character?.totalXp ?? 0;
+    const gold = u.character?.gold ?? 50;
+    const streakCurrent = u.character?.streakCurrent ?? 0;
+    const streakBest = u.character?.streakBest ?? 0;
+
+    return {
+      id: u.id,
+      email: u.email,
+      displayName: u.displayName,
+      avatarUrl: u.avatarUrl,
+      githubUsername: u.githubUsername,
+      role: u.role || 'USER',
+      createdAt: u.createdAt,
+      lastActiveAt: u.lastActiveAt,
+      title,
+      level,
+      totalXp,
+      coins: gold,
+      gold,
+      streakCurrent,
+      streakBest,
+      character: {
+        level,
+        totalXp,
+        gold,
+        streakCurrent,
+        streakBest,
+        title,
+      },
+    };
+  });
 }
 
 export async function grantUserEconomy(
@@ -101,12 +193,15 @@ export async function grantUserEconomy(
         level: 1,
         totalXp: 0,
         gold: 50,
+        streakCurrent: 0,
+        streakBest: 0,
       },
     });
   }
 
   const xpToAdd = Math.max(0, Number(input.xp) || 0);
-  const coinsToAdd = Math.max(0, Number(input.coins) || 0);
+  const coinsToAdd = Math.max(0, Number(input.coins ?? (input as any).gold) || 0);
+  const grantedTitle = input.title ? input.title.trim() : undefined;
 
   const newTotalXp = character.totalXp + xpToAdd;
   const newGold = character.gold + coinsToAdd;
@@ -125,7 +220,22 @@ export async function grantUserEconomy(
       },
     });
 
-    // Audit log
+    // Save title in audit log if provided
+    if (grantedTitle) {
+      await tx.activityLog.create({
+        data: {
+          userId: targetUserId,
+          eventType: 'TITLE_GRANT',
+          metadataJson: {
+            title: grantedTitle,
+            adminUserId,
+            reason: input.reason || 'Citadel Treasury Dispatch',
+          },
+        },
+      });
+    }
+
+    // General Audit log
     await tx.activityLog.create({
       data: {
         userId: targetUserId,
@@ -134,7 +244,7 @@ export async function grantUserEconomy(
           adminUserId,
           xpGranted: xpToAdd,
           coinsGranted: coinsToAdd,
-          title: input.title || null,
+          title: grantedTitle || null,
           reason: input.reason || 'Admin granted bonus',
           newLevel,
         },
@@ -144,19 +254,43 @@ export async function grantUserEconomy(
     return updated;
   });
 
-  return {
-    userId: targetUserId,
+  const effectiveTitle = grantedTitle || (await getUserLatestTitle(targetUserId)) || null;
+
+  const userPayload = {
+    id: targetUser.id,
+    email: targetUser.email,
+    displayName: targetUser.displayName,
+    role: targetUser.role || 'USER',
+    createdAt: targetUser.createdAt,
+    updatedAt: targetUser.updatedAt,
+    title: effectiveTitle,
+    level: updatedChar.level,
+    totalXp: updatedChar.totalXp,
+    coins: updatedChar.gold,
+    gold: updatedChar.gold,
+    streakCurrent: updatedChar.streakCurrent,
+    streakBest: updatedChar.streakBest,
     character: {
       level: updatedChar.level,
       totalXp: updatedChar.totalXp,
       gold: updatedChar.gold,
       streakCurrent: updatedChar.streakCurrent,
       streakBest: updatedChar.streakBest,
+      title: effectiveTitle,
     },
+  };
+
+  return {
+    success: true,
+    message: `Granted ${xpToAdd} XP and ${coinsToAdd} Gold${grantedTitle ? ` with title "${grantedTitle}"` : ''} to hero!`,
+    userId: targetUserId,
+    user: userPayload,
+    character: userPayload.character,
     granted: {
       xp: xpToAdd,
       coins: coinsToAdd,
-      title: input.title,
+      gold: coinsToAdd,
+      title: grantedTitle,
     },
   };
 }

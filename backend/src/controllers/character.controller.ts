@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { getUserLatestTitle } from '../services/admin.service.js';
 
 export async function getCharacter(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -8,6 +9,8 @@ export async function getCharacter(req: Request, res: Response, next: NextFuncti
     if (!userId) {
       throw new AppError(401, 'UNAUTHORIZED', 'Authentication required.');
     }
+
+    const title = await getUserLatestTitle(userId);
 
     const char = await prisma.character.findUnique({
       where: { userId },
@@ -22,6 +25,7 @@ export async function getCharacter(req: Request, res: Response, next: NextFuncti
         gold: 50,
         streakCurrent: 0,
         streakBest: 0,
+        title,
         attributes: [
           { key: 'intellect', displayName: 'Intellect', value: 10 },
           { key: 'strength', displayName: 'Strength', value: 10 },
@@ -39,6 +43,7 @@ export async function getCharacter(req: Request, res: Response, next: NextFuncti
       gold: char.gold,
       streakCurrent: char.streakCurrent,
       streakBest: char.streakBest,
+      title,
       attributes: char.attributes.map(a => ({
         key: a.key,
         displayName: a.displayName,

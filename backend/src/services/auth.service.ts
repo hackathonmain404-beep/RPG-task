@@ -6,6 +6,8 @@ import { AppError } from '../utils/errors.js';
 import { getJwtSecret } from '../utils/jwt.js';
 import type { SyncInput, RegisterInput, LoginInput, GithubAuthInput } from '../schemas/auth.schema.js';
 
+import { getUserLatestTitle } from './admin.service.js';
+
 const JWT_EXPIRES_IN = '7d';
 
 export interface AuthSessionUser {
@@ -13,6 +15,7 @@ export interface AuthSessionUser {
   email: string;
   displayName: string;
   role?: string;
+  title?: string | null;
 }
 
 export interface CharacterSummary {
@@ -21,6 +24,7 @@ export interface CharacterSummary {
   gold: number;
   streakCurrent: number;
   streakBest: number;
+  title?: string | null;
 }
 
 export interface SyncResult {
@@ -183,12 +187,15 @@ export async function syncUser(
       return { user: newUser, character: newChar };
     }, { maxWait: 15000, timeout: 25000 });
 
+    const title = await getUserLatestTitle(result.user.id);
+
     return {
       user: {
         id: result.user.id,
         email: result.user.email,
         displayName: result.user.displayName,
         role: (result.user as any).role || 'USER',
+        title,
       },
       character: {
         level: result.character.level,
@@ -196,6 +203,7 @@ export async function syncUser(
         gold: result.character.gold,
         streakCurrent: result.character.streakCurrent,
         streakBest: result.character.streakBest,
+        title,
       },
     };
   } catch (err: unknown) {
@@ -494,20 +502,38 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
       include: { character: true },
     });
 
-    if (user && user.character) {
+    if (user) {
+      let character = user.character;
+      if (!character) {
+        character = await prisma.character.create({
+          data: {
+            userId: user.id,
+            level: 1,
+            totalXp: 0,
+            gold: 50,
+            streakCurrent: 0,
+            streakBest: 0,
+          },
+        });
+      }
+
+      const title = await getUserLatestTitle(user.id);
+
       return {
         user: {
           id: user.id,
           email: user.email,
           displayName: user.displayName,
           role: (user as any).role || 'USER',
+          title,
         },
         character: {
-          level: user.character.level,
-          totalXp: user.character.totalXp,
-          gold: user.character.gold,
-          streakCurrent: user.character.streakCurrent,
-          streakBest: user.character.streakBest,
+          level: character.level,
+          totalXp: character.totalXp,
+          gold: character.gold,
+          streakCurrent: character.streakCurrent,
+          streakBest: character.streakBest,
+          title,
         },
       };
     }

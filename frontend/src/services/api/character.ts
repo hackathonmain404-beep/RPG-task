@@ -13,6 +13,7 @@ export interface CharacterResponse {
   gold: number;
   streakCurrent: number;
   streakBest: number;
+  title?: string | null;
   attributes: Attribute[];
 }
 

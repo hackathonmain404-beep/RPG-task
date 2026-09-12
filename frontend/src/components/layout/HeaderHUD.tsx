@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useFeedback } from '../../context/FeedbackContext';
-import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown } from 'lucide-react';
+import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -10,7 +10,7 @@ interface HeaderHUDProps {
 }
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, character, logout, isAdmin } = useAuth();
   const { openFeedback } = useFeedback();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -135,9 +135,17 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               <div className="hud-user-avatar">
                 <User size={14} className="hud-user-icon" />
               </div>
-              <span className="hud-user-name">
-                {user?.displayName || 'Adventurer'}
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
+                <span className="hud-user-name">
+                  {user?.displayName || 'Adventurer'}
+                </span>
+                {(user?.title || character?.title) && (
+                  <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <Award size={10} color="#fbbf24" />
+                    {user?.title || character?.title}
+                  </span>
+                )}
+              </div>
               <ChevronDown size={14} className={`hud-profile-chevron ${isMenuOpen ? 'is-open' : ''}`} />
             </button>
 
@@ -147,12 +155,92 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               aria-label="Profile options"
             >
               {/* User Identity Header */}
-              <div className="hud-dropdown-header">
-                <div className="hud-dropdown-user-info">
-                  <span className="hud-dropdown-title">Account Overview</span>
-                  {user?.email && (
-                    <span className="hud-dropdown-email">{user.email}</span>
+              <div className="hud-dropdown-header" style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
+                      {user?.displayName || 'Adventurer'}
+                    </div>
+                    {user?.email && (
+                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>
+                    )}
+                  </div>
+                  {isAdmin && (
+                    <span style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      color: '#c084fc',
+                      backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                      border: '1px solid rgba(168, 85, 247, 0.4)',
+                      padding: '0.1rem 0.4rem',
+                      borderRadius: '9999px',
+                    }}>
+                      ADMIN
+                    </span>
                   )}
+                </div>
+
+                {/* Bestowed Hero Title */}
+                {(user?.title || character?.title) ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.3rem 0.6rem',
+                      borderRadius: '6px',
+                      background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(168, 85, 247, 0.18))',
+                      border: '1px solid rgba(245, 158, 11, 0.45)',
+                      color: '#fbbf24',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      boxShadow: '0 2px 8px rgba(245, 158, 11, 0.15)',
+                    }}
+                  >
+                    <Award size={14} color="#fbbf24" />
+                    <span>{user?.title || character?.title}</span>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '6px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      color: '#94a3b8',
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    <Award size={12} color="#64748b" />
+                    <span>Novice Adventurer</span>
+                  </div>
+                )}
+
+                {/* Level & Coins Stat Bar */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.4rem 0.6rem',
+                    borderRadius: '6px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    fontSize: '0.75rem',
+                    marginTop: '0.15rem',
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#38bdf8', fontWeight: 600 }}>
+                    <Zap size={13} color="#38bdf8" />
+                    Level {character?.level || 1} ({character?.totalXp || 0} XP)
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#fbbf24', fontWeight: 600 }}>
+                    <Coins size={13} color="#fbbf24" />
+                    {character?.gold ?? 0}
+                  </span>
                 </div>
               </div>
 
