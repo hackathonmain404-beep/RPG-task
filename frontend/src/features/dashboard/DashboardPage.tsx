@@ -128,7 +128,7 @@ const InteractiveStatCard: React.FC<StatCardProps> = ({
 export const DashboardPage: React.FC = () => {
   useDocumentMetadata('Command Citadel | Achiever', { noindex: true });
 
-  const { user, character, xpProgress } = useAuth();
+  const { character, xpProgress } = useAuth();
   const { tasks, lastRewardNotice, clearRewardNotice, levelUpEvent, clearLevelUpEvent } = useQuests();
 
   const [charData, setCharData] = useState<CharacterResponse | null>(null);

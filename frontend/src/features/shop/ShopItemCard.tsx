@@ -58,12 +58,13 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
   const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({});
   const [isHovered, setIsHovered] = useState(false);
 
-  const typeKey = item.itemType.toLowerCase();
+  const typeKey = (item.itemType || '').toLowerCase();
   const Icon = TYPE_ICONS[typeKey] || Sparkles;
-  const rarityKey = item.rarity?.toLowerCase() || 'common';
-  const rarityLabel = RARITY_LABELS[rarityKey] || (item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1));
+  const rarityKey = (item.rarity || 'common').toLowerCase();
+  const rarityLabel = RARITY_LABELS[rarityKey] || (item.rarity ? item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1) : 'Common');
 
-  const hasEnoughGold = playerGold >= item.price;
+  const price = typeof item.price === 'number' ? item.price : 0;
+  const hasEnoughGold = playerGold >= price;
 
   // 3D Perspective Tilt and Cursor-following Lighting (Desktop only)
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -189,10 +190,10 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
       {/* Card Footer: Price & Primary Action */}
       <div className="armory-card-footer">
         {/* Authoritative Price Display */}
-        <div className="armory-price-box" aria-label={`Price: ${item.price} Gold`}>
+        <div className="armory-price-box" aria-label={`Price: ${price} Gold`}>
           <Coins size={18} aria-hidden="true" />
           <span className="armory-price-num mono-numbers">
-            {item.price.toLocaleString()}
+            {price.toLocaleString()}
           </span>
           <span className="armory-price-unit">Gold</span>
         </div>
@@ -231,7 +232,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
               onClick={() => onInitiatePurchase(item)}
               disabled={isPending}
               className={`armory-btn-acquire ${!hasEnoughGold && !isPending ? 'insufficient-funds' : ''}`}
-              aria-label={`Purchase ${item.name} for ${item.price} Gold`}
+              aria-label={`Purchase ${item.name} for ${price} Gold`}
               aria-busy={isPending}
               title={!hasEnoughGold ? 'Earn more Gold in Citadel Quests to acquire this item.' : undefined}
             >
