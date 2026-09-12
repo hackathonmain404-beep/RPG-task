@@ -12,7 +12,10 @@
     "test:backend": "npm --prefix backend test",
     "test:frontend": "npm --prefix frontend test",
     "typecheck": "npm --prefix backend run typecheck",
-    "seed": "npm --prefix backend run seed"
+    "seed": "npm --prefix backend run seed",
+    "db:start": "node backend/scripts/db.mjs",
+    "db:push": "npm --prefix backend run prisma:push",
+    "setup": "npm --prefix backend run prisma:generate && npm --prefix backend run prisma:push && npm --prefix backend run seed"
   },
   "devDependencies": {
     "typescript": "^7.0.2"

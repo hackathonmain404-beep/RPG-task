@@ -32,13 +32,20 @@ export async function startPostgres() {
     return null;
   }
 
+  const dataDir = path.join(__dirname, '../.pgdata');
   const pg = new EmbeddedPostgres({
     port: 5432,
-    databaseDir: path.join(__dirname, '../.pgdata'),
+    databaseDir: dataDir,
     user: 'postgres',
     password: 'password',
     persistent: true,
   });
+
+  const fs = await import('fs');
+  if (!fs.existsSync(dataDir)) {
+    console.log('[DB] Initializing local PostgreSQL cluster...');
+    await pg.initialise();
+  }
 
   await pg.start();
   try {
