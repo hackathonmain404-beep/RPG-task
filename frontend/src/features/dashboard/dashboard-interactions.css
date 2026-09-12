@@ -402,10 +402,10 @@
   flex-direction: column;
   overflow: hidden;
   cursor: default;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              background-color 500ms cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -424,7 +424,7 @@
   );
   pointer-events: none;
   opacity: 0;
-  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .interactive-stat-card:hover::before {
@@ -432,7 +432,7 @@
 }
 
 .interactive-stat-card:hover {
-  transform: translate3d(0, -3px, 0);
+  transform: translate3d(0, -2.5px, 0);
 }
 
 /* Card 1: Player Level (Purple) */
@@ -504,10 +504,10 @@
   will-change: transform, box-shadow, border-color;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              background-color 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .discipline-stat-card::before {
@@ -522,14 +522,14 @@
   );
   opacity: 0;
   pointer-events: none;
-  transition: opacity 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .discipline-stat-card:hover {
-  transform: translate3d(0, -3px, 0);
+  transform: translate3d(0, -2.5px, 0);
   border-color: var(--discipline-border, rgba(56, 189, 248, 0.45));
-  box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.65),
-              0 0 22px var(--discipline-shadow-glow, rgba(56, 189, 248, 0.2)),
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.62),
+              0 0 20px var(--discipline-shadow-glow, rgba(56, 189, 248, 0.18)),
               inset 0 1px 0 rgba(255, 255, 255, 0.08);
   background-color: #141b2c;
 }
@@ -548,12 +548,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              filter 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              filter 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .discipline-stat-card:hover .discipline-icon-wrapper {
-  transform: scale(1.15) translateY(-1px);
+  transform: scale(1.12) translateY(-1px);
   filter: drop-shadow(0 0 8px var(--discipline-color));
 }
 
@@ -561,9 +561,9 @@
 .discipline-card-title {
   font-weight: 700;
   font-size: 0.95rem;
-  transition: color 440ms ease,
-              text-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              filter 440ms ease;
+  transition: color 500ms ease,
+              text-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              filter 500ms ease;
 }
 
 .discipline-stat-card:hover .discipline-card-title {
@@ -583,9 +583,9 @@
   font-weight: 700;
   min-width: 24px;
   text-align: right;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              filter 440ms ease,
-              text-shadow 440ms ease;
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              filter 500ms ease,
+              text-shadow 500ms ease;
 }
 
 .discipline-stat-card:hover .discipline-card-number {
@@ -719,10 +719,10 @@
 .analytics-card {
   position: relative;
   overflow: hidden;
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 440ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 500ms cubic-bezier(0.25, 1, 0.5, 1),
+              background-color 500ms cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -741,14 +741,14 @@
   );
   opacity: 0;
   pointer-events: none;
-  transition: opacity 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .analytics-card:hover {
-  transform: translate3d(0, -3px, 0);
+  transform: translate3d(0, -2px, 0);
   border-color: var(--analytics-card-border, rgba(56, 189, 248, 0.35));
-  box-shadow: 0 14px 32px -6px rgba(0, 0, 0, 0.62),
-              0 0 24px var(--analytics-card-glow, rgba(56, 189, 248, 0.12));
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.58),
+              0 0 20px var(--analytics-card-glow, rgba(56, 189, 248, 0.1));
   background-color: #141b2a;
 }
 
@@ -758,7 +758,7 @@
 
 /* Title subtle illumination on card hover */
 .analytics-card-title {
-  transition: text-shadow 440ms cubic-bezier(0.16, 1, 0.3, 1), color 440ms ease;
+  transition: text-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1), color 500ms ease;
 }
 
 .analytics-card:hover .analytics-card-title {
@@ -773,12 +773,18 @@
   --analytics-card-glow: rgba(56, 189, 248, 0.12);
 }
 
+.trends-legend-dot {
+  transition: box-shadow 500ms ease, transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
 .card-analytics-trends:hover .trends-legend-dot.completed {
   box-shadow: 0 0 8px #10b981;
+  transform: scale(1.1);
 }
 
 .card-analytics-trends:hover .trends-legend-dot.overdue {
   box-shadow: 0 0 8px #f43f5e;
+  transform: scale(1.1);
 }
 
 /* Card 2: Completed Categories (Purple / Violet) */
@@ -789,15 +795,15 @@
 }
 
 .donut-chart-wrapper {
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .card-analytics-categories:hover .donut-chart-wrapper {
-  transform: scale(1.025);
+  transform: scale(1.02);
 }
 
 .donut-center-text {
-  transition: filter 440ms cubic-bezier(0.16, 1, 0.3, 1), transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: filter 500ms ease, transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .card-analytics-categories:hover .donut-center-text {
@@ -812,22 +818,32 @@
 }
 
 .vibe-card-inner {
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.card-analytics-vibe:hover .vibe-card-inner {
+  transform: translate3d(0, -1px, 0);
 }
 
 .vibe-ring-container svg {
-  transition: filter 440ms cubic-bezier(0.16, 1, 0.3, 1), transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: filter 500ms ease, transform 500ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .card-analytics-vibe:hover .vibe-ring-container svg {
-  transform: scale(1.03);
-  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.55));
+  transform: scale(1.02);
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+}
+
+/* Two-way smooth transition for sparkles icon on both hover in and hover out */
+.vibe-card-inner svg[class*="lucide-sparkles"],
+.vibe-card-inner .lucide-sparkles {
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1), filter 500ms ease;
+  will-change: transform;
 }
 
 .card-analytics-vibe:hover .vibe-card-inner svg[class*="lucide-sparkles"],
 .card-analytics-vibe:hover .vibe-card-inner .lucide-sparkles {
-  transform: rotate(15deg) scale(1.18);
-  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1), filter 440ms ease;
+  transform: rotate(12deg) scale(1.12);
   filter: drop-shadow(0 0 6px #f59e0b);
 }
 
@@ -862,13 +878,15 @@
 
 .heatmap-cell {
   animation: heatmapCellWave 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.18s ease,
-              border-color 0.18s ease;
+  transition: transform 320ms cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 320ms ease,
+              border-color 320ms ease,
+              filter 320ms ease;
+  will-change: transform;
 }
 
 .heatmap-cell:hover {
-  transform: scale(1.28);
+  transform: scale(1.22);
   z-index: 10;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
   border-color: #34d399 !important;
