@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
 import type { Task } from '../../../types/contract';
 
@@ -7,17 +7,51 @@ interface VibeScoreCardProps {
 }
 
 export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
-  const completedCount = tasks.filter(t => t.completed).length;
-  // Calculate dynamic vibe score with 155 baseline
-  const score = 155 + (completedCount * 10);
+  // Compute score strictly from actual user quest data:
+  // Baseline: 100
+  // +10 for on-time finishes
+  // -5 for missed deadlines
+  const { score, onTimeCount, missedCount } = useMemo(() => {
+    const now = new Date();
+    let onTime = 0;
+    let missed = 0;
+
+    for (const t of tasks) {
+      if (t.completed) {
+        if (!t.dueDate || !t.completedAt) {
+          onTime += 1;
+        } else {
+          const compDate = new Date(t.completedAt);
+          const dueDate = new Date(t.dueDate);
+          if (compDate <= dueDate) {
+            onTime += 1;
+          } else {
+            // Completed but late
+            onTime += 0.5;
+          }
+        }
+      } else if (t.dueDate && new Date(t.dueDate) < now) {
+        missed += 1;
+      }
+    }
+
+    const calculated = Math.max(0, Math.round(100 + (onTime * 10) - (missed * 5)));
+    return {
+      score: calculated,
+      onTimeCount: Math.floor(onTime),
+      missedCount: missed,
+    };
+  }, [tasks]);
 
   // Circular ring settings
   const ringSize = 74;
   const strokeWidth = 7;
   const radius = (ringSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  // Fill 78% of the ring
-  const strokeDashoffset = circumference * (1 - 0.78);
+
+  // Ring fills based on score relative to 200 target
+  const fillPercent = Math.min(1, Math.max(0.1, score / 200));
+  const strokeDashoffset = circumference * (1 - fillPercent);
 
   return (
     <div className="analytics-card" style={{ display: 'flex', alignItems: 'center' }}>
@@ -73,7 +107,7 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
             <span>Vibe Score</span>
           </div>
           <p className="vibe-subtext">
-            +10 for on-time finishes, -5 for missed deadlines.
+            +10 for on-time finishes ({onTimeCount}), -5 for missed deadlines ({missedCount}).
             <br />
             Keep it up!
           </p>

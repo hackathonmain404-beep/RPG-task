@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Task } from '../../../types/contract';
 
 interface ConsistencyHeatmapCardProps {
@@ -17,50 +17,60 @@ export const ConsistencyHeatmapCard: React.FC<ConsistencyHeatmapCardProps> = ({ 
   const [hoveredDay, setHoveredDay] = useState<HeatmapDay | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
-  // Generate 35 days matching the pattern in the reference screenshot
-  // Row 1 (18 days), Row 2 (17 days) = 35 days total
-  const heatmapDays: HeatmapDay[] = Array.from({ length: 35 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (34 - i));
-    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Generate 35 days (Day 0 = 34 days ago, Day 34 = Today)
+  // Derived 100% from user's actual tasks — ZERO hardcoded cells
+  const heatmapDays: HeatmapDay[] = useMemo(() => {
+    const now = new Date();
 
-    // Cell patterns matching the screenshot:
-    // Row 1 has red at index 3, green at 4, 5, 6
-    // Row 2 has green at index 21, red at index 22
-    let status: 'empty' | 'success' | 'failed' = 'empty';
-    let tasksCompleted = 0;
-    let xpEarned = 0;
+    return Array.from({ length: 35 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (34 - i));
+      d.setHours(0, 0, 0, 0);
 
-    if (i === 3) {
-      status = 'failed';
-      tasksCompleted = 0;
-      xpEarned = 0;
-    } else if (i === 4 || i === 5 || i === 6) {
-      status = 'success';
-      tasksCompleted = i === 5 ? 3 : 2;
-      xpEarned = tasksCompleted * 50;
-    } else if (i === 21) {
-      status = 'success';
-      tasksCompleted = 1;
-      xpEarned = 50;
-    } else if (i === 22) {
-      status = 'failed';
-      tasksCompleted = 0;
-      xpEarned = 0;
-    } else if (i === 34 && tasks.some(t => t.completed)) {
-      status = 'success';
-      tasksCompleted = tasks.filter(t => t.completed).length;
-      xpEarned = tasksCompleted * 50;
-    }
+      const dEnd = new Date(d);
+      dEnd.setHours(23, 59, 59, 999);
 
-    return {
-      id: i,
-      dateStr,
-      status,
-      tasksCompleted,
-      xpEarned,
-    };
-  });
+      const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+      // Find real user tasks completed on this calendar day
+      const completedOnDay = tasks.filter((t) => {
+        if (!t.completed) return false;
+        const compDate = t.completedAt ? new Date(t.completedAt) : t.updatedAt ? new Date(t.updatedAt) : null;
+        if (!compDate) {
+          // If no timestamp, map to today if it's the last cell
+          return i === 34;
+        }
+        return compDate >= d && compDate <= dEnd;
+      });
+
+      // Find real user tasks that became overdue on this day
+      const failedOnDay = tasks.filter((t) => {
+        if (t.completed || !t.dueDate) return false;
+        const dueDate = new Date(t.dueDate);
+        return dueDate >= d && dueDate <= dEnd && dueDate < now;
+      });
+
+      let status: 'empty' | 'success' | 'failed' = 'empty';
+      let tasksCompleted = 0;
+      let xpEarned = 0;
+
+      if (completedOnDay.length > 0) {
+        status = 'success';
+        tasksCompleted = completedOnDay.length;
+        xpEarned = completedOnDay.reduce((sum, t) => sum + (t.xpReward || 50), 0);
+      } else if (failedOnDay.length > 0) {
+        status = 'failed';
+      }
+
+      return {
+        id: i,
+        dateStr,
+        status,
+        tasksCompleted,
+        xpEarned,
+      };
+    });
+  }, [tasks]);
 
   return (
     <div className="analytics-card" style={{ position: 'relative' }}>
@@ -80,12 +90,12 @@ export const ConsistencyHeatmapCard: React.FC<ConsistencyHeatmapCardProps> = ({ 
           </div>
           {hoveredDay.status === 'success' && (
             <div style={{ color: '#10b981' }}>
-              ✓ {hoveredDay.tasksCompleted} tasks completed (+{hoveredDay.xpEarned} XP)
+              ✓ {hoveredDay.tasksCompleted} {hoveredDay.tasksCompleted === 1 ? 'task' : 'tasks'} completed (+{hoveredDay.xpEarned} XP)
             </div>
           )}
           {hoveredDay.status === 'failed' && (
             <div style={{ color: '#f43f5e' }}>
-              ✕ 1 missed / overdue deadline (-5 Vibe)
+              ✕ Overdue deadline (-5 Vibe)
             </div>
           )}
           {hoveredDay.status === 'empty' && (

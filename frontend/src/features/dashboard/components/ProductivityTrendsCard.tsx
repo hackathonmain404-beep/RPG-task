@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Task } from '../../../types/contract';
 
 interface ProductivityTrendsCardProps {
@@ -16,32 +16,91 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
   const [hoveredPoint, setHoveredPoint] = useState<DayPoint | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
-  // 7 days: Mon -> Today
-  const days: DayPoint[] = [
-    { label: 'Mon', x: 40, completed: 0, failed: 12 },
-    { label: 'Tue', x: 110, completed: 0, failed: 0 },
-    { label: 'Wed', x: 180, completed: 0, failed: 0 },
-    { label: 'Thu', x: 250, completed: 0, failed: 0 },
-    { label: 'Fri', x: 320, completed: 0, failed: 0 },
-    { label: 'Sat', x: 390, completed: 0, failed: 0 },
-    { label: 'Today', x: 460, completed: tasks.filter(t => t.completed).length, failed: 0 },
-  ];
-
-  // SVG dimensions
   const height = 180;
   const baselineY = 145;
 
-  // Path calculation for the smooth curve matching the reference design
-  // Mon starts at (40, 28) and swoops down smoothly with cubic bezier to (110, 145) then continues to (460, 145)
-  const failedPathD = `M 40 28 C 65 30, 85 145, 110 145 L 460 145`;
-  const failedAreaD = `M 40 28 C 65 30, 85 145, 110 145 L 460 145 L 460 145 L 40 145 Z`;
+  // Calculate 7-day productivity trend strictly from user's actual tasks
+  const days: DayPoint[] = useMemo(() => {
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const now = new Date();
 
-  // Completed line along baseline (or slight blip at Today)
-  const todayCompleted = tasks.filter(t => t.completed).length;
-  const todayCompletedY = todayCompleted > 0 ? Math.max(70, baselineY - todayCompleted * 20) : baselineY;
-  const completedPathD = todayCompleted > 0
-    ? `M 40 145 L 390 145 C 420 145, 435 ${todayCompletedY}, 460 ${todayCompletedY}`
-    : `M 40 145 L 460 145`;
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (6 - i));
+      d.setHours(0, 0, 0, 0);
+      const nextD = new Date(d);
+      nextD.setDate(d.getDate() + 1);
+
+      const label = i === 6 ? 'Today' : dayNames[d.getDay()];
+      const x = 40 + i * 70;
+
+      // Real completed tasks for this calendar day
+      const completed = tasks.filter(t => {
+        if (!t.completed) return false;
+        const compDate = t.completedAt ? new Date(t.completedAt) : t.updatedAt ? new Date(t.updatedAt) : null;
+        if (!compDate) return i === 6; // If no timestamp, associate with today
+        return compDate >= d && compDate < nextD;
+      }).length;
+
+      // Real failed/overdue tasks for this calendar day
+      const failed = tasks.filter(t => {
+        if (t.completed || !t.dueDate) return false;
+        const dueDate = new Date(t.dueDate);
+        return dueDate >= d && dueDate < nextD && dueDate < now;
+      }).length;
+
+      return {
+        label,
+        x,
+        completed,
+        failed,
+      };
+    });
+  }, [tasks]);
+
+  // Compute maximum count for scaling
+  const maxVal = Math.max(1, ...days.map(d => Math.max(d.completed, d.failed)));
+  const getY = (val: number) => {
+    if (val === 0) return baselineY;
+    return baselineY - (val / maxVal) * (baselineY - 35);
+  };
+
+  // Build SVG path for failed curve
+  const failedPathD = useMemo(() => {
+    const points = days.map(d => ({ x: d.x, y: getY(d.failed) }));
+    if (points.every(p => p.y === baselineY)) {
+      return `M 40 ${baselineY} L 460 ${baselineY}`;
+    }
+    // Smooth bezier curve through points
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+      const cx = (p0.x + p1.x) / 2;
+      d += ` C ${cx} ${p0.y}, ${cx} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
+    return d;
+  }, [days, maxVal]);
+
+  const failedAreaD = useMemo(() => {
+    return `${failedPathD} L 460 ${baselineY} L 40 ${baselineY} Z`;
+  }, [failedPathD]);
+
+  // Build SVG path for completed curve
+  const completedPathD = useMemo(() => {
+    const points = days.map(d => ({ x: d.x, y: getY(d.completed) }));
+    if (points.every(p => p.y === baselineY)) {
+      return `M 40 ${baselineY} L 460 ${baselineY}`;
+    }
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i];
+      const p1 = points[i + 1];
+      const cx = (p0.x + p1.x) / 2;
+      d += ` C ${cx} ${p0.y}, ${cx} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
+    return d;
+  }, [days, maxVal]);
 
   return (
     <div className="analytics-card">
@@ -82,13 +141,13 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
         >
           <defs>
             <linearGradient id="failedAreaGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.4" />
-              <stop offset="60%" stopColor="#f43f5e" stopOpacity="0.1" />
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.35" />
+              <stop offset="80%" stopColor="#f43f5e" stopOpacity="0.05" />
               <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
             </linearGradient>
             <linearGradient id="failedLineGradient" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#fb7185" />
-              <stop offset="25%" stopColor="#f43f5e" />
+              <stop offset="50%" stopColor="#f43f5e" />
               <stop offset="100%" stopColor="#e11d48" />
             </linearGradient>
           </defs>
@@ -103,11 +162,13 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
             strokeWidth="1"
           />
 
-          {/* Area Fill for Overdue / Failed */}
-          <path
-            d={failedAreaD}
-            fill="url(#failedAreaGradient)"
-          />
+          {/* Area Fill for Overdue / Failed (only if there are actual failed tasks) */}
+          {days.some(d => d.failed > 0) && (
+            <path
+              d={failedAreaD}
+              fill="url(#failedAreaGradient)"
+            />
+          )}
 
           {/* Stroke Line for Overdue / Failed */}
           <path
@@ -123,14 +184,14 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
             d={completedPathD}
             fill="none"
             stroke="#10b981"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
           />
 
           {/* Interactive hover targets & points */}
           {days.map((day) => {
             const isHovered = hoveredPoint?.label === day.label;
-            const ptY = day.label === 'Mon' ? 28 : (day.label === 'Today' && todayCompleted > 0 ? todayCompletedY : baselineY);
+            const ptY = day.completed > 0 ? getY(day.completed) : day.failed > 0 ? getY(day.failed) : baselineY;
             return (
               <g
                 key={day.label}
@@ -157,13 +218,13 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
                   fill="transparent"
                 />
 
-                {/* Visible node point if hovered or key point */}
-                {(isHovered || day.label === 'Mon') && (
+                {/* Visible node point if count > 0 or hovered */}
+                {(day.completed > 0 || day.failed > 0 || isHovered) && (
                   <circle
                     cx={day.x}
-                    cy={day.label === 'Mon' ? 28 : baselineY}
+                    cy={ptY}
                     r={isHovered ? 5 : 3.5}
-                    fill={day.label === 'Mon' ? '#f43f5e' : '#10b981'}
+                    fill={day.failed > 0 ? '#f43f5e' : '#10b981'}
                     stroke="#0b0f17"
                     strokeWidth="2"
                   />

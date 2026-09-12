@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Folder } from 'lucide-react';
 import type { Task } from '../../../types/contract';
 
@@ -14,20 +14,49 @@ interface CategoryItem {
   count: number;
 }
 
+const CATEGORY_META: Record<string, { name: string; color: string }> = {
+  intellect: { name: 'Imp. Work', color: '#3b82f6' },
+  vitality: { name: 'Personal', color: '#a855f7' },
+  personal: { name: 'Personal', color: '#a855f7' },
+  wisdom: { name: 'Learning', color: '#38bdf8' },
+  strength: { name: 'Strength', color: '#ef4444' },
+  charisma: { name: 'Social', color: '#eab308' },
+  general: { name: 'General', color: '#f59e0b' },
+};
+
 export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = ({ tasks = [] }) => {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
-  // Compute completed tasks by category, or fallback to the reference breakdown
-  const completedTasks = tasks.filter(t => t.completed);
-  const totalCompleted = completedTasks.length > 0 ? completedTasks.length : 20;
+  // Derive strictly from the user's real completed tasks
+  const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
+  const totalCompleted = completedTasks.length;
 
-  // Reference category breakdown: Personal (45%), General (30%), Imp. Work (20%), Learning (5%)
-  const categories: CategoryItem[] = [
-    { id: 'personal', name: 'Personal', percentage: 45, color: '#eab308', count: 9 },
-    { id: 'general', name: 'General', percentage: 30, color: '#f59e0b', count: 6 },
-    { id: 'imp-work', name: 'Imp. Work', percentage: 20, color: '#f43f5e', count: 4 },
-    { id: 'learning', name: 'Learning', percentage: 5, color: '#38bdf8', count: 1 },
-  ];
+  const categories: CategoryItem[] = useMemo(() => {
+    if (totalCompleted === 0) return [];
+
+    const counts: Record<string, number> = {};
+    for (const t of completedTasks) {
+      const key = (t.categoryKey || 'general').toLowerCase();
+      counts[key] = (counts[key] || 0) + 1;
+    }
+
+    const keys = Object.keys(counts);
+    return keys.map((key) => {
+      const count = counts[key];
+      const meta = CATEGORY_META[key] || {
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        color: '#10b981',
+      };
+      const percentage = Math.round((count / totalCompleted) * 100);
+      return {
+        id: key,
+        name: meta.name,
+        percentage,
+        color: meta.color,
+        count,
+      };
+    });
+  }, [completedTasks, totalCompleted]);
 
   // SVG Donut settings
   const size = 150;
@@ -47,23 +76,17 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
         {/* Donut Chart */}
         <div className="donut-chart-wrapper">
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-            <defs>
-              <filter id="segmentGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="0" stdDeviation="3" floodOpacity="0.4" />
-              </filter>
-            </defs>
-
             {/* Background track */}
             <circle
               cx={size / 2}
               cy={size / 2}
               r={radius}
               fill="transparent"
-              stroke="rgba(255, 255, 255, 0.04)"
+              stroke="rgba(255, 255, 255, 0.05)"
               strokeWidth={strokeWidth}
             />
 
-            {/* Render Segments */}
+            {/* Render Segments based 100% on real completed tasks */}
             {categories.map((cat) => {
               const strokeDasharray = `${(cat.percentage / 100) * circumference} ${circumference}`;
               const strokeDashoffset = -((cumulativePercent / 100) * circumference);
@@ -105,39 +128,45 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
 
         {/* Legend List */}
         <div className="category-legend-list">
-          {categories.map((cat) => {
-            const isHovered = hoveredCategory === cat.id;
-            return (
-              <div
-                key={cat.id}
-                className="category-legend-row"
-                style={{
-                  cursor: 'pointer',
-                  padding: '2px 4px',
-                  borderRadius: '4px',
-                  backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
-                  transition: 'background-color 0.15s ease',
-                }}
-                onMouseEnter={() => setHoveredCategory(cat.id)}
-                onMouseLeave={() => setHoveredCategory(null)}
-              >
-                <div className="category-legend-left">
-                  <span
-                    className="category-folder-icon"
-                    style={{ color: cat.color }}
-                  >
-                    <Folder size={14} fill={cat.color} stroke={cat.color} />
-                  </span>
-                  <span style={{ color: isHovered ? '#ffffff' : '#cbd5e1', fontWeight: 500 }}>
-                    {cat.name}
+          {categories.length === 0 ? (
+            <div style={{ textAlign: 'center', color: '#64748b', fontSize: '0.82rem', padding: '0.5rem 0' }}>
+              No completed quests yet.
+            </div>
+          ) : (
+            categories.map((cat) => {
+              const isHovered = hoveredCategory === cat.id;
+              return (
+                <div
+                  key={cat.id}
+                  className="category-legend-row"
+                  style={{
+                    cursor: 'pointer',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.04)' : 'transparent',
+                    transition: 'background-color 0.15s ease',
+                  }}
+                  onMouseEnter={() => setHoveredCategory(cat.id)}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                >
+                  <div className="category-legend-left">
+                    <span
+                      className="category-folder-icon"
+                      style={{ color: cat.color }}
+                    >
+                      <Folder size={14} fill={cat.color} stroke={cat.color} />
+                    </span>
+                    <span style={{ color: isHovered ? '#ffffff' : '#cbd5e1', fontWeight: 500 }}>
+                      {cat.name} ({cat.count})
+                    </span>
+                  </div>
+                  <span className="category-percentage" style={{ color: isHovered ? cat.color : '#f1f5f9' }}>
+                    {cat.percentage}%
                   </span>
                 </div>
-                <span className="category-percentage" style={{ color: isHovered ? cat.color : '#f1f5f9' }}>
-                  {cat.percentage}%
-                </span>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </div>

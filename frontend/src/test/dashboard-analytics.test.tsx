@@ -26,41 +26,40 @@ const mockTasks: Task[] = [
   },
 ];
 
-describe('Productivity Analytics Dashboard Components', () => {
+describe('Productivity Analytics Dashboard Components (100% Real User Data)', () => {
   it('renders ProductivityTrendsCard with title, legend, and timeline', () => {
     render(<ProductivityTrendsCard tasks={mockTasks} />);
     expect(screen.getByText('Productivity Trends')).toBeInTheDocument();
     expect(screen.getByText('Completed')).toBeInTheDocument();
     expect(screen.getByText('Overdue / Failed')).toBeInTheDocument();
-    expect(screen.getByText('Mon')).toBeInTheDocument();
     expect(screen.getByText('Today')).toBeInTheDocument();
   });
 
-  it('renders CompletedCategoriesCard with donut center and category breakdown', () => {
+  it('renders CompletedCategoriesCard with dynamic real counts and percentages', () => {
     render(<CompletedCategoriesCard tasks={mockTasks} />);
     expect(screen.getByText('Completed Categories')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('TOTAL')).toBeInTheDocument();
-    expect(screen.getByText('Personal')).toBeInTheDocument();
-    expect(screen.getByText('General')).toBeInTheDocument();
-    expect(screen.getByText('Imp. Work')).toBeInTheDocument();
-    expect(screen.getByText('Learning')).toBeInTheDocument();
+    expect(screen.getByText(/Personal/)).toBeInTheDocument();
+    expect(screen.getByText('100%')).toBeInTheDocument();
   });
 
-  it('renders VibeScoreCard with circular score and supporting text', () => {
+  it('renders VibeScoreCard dynamically computed from real on-time and missed quests', () => {
     render(<VibeScoreCard tasks={mockTasks} />);
     expect(screen.getByText('Vibe Score')).toBeInTheDocument();
-    expect(screen.getByText(/165/)).toBeInTheDocument(); // 155 base + 1 completed * 10
-    expect(screen.getByText(/\+10 for on-time finishes, -5 for missed deadlines/i)).toBeInTheDocument();
+    // 100 base + 1 on-time (+10) - 1 missed (-5) = 105
+    expect(screen.getByText('105')).toBeInTheDocument();
+    expect(screen.getByText(/\+10 for on-time finishes \(1\), -5 for missed deadlines \(1\)/i)).toBeInTheDocument();
   });
 
-  it('renders ConsistencyHeatmapCard with title and 35 cells', () => {
+  it('renders ConsistencyHeatmapCard with title and 35 cells reflecting real activity', () => {
     const { container } = render(<ConsistencyHeatmapCard tasks={mockTasks} />);
     expect(screen.getByText('35-Day Consistency Heatmap')).toBeInTheDocument();
     const cells = container.querySelectorAll('.heatmap-cell');
     expect(cells.length).toBe(35);
   });
 
-  it('renders AccountabilityMatrix and filters tasks', () => {
+  it('renders AccountabilityMatrix with only real user tasks and supports failure filtering', () => {
     render(<AccountabilityMatrix tasks={mockTasks} />);
     expect(screen.getByText('The Accountability Matrix')).toBeInTheDocument();
     expect(screen.getByText('All Time')).toBeInTheDocument();
@@ -73,8 +72,9 @@ describe('Productivity Analytics Dashboard Components', () => {
     expect(screen.getByText('COMPLETED AT')).toBeInTheDocument();
     expect(screen.getByText('STATUS')).toBeInTheDocument();
 
-    // Verify task row items exist
-    expect(screen.getByText('Fix the coin compensation that gives coins (1000) when a user log out and log in')).toBeInTheDocument();
+    // Verify real user tasks exist
+    expect(screen.getByText('Daily Meditation')).toBeInTheDocument();
+    expect(screen.getByText('Algorithm Drill')).toBeInTheDocument();
 
     // Click Failures filter
     const failuresBtn = screen.getByRole('button', { name: 'Failures' });
@@ -82,8 +82,8 @@ describe('Productivity Analytics Dashboard Components', () => {
     expect(failuresBtn).toHaveClass('active');
 
     // Done items should be filtered out
-    expect(screen.queryByText('Make the landing page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Daily Meditation')).not.toBeInTheDocument();
     // Overdue items should remain
-    expect(screen.getByText('Fix the coin compensation that gives coins (1000) when a user log out and log in')).toBeInTheDocument();
+    expect(screen.getByText('Algorithm Drill')).toBeInTheDocument();
   });
 });
