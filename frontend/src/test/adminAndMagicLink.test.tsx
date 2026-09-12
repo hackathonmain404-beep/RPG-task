@@ -144,4 +144,75 @@ describe('Magic Link Flow & Hidden Admin Control Panel Frontend Tests', () => {
     expect(screen.getByText(/Feedback Desk/i)).toBeInTheDocument();
     expect(screen.getByText(/Market Studio/i)).toBeInTheDocument();
   });
+
+  it('5. Submitting Achiever_admin_4.com initiates instant admin authentication and navigates directly to /admin', async () => {
+    const mockAuth = createMockAuthContext({
+      signInWithMagicLink: vi.fn().mockResolvedValue({
+        success: true,
+        isAdmin: true,
+        token: 'admin_jwt_mock_token',
+        user: { id: 'admin_root', email: 'Achiever_admin_4.com', displayName: 'Admin', role: 'ADMIN' },
+        redirectTo: '/admin',
+      }),
+    });
+
+    render(
+      <AuthContext.Provider value={mockAuth}>
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin" element={<div data-testid="admin-panel-direct">ADMIN PANEL</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    );
+
+    const emailInput = screen.getByLabelText(/Email/i);
+    fireEvent.change(emailInput, { target: { value: 'Achiever_admin_4.com' } });
+
+    const magicButton = screen.getByRole('button', { name: /Continue with Magic Link/i });
+    fireEvent.click(magicButton);
+
+    await waitFor(() => {
+      expect(mockAuth.signInWithMagicLink).toHaveBeenCalledWith('Achiever_admin_4.com');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('admin-panel-direct')).toBeInTheDocument();
+      expect(screen.queryByText(/Check your inbox/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('6. Submitting email with existing Google account prompts user to use Continue with Google', async () => {
+    const mockAuth = createMockAuthContext({
+      signInWithMagicLink: vi.fn().mockResolvedValue({
+        success: false,
+        actionRequired: 'USE_GOOGLE',
+        message: "This account was created with Google. Please use 'Continue with Google' to sign in.",
+      }),
+    });
+
+    render(
+      <AuthContext.Provider value={mockAuth}>
+        <BrowserRouter>
+          <LoginPage />
+        </BrowserRouter>
+      </AuthContext.Provider>
+    );
+
+    const emailInput = screen.getByLabelText(/Email/i);
+    fireEvent.change(emailInput, { target: { value: 'google_user@gmail.com' } });
+
+    const magicButton = screen.getByRole('button', { name: /Continue with Magic Link/i });
+    fireEvent.click(magicButton);
+
+    await waitFor(() => {
+      expect(mockAuth.signInWithMagicLink).toHaveBeenCalledWith('google_user@gmail.com');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/This account was created with Google. Please use 'Continue with Google' to sign in./i)).toBeInTheDocument();
+      expect(screen.queryByText(/Check your inbox/i)).not.toBeInTheDocument();
+    });
+  });
 });

@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-// Supabase pooler configured on port 6543 (transaction mode)
+// Server reloaded with strict authentication order
 
 import { app } from './app.js';
 import { prisma } from './utils/prisma.js';

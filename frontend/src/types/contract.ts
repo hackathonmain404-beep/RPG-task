@@ -241,9 +241,15 @@ export interface SendMagicLinkRequest {
 export interface SendMagicLinkResponse {
   success: boolean;
   message: string;
-  email: string;
-  isAdmin: boolean;
+  email?: string;
+  isAdmin?: boolean;
+  actionRequired?: 'USE_GOOGLE' | 'USE_GITHUB' | 'USE_PASSWORD';
+  provider?: string;
+  token?: string;
+  user?: User;
+  redirectTo?: string;
   verificationToken?: string;
+  isNewUser?: boolean;
 }
 
 export interface VerifyMagicLinkResponse {

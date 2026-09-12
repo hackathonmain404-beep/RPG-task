@@ -11,6 +11,15 @@ export async function send(req: Request, res: Response, next: NextFunction): Pro
     const input = sendMagicLinkSchema.parse(req.body);
     const result = await magicLinkService.sendMagicLink(input.email);
 
+    if (result.token) {
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    }
+
     res.status(200).json(result);
   } catch (err) {
     next(err);

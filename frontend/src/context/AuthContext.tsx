@@ -423,7 +423,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sign in with Magic Link
   const signInWithMagicLink = useCallback(async (email: string) => {
-    return sendMagicLinkApi(email);
+    const res = await sendMagicLinkApi(email);
+    if (res.isAdmin && res.token && res.user) {
+      localStorage.setItem('auth_token', res.token);
+      setUser(res.user);
+      try {
+        const me = await authApi.getMe();
+        setUser(me.user);
+        if (me.character) {
+          setCharacter({
+            ...me.character,
+            attributes: normalizeAttributes(me.character.attributes),
+          });
+        }
+      } catch {
+        // Me endpoint fallback
+      }
+    }
+    return res;
   }, []);
 
   // Verify Magic Link Token

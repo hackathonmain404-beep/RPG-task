@@ -83,6 +83,16 @@ export const LoginPage: React.FC = () => {
 
     try {
       const res = await signInWithMagicLink(clean);
+      if (res.isAdmin && res.token) {
+        // Admin Immediate Access: Navigate straight to /admin without email or verification screen
+        navigate(res.redirectTo || '/admin');
+        return;
+      }
+      if (res.actionRequired) {
+        // Existing user with Google, GitHub, or Password
+        setErrorMsg(res.message);
+        return;
+      }
       setMagicLinkSentTo(clean);
       if (res.verificationToken) {
         setLocalDevToken(res.verificationToken);

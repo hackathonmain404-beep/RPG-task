@@ -11,11 +11,21 @@ const JWT_EXPIRES_IN = '7d';
 export interface SendMagicLinkResult {
   success: boolean;
   message: string;
-  email: string;
-  isAdmin: boolean;
-  // Included for seamless local dev, testing, and confirmation
+  email?: string;
+  isAdmin?: boolean;
+  actionRequired?: 'USE_GOOGLE' | 'USE_GITHUB' | 'USE_PASSWORD';
+  provider?: string;
+  token?: string;
+  user?: {
+    id: string;
+    email: string;
+    displayName: string;
+    role: string;
+  };
+  redirectTo?: string;
   verificationToken?: string;
   verificationUrl?: string;
+  isNewUser?: boolean;
 }
 
 export interface VerifyMagicLinkResult {
@@ -38,23 +48,37 @@ export interface VerifyMagicLinkResult {
 }
 
 /**
- * Initiates Magic Link authentication for new users, returning users, or the administrator.
+ * Initiates authentication in strict order:
+ * 1. Normalize input
+ * 2. Check special admin identifier -> server-side verify admin session (no email, no magic link token)
+ * 3. Check database for existing account
+ *    -> if Google/GitHub/Password account, instruct user to use valid provider
+ *    -> if existing Magic Link account, send link to existing account (no duplicate account)
+ * 4. If new account -> send link, create account only upon verification
  */
 export async function sendMagicLink(inputIdentifier: string): Promise<SendMagicLinkResult> {
+  if (!inputIdentifier || typeof inputIdentifier !== 'string') {
+    throw new AppError(400, 'INVALID_INPUT', 'Email address is required.');
+  }
+
+  // 1. Normalize input
   const trimmed = inputIdentifier.trim();
-  const isAdmin = trimmed.toLowerCase() === ADMIN_IDENTIFIER;
-  const normalizedEmail = isAdmin ? 'Achiever_admin_4.com' : trimmed.toLowerCase();
+  const normalizedEmail = trimmed.toLowerCase();
 
-  // 1. Ensure user account exists or initialize it
-  let user = await (prisma as any).user.findUnique({
-    where: { email: normalizedEmail },
-    include: { character: true },
-  });
+  // 2. FIRST: Check special admin identifier
+  if (normalizedEmail === ADMIN_IDENTIFIER) {
+    // DO NOT send any email
+    // DO NOT generate a Magic Link
+    // DO NOT create a normal user account
+    // Server-side verify admin authorization:
+    let adminUser = await (prisma as any).user.findUnique({
+      where: { email: 'Achiever_admin_4.com' },
+      select: { id: true, email: true, role: true, displayName: true },
+    });
 
-  if (isAdmin) {
-    if (!user) {
-      // Create dedicated Admin account in DB
-      user = await (prisma as any).$transaction(async (tx: any) => {
+    if (!adminUser) {
+      // Ensure the configured root admin exists with role ADMIN in DB
+      adminUser = await (prisma as any).$transaction(async (tx: any) => {
         const newUser = await tx.user.create({
           data: {
             id: 'admin_achiever_root_4',
@@ -64,8 +88,7 @@ export async function sendMagicLink(inputIdentifier: string): Promise<SendMagicL
             lastActiveAt: new Date(),
           },
         });
-
-        const newChar = await tx.character.create({
+        await tx.character.create({
           data: {
             id: 'admin_char_root_4',
             userId: newUser.id,
@@ -76,92 +99,152 @@ export async function sendMagicLink(inputIdentifier: string): Promise<SendMagicL
             streakBest: 10,
           },
         });
-
-        return { ...newUser, character: newChar };
-      });
-    } else if (user.role !== 'ADMIN') {
-      // Ensure role is ADMIN
-      user = await (prisma as any).user.update({
-        where: { id: user.id },
-        data: { role: 'ADMIN' },
-        include: { character: true },
+        return newUser;
       });
     }
-  } else {
-    // Normal User Flow: Create account if first-time user
-    if (!user) {
-      user = await (prisma as any).$transaction(async (tx: any) => {
-        const newUser = await tx.user.create({
-          data: {
-            id: crypto.randomUUID(),
-            email: normalizedEmail,
-            displayName: normalizedEmail.split('@')[0],
-            role: 'USER',
-            lastActiveAt: new Date(),
-          },
-        });
 
-        const newChar = await tx.character.create({
-          data: {
-            userId: newUser.id,
-            level: 1,
-            totalXp: 0,
-            gold: 50,
-            streakCurrent: 0,
-            streakBest: 0,
-            attributes: {
-              create: [
-                { key: 'intellect', displayName: 'Intellect', value: 10 },
-                { key: 'strength', displayName: 'Strength', value: 10 },
-                { key: 'wisdom', displayName: 'Wisdom', value: 10 },
-                { key: 'charisma', displayName: 'Charisma', value: 10 },
-                { key: 'vitality', displayName: 'Vitality', value: 10 },
-              ],
-            },
-          },
-        });
-
-        return { ...newUser, character: newChar };
-      });
-    } else {
-      // Returning user: update last active
-      await (prisma as any).user.update({
-        where: { id: user.id },
-        data: { lastActiveAt: new Date() },
-      });
+    if (adminUser.role !== 'ADMIN') {
+      throw new AppError(403, 'FORBIDDEN', 'Access denied. Account is not authorized for administrator privileges.');
     }
+
+    // Generate secure admin JWT session
+    const adminToken = jwt.sign(
+      {
+        userId: adminUser.id,
+        email: adminUser.email,
+        role: 'ADMIN',
+      },
+      getJwtSecret(),
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    return {
+      success: true,
+      isAdmin: true,
+      token: adminToken,
+      user: {
+        id: adminUser.id,
+        email: adminUser.email,
+        displayName: adminUser.displayName,
+        role: 'ADMIN',
+      },
+      redirectTo: '/admin',
+      message: 'Admin authenticated successfully.',
+    };
   }
 
-  // 2. Generate cryptographically secure single-use token
+  // 3. Normal user: Check database for existing account (lightweight SELECT ONLY)
+  // DO NOT load tasks, analytics, inventory, shop, feedback, etc.
+  const existingUser = await (prisma as any).user.findUnique({
+    where: { email: normalizedEmail },
+    select: {
+      id: true,
+      email: true,
+      passwordHash: true,
+      githubId: true,
+      githubUsername: true,
+      avatarUrl: true,
+      role: true,
+    },
+  });
+
+  if (existingUser) {
+    // User already exists: determine existing authentication method
+    // Check if created with Google
+    if (
+      existingUser.avatarUrl?.includes('googleusercontent.com') ||
+      (!existingUser.passwordHash && !existingUser.githubId && !existingUser.githubUsername && existingUser.avatarUrl?.includes('google'))
+    ) {
+      return {
+        success: false,
+        actionRequired: 'USE_GOOGLE',
+        provider: 'google',
+        message: "This account was created with Google. Please use 'Continue with Google' to sign in.",
+      };
+    }
+
+    // Check if created with GitHub
+    if (
+      existingUser.githubId ||
+      existingUser.githubUsername ||
+      existingUser.avatarUrl?.includes('githubusercontent.com')
+    ) {
+      return {
+        success: false,
+        actionRequired: 'USE_GITHUB',
+        provider: 'github',
+        message: "This account is linked with GitHub. Please use 'Continue with GitHub' to sign in.",
+      };
+    }
+
+    // Check if created with standard email/password
+    if (existingUser.passwordHash) {
+      return {
+        success: false,
+        actionRequired: 'USE_PASSWORD',
+        provider: 'password',
+        message: "This account uses password authentication. Please enter your password to sign in.",
+      };
+    }
+
+    // Existing Magic Link account: Send Magic Link! (DO NOT create duplicate account)
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_MS);
+
+    await (prisma as any).magicLinkToken.deleteMany({
+      where: { email: normalizedEmail },
+    });
+
+    await (prisma as any).magicLinkToken.create({
+      data: {
+        email: normalizedEmail,
+        tokenHash,
+        expiresAt,
+        used: false,
+        isAdmin: false,
+      },
+    });
+
+    return {
+      success: true,
+      isNewUser: false,
+      message: 'Check your email for your sign-in link.',
+      email: normalizedEmail,
+      isAdmin: false,
+      verificationToken: rawToken,
+      verificationUrl: `/auth/verify?token=${rawToken}`,
+    };
+  }
+
+  // 4. New user: Email does NOT exist in DB
+  // Send Magic Link! DO NOT create the account yet!
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_MS);
 
-  // Invalidate any previous pending tokens for this email
   await (prisma as any).magicLinkToken.deleteMany({
     where: { email: normalizedEmail },
   });
 
-  // Persist secure hashed token
   await (prisma as any).magicLinkToken.create({
     data: {
       email: normalizedEmail,
       tokenHash,
       expiresAt,
       used: false,
-      isAdmin,
+      isAdmin: false,
     },
   });
 
-  const verificationUrl = `/auth/verify?token=${rawToken}`;
-
   return {
     success: true,
+    isNewUser: true,
     message: 'Check your email for your sign-in link.',
     email: normalizedEmail,
-    isAdmin,
+    isAdmin: false,
     verificationToken: rawToken,
-    verificationUrl,
+    verificationUrl: `/auth/verify?token=${rawToken}`,
   };
 }
 
@@ -198,18 +281,56 @@ export async function verifyMagicLink(rawToken: string): Promise<VerifyMagicLink
     data: { used: true },
   });
 
-  // Retrieve user account
-  const user = await (prisma as any).user.findUnique({
+  // Retrieve user account or create if first-time user
+  let user = await (prisma as any).user.findUnique({
     where: { email: record.email },
     include: { character: true },
   });
 
   if (!user) {
-    throw new AppError(404, 'USER_NOT_FOUND', 'Associated adventurer account not found.');
+    // New user verified link: Create exactly ONE user account + character
+    user = await (prisma as any).$transaction(async (tx: any) => {
+      const newUser = await tx.user.create({
+        data: {
+          id: crypto.randomUUID(),
+          email: record.email,
+          displayName: record.email.split('@')[0],
+          role: 'USER',
+          lastActiveAt: new Date(),
+        },
+      });
+
+      const newChar = await tx.character.create({
+        data: {
+          userId: newUser.id,
+          level: 1,
+          totalXp: 0,
+          gold: 50,
+          streakCurrent: 0,
+          streakBest: 0,
+          attributes: {
+            create: [
+              { key: 'intellect', displayName: 'Intellect', value: 10 },
+              { key: 'strength', displayName: 'Strength', value: 10 },
+              { key: 'wisdom', displayName: 'Wisdom', value: 10 },
+              { key: 'charisma', displayName: 'Charisma', value: 10 },
+              { key: 'vitality', displayName: 'Vitality', value: 10 },
+            ],
+          },
+        },
+      });
+
+      return { ...newUser, character: newChar };
+    });
+  } else {
+    // Existing user: update lastActiveAt (do NOT create duplicate account)
+    await (prisma as any).user.update({
+      where: { id: user.id },
+      data: { lastActiveAt: new Date() },
+    });
   }
 
   // Server-authoritative Admin verification:
-  // If this token was created for an admin request, the user's role MUST be ADMIN in the database!
   const isActualAdmin = user.role === 'ADMIN';
   if (record.isAdmin && !isActualAdmin) {
     throw new AppError(403, 'FORBIDDEN', 'Access denied. Account is not authorized for administrator privileges.');
