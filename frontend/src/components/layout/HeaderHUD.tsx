@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useFeedback } from '../../context/FeedbackContext';
-import { LogOut, User, Menu, X, MessageSquarePlus, Crown } from 'lucide-react';
+import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -14,6 +14,28 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
   const { openFeedback } = useFeedback();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside or Escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -85,125 +107,101 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           </Link>
         </div>
 
-        {/* Right: Feedback Button, Player Profile & Sign Out */}
+        {/* Right: Admin Quick Link & Interactive Profile Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Feedback Trigger — immediately to the left of user profile */}
-          <button
-            type="button"
-            onClick={openFeedback}
-            className="rpg-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.4rem 0.75rem',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              borderRadius: '8px',
-              backgroundColor: 'rgba(139, 92, 246, 0.12)',
-              border: '1px solid rgba(139, 92, 246, 0.3)',
-              color: '#c084fc',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.22)';
-              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.55)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.12)';
-              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
-            }}
-            aria-label="Send Feedback"
-          >
-            <MessageSquarePlus size={16} />
-            <span className="desktop-only">Feedback</span>
-          </button>
-
           {/* Admin Control Center Quick Link — ONLY visible to verified admins */}
           {isAdmin && (
             <Link
               to="/admin"
               id="header-admin-link"
               title="Admin Control Center"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.4rem 0.65rem',
-                borderRadius: '8px',
-                background: 'rgba(168, 85, 247, 0.15)',
-                border: '1px solid rgba(168, 85, 247, 0.45)',
-                color: '#d8b4fe',
-                textDecoration: 'none',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(168, 85, 247, 0.25)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(168, 85, 247, 0.15)';
-              }}
+              className="hud-admin-quick-btn"
             >
               <Crown size={14} color="#c084fc" />
               <span className="desktop-only">Admin</span>
             </Link>
           )}
 
-          <div
-            className="hud-profile-btn"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.25rem 0.6rem',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-surface-elevated)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+          {/* Interactive Profile Dropdown (housing Feedback & Sign Out) */}
+          <div ref={menuRef} className="hud-profile-container" style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(prev => !prev)}
+              className={`hud-profile-btn ${isMenuOpen ? 'is-open' : ''}`}
+              aria-haspopup="menu"
+              aria-expanded={isMenuOpen}
+              aria-label="User Profile Menu"
             >
-              <User size={14} color="#38bdf8" className="hud-user-icon" />
-            </div>
-            <span
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                color: 'var(--text-primary)',
-                maxWidth: '120px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {user?.displayName || 'Adventurer'}
-            </span>
-          </div>
+              <div className="hud-user-avatar">
+                <User size={14} className="hud-user-icon" />
+              </div>
+              <span className="hud-user-name">
+                {user?.displayName || 'Adventurer'}
+              </span>
+              <ChevronDown size={14} className={`hud-profile-chevron ${isMenuOpen ? 'is-open' : ''}`} />
+            </button>
 
-          {/* Sign Out Action */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="rpg-btn rpg-btn-danger hud-signout-btn"
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
-            aria-label="Sign out of Achiever"
-          >
-            <LogOut size={16} className="signout-icon" />
-            <span className="desktop-only">{isLoggingOut ? 'Leaving...' : 'Sign Out'}</span>
-          </button>
+            {/* Glassmorphic Profile Dropdown Menu */}
+            <div
+              className={`hud-profile-dropdown ${isMenuOpen ? 'is-open' : ''}`}
+              aria-label="Profile options"
+            >
+              {/* User Identity Header */}
+              <div className="hud-dropdown-header">
+                <div className="hud-dropdown-user-info">
+                  <span className="hud-dropdown-title">Account Overview</span>
+                  {user?.email && (
+                    <span className="hud-dropdown-email">{user.email}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="hud-dropdown-divider" />
+
+              {/* Feedback Item */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  openFeedback();
+                }}
+                className="hud-dropdown-item hud-dropdown-feedback"
+                aria-label="Send Feedback"
+              >
+                <MessageSquarePlus size={16} className="hud-item-icon" />
+                <span>Feedback</span>
+              </button>
+
+              {/* Admin Link inside dropdown if verified admin */}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="hud-dropdown-item hud-dropdown-admin"
+                >
+                  <Crown size={16} className="hud-item-icon" />
+                  <span>Admin Control</span>
+                </Link>
+              )}
+
+              <div className="hud-dropdown-divider" />
+
+              {/* Sign Out Item */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  handleLogout();
+                }}
+                disabled={isLoggingOut}
+                className="hud-dropdown-item hud-dropdown-signout"
+                aria-label="Sign out of Achiever"
+              >
+                <LogOut size={16} className="hud-item-icon signout-icon" />
+                <span>{isLoggingOut ? 'Leaving...' : 'Sign Out'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
