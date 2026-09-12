@@ -16,8 +16,9 @@ model User {
   updatedAt    DateTime   @updatedAt
   lastActiveAt DateTime?
 
-  character    Character?
-  tasks        Task[]
+  character        Character?
+  tasks            Task[]
+  completionEvents CompletionEvent[]
 
   @@index([email])
 }
@@ -73,9 +74,30 @@ model Task {
   completedAt      DateTime?
   dueDate          String?
 
+  completionEvents CompletionEvent[]
+
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
   @@index([userId])
   @@index([userId, completed])
+}
+
+model CompletionEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  completedAt DateTime @default(now())
+  xpAwarded   Int
+  goldAwarded Int
+  streakAfter Int
+  levelBefore Int
+  levelAfter  Int
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId, completedAt])
 }

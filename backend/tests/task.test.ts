@@ -238,16 +238,42 @@ describe('Task CRUD & Completion API', () => {
   // ─── COMPLETE ───────────────────────────────────────────────────────────
 
   describe('POST /api/tasks/:id/complete', () => {
-    it('should complete a task and mark it as done', async () => {
+    it('should complete a task with full RPG rewards, progression, and streak', async () => {
       const res = await request(app)
         .post(`/api/tasks/${taskIdForComplete}/complete`)
         .set('Authorization', `Bearer ${tokenA}`);
 
       expect(res.status).toBe(200);
+
+      // Task status
       expect(res.body.task).toBeDefined();
       expect(res.body.task.id).toBe(taskIdForComplete);
       expect(res.body.task.completed).toBe(true);
       expect(res.body.task.completedAt).toBeDefined();
+
+      // Rewards (hard difficulty: +140 XP, +40 Gold, +16 Attribute)
+      expect(res.body.rewards).toBeDefined();
+      expect(res.body.rewards.xp).toBe(140);
+      expect(res.body.rewards.gold).toBe(40);
+      expect(res.body.rewards.attribute).toBeDefined();
+      expect(res.body.rewards.attribute.key).toBe('strength');
+      expect(res.body.rewards.attribute.amount).toBe(16);
+
+      // Progression
+      expect(res.body.progression).toBeDefined();
+      expect(res.body.progression.levelBefore).toBeDefined();
+      expect(res.body.progression.levelAfter).toBeDefined();
+      expect(res.body.progression.totalXp).toBeDefined();
+      expect(res.body.progression.currentLevelXp).toBeDefined();
+      expect(res.body.progression.nextLevelXp).toBeDefined();
+      expect(typeof res.body.progression.progressPercent).toBe('number');
+      // XP should have increased
+      expect(res.body.progression.totalXp).toBeGreaterThan(0);
+
+      // Streak
+      expect(res.body.streak).toBeDefined();
+      expect(res.body.streak.current).toBeGreaterThanOrEqual(1);
+      expect(res.body.streak.best).toBeGreaterThanOrEqual(1);
     });
 
     it('should reject double completion with 409 TASK_ALREADY_COMPLETED', async () => {

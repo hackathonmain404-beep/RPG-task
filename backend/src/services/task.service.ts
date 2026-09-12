@@ -1,6 +1,11 @@
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
 import { CreateTaskInput, UpdateTaskInput } from '../schemas/task.schema.js';
+import {
+  calculateReward,
+  computeProgression,
+  calculateStreak,
+} from './rpg.engine.js';
 
 /**
  * Creates a new task owned by the authenticated user.
@@ -95,15 +100,20 @@ export async function deleteTask(userId: string, taskId: string) {
 /**
  * Completes a task owned by the authenticated user.
  *
- * Phase 2 boundary:
- *  - Verifies ownership (row-level security)
- *  - Verifies task is not already completed (anti-cheat)
- *  - Marks task as completed with timestamp
- *  - Does NOT calculate RPG rewards (that's Phase 3)
+ * Full server-authoritative RPG transaction:
+ *   authenticate → verify ownership → verify incomplete → calculate reward
+ *   → mark complete → record completion → update XP → determine level
+ *   → update attribute → update streak → update character → commit
  *
- * Anti-cheat: double-completion returns 409 TASK_ALREADY_COMPLETED
+ * Anti-cheat:
+ *   - Double-completion → 409 TASK_ALREADY_COMPLETED
+ *   - No reward values accepted from client
+ *   - All calculations are server-side (rpg.engine.ts)
+ *
+ * Atomic: entire flow runs in prisma.$transaction
  */
 export async function completeTask(userId: string, taskId: string) {
+  // Pre-flight checks outside transaction for fast failure
   const existing = await prisma.task.findFirst({
     where: { id: taskId, userId },
   });
@@ -116,21 +126,121 @@ export async function completeTask(userId: string, taskId: string) {
     throw new AppError(409, 'TASK_ALREADY_COMPLETED', 'This quest has already been completed.');
   }
 
-  const completedAt = new Date();
+  const now = new Date();
 
-  const completed = await prisma.task.update({
-    where: { id: taskId },
-    data: {
-      completed: true,
-      completedAt,
-    },
+  // Full atomic transaction
+  const result = await prisma.$transaction(async (tx) => {
+    // 1. Re-check task state inside transaction (race condition guard)
+    const task = await tx.task.findFirst({
+      where: { id: taskId, userId, completed: false },
+    });
+
+    if (!task) {
+      throw new AppError(409, 'TASK_ALREADY_COMPLETED', 'This quest has already been completed.');
+    }
+
+    // 2. Get character with attributes
+    const character = await tx.character.findUnique({
+      where: { userId },
+      include: { attributes: true },
+    });
+
+    if (!character) {
+      throw new AppError(500, 'INTERNAL_SERVER_ERROR', 'Character not found for user.');
+    }
+
+    // 3. Calculate reward from server-defined matrix (NEVER from client)
+    const reward = calculateReward(task.difficulty, task.categoryKey);
+
+    // 4. Compute XP progression and level transition
+    const progression = computeProgression(character.totalXp, reward.xp);
+
+    // 5. Calculate streak
+    const streak = calculateStreak(
+      character.lastActivityDate,
+      character.streakCurrent,
+      character.streakBest,
+      now
+    );
+
+    // 6. Mark task as completed
+    const completedTask = await tx.task.update({
+      where: { id: taskId },
+      data: {
+        completed: true,
+        completedAt: now,
+        xpReward: reward.xp,
+        goldReward: reward.gold,
+      },
+    });
+
+    // 7. Create CompletionEvent audit record
+    await tx.completionEvent.create({
+      data: {
+        userId,
+        taskId,
+        completedAt: now,
+        xpAwarded: reward.xp,
+        goldAwarded: reward.gold,
+        streakAfter: streak.current,
+        levelBefore: progression.levelBefore,
+        levelAfter: progression.levelAfter,
+      },
+    });
+
+    // 8. Update character (XP, level, gold, streak)
+    await tx.character.update({
+      where: { userId },
+      data: {
+        totalXp: progression.totalXp,
+        level: progression.levelAfter,
+        gold: character.gold + reward.gold,
+        streakCurrent: streak.current,
+        streakBest: streak.best,
+        lastActivityDate: now,
+      },
+    });
+
+    // 9. Update attribute value
+    const targetAttribute = character.attributes.find(
+      (attr) => attr.key === reward.attribute.key
+    );
+
+    if (targetAttribute) {
+      await tx.attribute.update({
+        where: { id: targetAttribute.id },
+        data: {
+          value: targetAttribute.value + reward.attribute.amount,
+        },
+      });
+    }
+
+    return {
+      task: {
+        id: completedTask.id,
+        completed: completedTask.completed,
+        completedAt: completedTask.completedAt,
+      },
+      rewards: {
+        xp: reward.xp,
+        gold: reward.gold,
+        attribute: reward.attribute,
+      },
+      progression: {
+        levelBefore: progression.levelBefore,
+        levelAfter: progression.levelAfter,
+        totalXp: progression.totalXp,
+        currentLevelXp: progression.currentLevelXp,
+        nextLevelXp: progression.nextLevelXp,
+        progressPercent: progression.progressPercent,
+      },
+      streak: {
+        current: streak.current,
+        best: streak.best,
+      },
+    };
   });
 
-  return {
-    task: {
-      id: completed.id,
-      completed: completed.completed,
-      completedAt: completed.completedAt,
-    },
-  };
+  return result;
 }
+
