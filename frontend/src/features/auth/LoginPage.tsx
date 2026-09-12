@@ -51,6 +51,25 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleQuickTestLogin = async () => {
+    setErrorMsg(null);
+    setEmail('adventurer@liferpg.app');
+    setPassword('password123');
+    setIsSubmitting(true);
+    try {
+      await login({ email: 'adventurer@liferpg.app', password: 'password123' });
+      navigate(redirectUrl, { replace: true });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrorMsg(err.message || 'Test authentication failed.');
+      } else {
+        setErrorMsg('An unexpected error occurred during test login.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -224,6 +243,51 @@ export const LoginPage: React.FC = () => {
             {isSubmitting ? 'Entering the Citadel...' : 'Enter Citadel'}
             {!isSubmitting && <ArrowRight size={18} />}
           </button>
+
+          {/* ⚡ Quick Test Login Button */}
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleQuickTestLogin}
+            className="rpg-btn"
+            style={{
+              width: '100%',
+              padding: '0.8rem',
+              marginTop: '0.75rem',
+              fontSize: '0.95rem',
+              backgroundColor: 'rgba(56, 189, 248, 0.1)',
+              border: '1px solid rgba(56, 189, 248, 0.4)',
+              color: '#38bdf8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              fontWeight: 600,
+            }}
+          >
+            ⚡ Quick Test Login (Hero of Citadel)
+          </button>
+
+          {/* Testing Account Helper Box */}
+          <div
+            style={{
+              marginTop: '1rem',
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(15, 23, 42, 0.6)',
+              border: '1px dashed rgba(56, 189, 248, 0.3)',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+              🧪 <strong>Testing Account Credentials</strong>
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#38bdf8', fontFamily: 'monospace' }}>
+              adventurer@liferpg.app / password123
+            </div>
+          </div>
         </form>
 
         <div

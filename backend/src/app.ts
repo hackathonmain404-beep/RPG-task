@@ -9,6 +9,7 @@ import { shopRouter } from './routes/shop.routes.js';
 import { inventoryRouter } from './routes/inventory.routes.js';
 import { badgeRouter } from './routes/badge.routes.js';
 import { themeRouter } from './routes/theme.routes.js';
+import { characterRouter } from './routes/character.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 export const app = express();
@@ -54,6 +55,7 @@ apiRouter.use('/shop', shopRouter);
 apiRouter.use('/inventory', inventoryRouter);
 apiRouter.use('/badges', badgeRouter);
 apiRouter.use('/themes', themeRouter);
+apiRouter.use('/character', characterRouter);
 
 // Mount router under both prefixes
 app.use('/api', apiRouter);
