@@ -837,16 +837,45 @@ export const LandingPage: React.FC = () => {
         </section>
       </main>
 
-      {/* RICH 5-COLUMN FOOTER */}
+      {/* RICH 5-COLUMN FOOTER & COMMAND CENTER (STITCH SPEC) */}
       <footer
+        id="command-center-footer"
         style={{
           borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-          backgroundColor: '#06080b',
+          backgroundColor: '#04060d',
           padding: '4rem 1.5rem 2rem',
           color: 'var(--text-tertiary)',
           fontSize: '0.9rem',
+          position: 'relative',
+          zIndex: 20,
+          overflow: 'hidden'
         }}
       >
+        {/* Subtle Horizon Glow Divider */}
+        <div 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: 'linear-gradient(to right, transparent, rgba(56, 189, 248, 0.4), transparent)'
+          }} 
+        />
+        <div 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '75%',
+            height: '96px',
+            backgroundColor: 'rgba(56, 189, 248, 0.05)',
+            filter: 'blur(48px)',
+            pointerEvents: 'none'
+          }} 
+        />
+
         <div
           style={{
             maxWidth: '1280px',
@@ -855,71 +884,83 @@ export const LandingPage: React.FC = () => {
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '3rem 2rem',
             marginBottom: '3.5rem',
+            position: 'relative',
+            zIndex: 1
           }}
         >
           {/* Col 1: Brand & Bio */}
           <div style={{ gridColumn: 'span 2' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.85rem' }}>
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
                   backgroundColor: 'rgba(56, 189, 248, 0.15)',
                   border: '1px solid rgba(56, 189, 248, 0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
                 }}
               >
-                <Shield size={18} color="#38bdf8" />
+                <Shield size={20} color="#38bdf8" />
               </div>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.15rem', color: '#f8fafc' }}>
-                LIFE RPG
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.2rem', color: '#f8fafc', letterSpacing: '0.04em' }}>
+                LIFE <span style={{ color: '#38bdf8', textShadow: '0 0 10px rgba(56, 189, 248, 0.5)' }}>RPG</span>
               </span>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, maxWidth: '360px', marginBottom: '1.5rem' }}>
-              Turn your real life into an adventure. Transform everyday tasks, habits, and learning into epic quests, earn XP, level up your disciplines, and build real-world momentum.
+            <p style={{ color: '#38bdf8', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.02em', marginBottom: '0.5rem' }}>
+              Turn your real life into an adventure.
             </p>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <a href="https://github.com" target="_blank" rel="noreferrer" style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', textDecoration: 'none' }} aria-label="GitHub">
-                <Code2 size={18} />
-              </a>
-              <a href="#citadel" style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', textDecoration: 'none' }} aria-label="Terminal">
-                <Terminal size={18} />
-              </a>
-              <a href="#radio" style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', textDecoration: 'none' }} aria-label="Broadcast">
-                <Radio size={18} />
-              </a>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, maxWidth: '380px', marginBottom: '1.5rem' }}>
+              Transform everyday tasks, habits, and learning into quests, earn XP, build your character, and level up your life.
+            </p>
+
+            <div>
+              <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', display: 'block', marginBottom: '0.6rem' }}>
+                Translink Satellites
+              </span>
+              <div style={{ display: 'flex', gap: '0.65rem' }}>
+                <a href="https://github.com" target="_blank" rel="noreferrer" style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', textDecoration: 'none', transition: 'all 0.2s ease' }} aria-label="GitHub">
+                  <Code2 size={16} />
+                </a>
+                <a href="#terminal" style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', textDecoration: 'none', transition: 'all 0.2s ease' }} aria-label="Terminal">
+                  <Terminal size={16} />
+                </a>
+                <a href="#broadcast" style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', textDecoration: 'none', transition: 'all 0.2s ease' }} aria-label="Broadcast">
+                  <Radio size={16} />
+                </a>
+              </div>
             </div>
           </div>
 
           {/* Col 2: Product */}
           <div>
-            <h4 style={{ color: '#f8fafc', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.25rem' }}>
+            <h4 style={{ color: '#f8fafc', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1.25rem', borderLeft: '2px solid #38bdf8', paddingLeft: '0.6rem' }}>
               Product
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0 }}>
-              <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s' }}>Features</a></li>
-              <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s' }}>How It Works</a></li>
-              <li><Link to="/register" style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s' }}>Quests</Link></li>
-              <li><a href="#disciplines" style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s' }}>Disciplines Progression</a></li>
-              <li><Link to="/register" style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s' }}>Armory</Link></li>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
+              <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Features <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>How It Works <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><Link to="/register" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Quests <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><a href="#disciplines" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Character Progression <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><Link to="/register" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Rewards <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
             </ul>
           </div>
 
-          {/* Col 3: Developers */}
+          {/* Col 3: Resources */}
           <div>
-            <h4 style={{ color: '#f8fafc', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.25rem' }}>
-              Developers
+            <h4 style={{ color: '#f8fafc', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1.25rem', borderLeft: '2px solid #c084fc', paddingLeft: '0.6rem' }}>
+              Resources
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0 }}>
-              <li><a href="#persistence" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Documentation</a></li>
-              <li><a href="#persistence" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>API</a></li>
-              <li><a href="#persistence" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>System Architecture</a></li>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
+              <li><a href="#persistence" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Documentation <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#faq" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>FAQ <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#persistence" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>System Architecture <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
               <li>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)' }}>
-                  Changelog <span className="rpg-badge" style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '0.1rem 0.4rem', fontSize: '0.65rem' }}>v1.0.0</span>
+                  Changelog <span className="rpg-badge" style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '0.1rem 0.4rem', fontSize: '0.65rem' }}>v2.4.0</span> <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span>
                 </span>
               </li>
             </ul>
@@ -927,37 +968,37 @@ export const LandingPage: React.FC = () => {
 
           {/* Col 4: Company */}
           <div>
-            <h4 style={{ color: '#f8fafc', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.25rem' }}>
+            <h4 style={{ color: '#f8fafc', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1.25rem', borderLeft: '2px solid #fbbf24', paddingLeft: '0.6rem' }}>
               Company
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0 }}>
-              <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>About</a></li>
-              <li><a href="#citadel" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Community</a></li>
-              <li><a href="#contact" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Contact</a></li>
-              <li><a href="#citadel" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Citadel HQ</a></li>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
+              <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>About <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#community" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Community <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#contact" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Contact <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#citadel" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Citadel HQ <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
             </ul>
           </div>
 
           {/* Col 5: Legal */}
           <div>
-            <h4 style={{ color: '#f8fafc', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.25rem' }}>
+            <h4 style={{ color: '#f8fafc', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '1.25rem', borderLeft: '2px solid #f43f5e', paddingLeft: '0.6rem' }}>
               Legal
             </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0 }}>
-              <li><a href="#privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy</a></li>
-              <li><a href="#terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service</a></li>
-              <li><a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Security Integrity</a></li>
-              <li><a href="#accessibility" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Accessibility</a></li>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
+              <li><a href="#privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#security" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Security Integrity <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><a href="#accessibility" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Accessibility <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
             </ul>
           </div>
         </div>
 
-        {/* System Telemetry & Status Bar */}
+        {/* DECORATIVE RPG SYSTEM STATUS MODULE (HUD Console) */}
         <div
           style={{
             maxWidth: '1280px',
             margin: '0 auto',
-            padding: '1.25rem 0',
+            padding: '1.5rem 0',
             borderTop: '1px solid rgba(255, 255, 255, 0.06)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
             display: 'flex',
@@ -970,58 +1011,129 @@ export const LandingPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: '#10b981' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-              SYSTEM ONLINE
-            </span>
-            <span style={{ color: 'var(--text-tertiary)' }}>SERVER: <strong style={{ color: '#10b981' }}>ONLINE</strong></span>
-            <span style={{ color: 'var(--text-tertiary)' }}>DB: <strong style={{ color: '#38bdf8' }}>POSTGRESQL</strong></span>
-            <span style={{ color: 'var(--text-tertiary)' }}>ENGINE: <strong style={{ color: '#c084fc' }}>OPERATIONAL</strong></span>
-            <span style={{ color: 'var(--text-tertiary)' }}>LATENCY: <strong style={{ color: '#10b981' }}>&lt; 24ms</strong></span>
+            {/* Status Pill */}
+            <div
+              style={{
+                padding: '0.35rem 0.75rem',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(9, 14, 31, 0.9)',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                color: '#38bdf8',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                boxShadow: '0 0 12px rgba(56, 189, 248, 0.2)'
+              }}
+            >
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
+              System Status
+            </div>
+
+            <span className="desktop-only" style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
+
+            {/* Engine Status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(6, 9, 19, 0.6)', padding: '0.35rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <span style={{ color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '0.65rem' }}>Quest Engine:</span>
+              <span style={{ color: '#34d399', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#34d399' }} /> ONLINE
+              </span>
+            </div>
+
+            {/* XP Progression Status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(6, 9, 19, 0.6)', padding: '0.35rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <span style={{ color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '0.65rem' }}>XP Progression:</span>
+              <span style={{ color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8' }} /> ONLINE
+              </span>
+            </div>
+
+            {/* Cloud Vault Status */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(6, 9, 19, 0.6)', padding: '0.35rem 0.75rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+              <span style={{ color: 'var(--text-tertiary)', textTransform: 'uppercase', fontSize: '0.65rem' }}>Cloud Vault (PostgreSQL):</span>
+              <span style={{ color: '#818cf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#818cf8' }} /> VERIFIED
+              </span>
+            </div>
+
+            {/* Latency */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '0.35rem 0.65rem', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.25)', color: '#fbbf24' }}>
+              <Zap size={13} color="#fbbf24" />
+              <span>24ms SYNCHRONIZED</span>
+            </div>
           </div>
 
+          {/* Back to Top */}
           <button
             type="button"
             onClick={scrollToTop}
+            id="back-to-top"
+            aria-label="Scroll back to top of page"
             style={{
-              background: 'none',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '6px',
-              padding: '0.35rem 0.75rem',
+              background: 'rgba(15, 23, 49, 0.6)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              padding: '0.45rem 0.95rem',
               color: 'var(--text-secondary)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
               fontSize: '0.75rem',
+              transition: 'all 0.2s ease',
             }}
           >
             <ArrowUp size={12} /> Back to Top
           </button>
         </div>
 
-        {/* Copyright sub-bar */}
+        {/* COPYRIGHT & SESSION METADATA BAR */}
         <div
           style={{
             maxWidth: '1280px',
             margin: '0 auto',
-            paddingTop: '1.5rem',
+            paddingTop: '1.75rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '1rem',
             fontSize: '0.8rem',
+            fontFamily: 'var(--font-mono)'
           }}
         >
-          <div>
-            &copy; {new Date().getFullYear()} <strong style={{ color: 'var(--text-secondary)' }}>LIFE RPG</strong>. Built for adventurers.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Shield size={16} color="#38bdf8" />
+            <span>&copy; 2026 <strong style={{ color: '#f8fafc' }}>LIFE RPG</strong> — Built for adventurers.</span>
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
-            <a href="#privacy" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Privacy</a>
-            <a href="#terms" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Terms</a>
-            <a href="#accessibility" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Accessibility</a>
-            <span style={{ color: '#38bdf8' }}>VERSION: 1.0.0 (PRODUCTION)</span>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-tertiary)' }}>
+              <a href="#privacy" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Privacy</a>
+              <span>·</span>
+              <a href="#terms" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Terms</a>
+              <span>·</span>
+              <a href="#accessibility" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Accessibility</a>
+            </div>
+
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.2rem 0.65rem',
+                borderRadius: '4px',
+                backgroundColor: '#060913',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                fontSize: '0.7rem',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8' }} />
+              <span>SESSION: <code style={{ color: '#38bdf8' }}>CID-8842-PROD</code></span>
+            </div>
           </div>
         </div>
       </footer>
