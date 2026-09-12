@@ -1,0 +1,149 @@
+================================================================================
+           HACKATHON PROBLEM STATEMENT EXPLANATION: LIFE RPG
+                 Based on document: TZPSv2.pdf
+================================================================================
+
+1. EXECUTIVE SUMMARY & OBJECTIVE
+--------------------------------------------------------------------------------
+The project is to build a full-stack "Life RPG" web application.
+The core concept is to gamify real-life productivity (habits, daily chores, study, 
+fitness) by turning everyday tasks into an engaging Role-Playing Game (RPG).
+
+Instead of conventional to-do apps that feel like tedious chores with "delayed 
+gratification", a Life RPG provides instant dopamine, tangible visual rewards, 
+progression loops, and an immersive user experience.
+
+IMPORTANT REQUIREMENT:
+This is NOT just a frontend prototype. It strictly requires a robust, secure 
+full-stack architecture with real database persistence, user authentication, 
+and cheat-prevention logic on the backend.
+
+
+2. THE CORE PROBLEM TO SOLVE
+--------------------------------------------------------------------------------
+- Traditional to-do lists and habit trackers suffer from delayed gratification:
+  Going to the gym, studying, or reading books takes weeks or months to show 
+  real-world results, causing users to lose motivation and abandon apps.
+- Video games solve this by offering instant feedback loops: XP points, sound/visual 
+  cues, level-up milestones, and unlockable gear.
+- Your app bridges this psychological gap by mapping real-world actions into 
+  immediate in-game progress.
+
+
+3. PRODUCT FEEL & CREATIVE DIRECTION
+--------------------------------------------------------------------------------
+The hackathon rules strictly discourage generic, cookie-cutter SaaS dashboards 
+or unstyled Bootstrap/CRUD apps. The app must have personality and "a soul".
+
+You have full freedom to pick a unique artistic theme, such as:
+  * 16-bit Retro Dungeon Crawler / Pixel Art
+  * Cozy Lo-Fi Study Room / Coffee Shop
+  * Sleek Neon Cyberpunk / Sci-Fi Terminal
+  * Minimalist Modern Fantasy / Dark Mode RPG
+
+Key Experiential Requirements:
+  1. Alive & Tactile:
+     - Instant UI reactions.
+     - Celebratory feedback upon earning XP, leveling up, or buying items.
+     - Micro-interactions, spring animations, celebratory modals, particle effects.
+  2. Thematically Cohesive:
+     - Terminology must match the theme (e.g., "Quests" instead of "Tasks", 
+       "Gold / Mana / Credits" instead of "Points", "Stats / Attributes" instead of "Tags").
+     - Cohesive typography, matching color palette, and clear visual hierarchy.
+  3. Seamless & Fast:
+     - Remote database sync must feel instantaneous.
+     - Use optimistic UI updates, loading skeletons, and smooth state transitions.
+
+
+4. ALLOWED TECHNOLOGY POOL
+--------------------------------------------------------------------------------
+You can choose any modern full-stack stack:
+- Frontend:
+    React, Vue, Svelte, Angular, SolidJS, HTML/CSS/JS
+    Styling/UI: Tailwind CSS, SCSS, Radix UI, Shadcn/ui, Framer Motion, GSAP, etc.
+- Backend / API:
+    Node.js (Express, NestJS), Python (FastAPI, Django), Go, Ruby on Rails, 
+    Java (Spring), Next.js API Routes, or SvelteKit endpoints.
+- Database:
+    PostgreSQL, MongoDB, MySQL, SQLite, Redis.
+- Auth / BaaS:
+    Firebase, Supabase, Appwrite, Clerk, NextAuth/Auth.js, or custom JWT/Sessions.
+
+
+5. CORE FEATURES CHECKLIST (MANDATORY)
+--------------------------------------------------------------------------------
+1. User Authentication & Security:
+   - Secure sign up, login, logout, and persistent session management.
+   - Strict data isolation: Users can only access and modify their own tasks, 
+     inventory, stats, and profile data.
+   - Backend validation to prevent clients from tampering with/cheating XP, 
+     gold, or stats.
+
+2. Database Schema & Task CRUD:
+   - Well-modeled relational or document schema for Users, Tasks/Quests, Character 
+     Attributes, Inventory/Rewards, and Activity Logs.
+   - Complete CRUD operations: Create, Read, Update, Delete tasks smoothly.
+
+3. RPG Progression Engine (Non-Linear Math):
+   - A leveling curve where each subsequent level requires exponentially or 
+     progressively more XP (e.g., NextLevelXP = BaseXP * (Level ^ 1.5)).
+   - Leveling up triggers visual milestones and unlocks.
+
+4. Gamified Sub-Systems:
+   - Streaks: Track consecutive active days. Incentivize daily consistency.
+   - Attributes / Stats: Categorize tasks so completion boosts specific RPG attributes
+     (e.g., Coding -> +Intellect, Gym -> +Strength, Meditation -> +Spirit/Wisdom).
+   - Economy & Rewards Shop: Completing tasks earns virtual currency (Gold/Coins).
+     Users can spend earnings in a shop for virtual items, titles, cosmetic themes, 
+     or profile badges.
+
+5. Accessibility & Responsiveness:
+   - Fully responsive design (mobile, tablet, desktop).
+   - Fully keyboard navigable (Tab, Enter, Space).
+   - Semantic HTML and accessibility for screen readers.
+
+
+6. REQUIRED DELIVERABLES
+--------------------------------------------------------------------------------
+1. Public GitHub Repository:
+   - Contains both frontend and backend source code.
+   - Clean, chronological commit history (at least 3+ commits, no single-dump commits).
+   - Comprehensive README.md with setup instructions and .env.example files.
+2. Live Deployed URL:
+   - Fully functional, publicly accessible web link (e.g., Vercel, Render, 
+     Netlify, Railway, Supabase).
+3. Illustration Video:
+   - High-quality screen recording strictly between 90 and 180 seconds (1.5 to 3 mins).
+   - Must be under 100 MB.
+   - Must demonstrate:
+     a) User registration / login
+     b) Adding and completing a task
+     c) XP gain and level-up sequence
+     d) Hard browser page refresh to visually prove real database persistence.
+   - Must be accessible without login authorization (public link or stored in repo).
+
+
+7. ZERO-TOLERANCE DISQUALIFICATION RULES (IMMEDIATE ZERO SCORE)
+--------------------------------------------------------------------------------
+Avoid these at all costs:
+- Broken Links: Repo is private, or live URL is 404/broken at judging time.
+- Fake Persistence: Relying solely on browser localStorage. Data MUST persist 
+  in a real remote or backend database across different browsers/devices.
+- Build / Deployment Crash: Live app fails to load or backend cannot connect to DB.
+- Runtime Console Crashes: Unhandled JavaScript exceptions, blank screen whiteouts.
+- Invalid Repo: Less than 3 chronological commits, missing backend, or bulk-dumped repo.
+- Missing or Invalid Video: Missing video, video requiring private permissions, 
+  or video file exceeding 100 MB.
+
+
+8. JUDGING CRITERIA & HOW TO SCORE HIGHEST
+--------------------------------------------------------------------------------
+- Design & UX (Crucial): Visual appeal, thematic immersion, animations, tactile feel.
+- Performance & SEO: Blazing fast load times, optimized assets, metadata.
+- Creativity & Gamification: Meaningful RPG progression, dopamine-inducing feedback.
+- Robustness & Edge Cases: Graceful error handling (empty tasks, offline state, validation).
+- Responsiveness & Accessibility: Flawless mobile experience and keyboard navigation.
+
+================================================================================
+Generated for: RPG-task ("Backend" branch)
+================================================================================
