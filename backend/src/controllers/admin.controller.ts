@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as adminService from '../services/admin.service.js';
 import { AppError } from '../utils/errors.js';
+import { sseHub } from '../utils/sseHub.js';
 
 // --------------------------------------------------
 // 1. USERS & ECONOMY
@@ -46,6 +47,9 @@ export async function setBroadcast(req: Request, res: Response, next: NextFuncti
   try {
     const broadcast = await adminService.setBroadcast(req.body);
     res.status(200).json({ broadcast });
+
+    // SSE: Push broadcast to all connected users instantly
+    sseHub.broadcast('broadcast:update', { broadcast });
   } catch (err) {
     next(err);
   }
@@ -55,6 +59,9 @@ export async function dismissBroadcast(_req: Request, res: Response, next: NextF
   try {
     const result = await adminService.dismissBroadcast();
     res.status(200).json(result);
+
+    // SSE: Clear broadcast banner for all connected users
+    sseHub.broadcast('broadcast:dismiss', {});
   } catch (err) {
     next(err);
   }
@@ -78,6 +85,9 @@ export async function startSurge(req: Request, res: Response, next: NextFunction
     const durationHours = req.body.durationHours || 2;
     const surge = await adminService.startSurgeEvent(durationHours);
     res.status(200).json(surge);
+
+    // SSE: Push surge activation to all users
+    sseHub.broadcast('surge:update', { surge });
   } catch (err) {
     next(err);
   }
@@ -87,6 +97,9 @@ export async function endSurge(_req: Request, res: Response, next: NextFunction)
   try {
     const result = await adminService.endSurgeEvent();
     res.status(200).json(result);
+
+    // SSE: Push surge deactivation to all users
+    sseHub.broadcast('surge:update', { surge: { active: false, multiplier: 1.0 } });
   } catch (err) {
     next(err);
   }
@@ -116,6 +129,16 @@ export async function replyFeedback(req: Request, res: Response, next: NextFunct
 
     const updated = await adminService.replyFeedback(feedbackId, replyText, status);
     res.status(200).json({ feedback: updated });
+
+    // SSE: Push feedback reply to the specific user who submitted it
+    if (updated.userId) {
+      sseHub.sendToUser(updated.userId, 'feedback:reply', {
+        feedbackId: updated.id,
+        adminReply: updated.adminReply,
+        status: updated.status,
+        repliedAt: updated.repliedAt,
+      });
+    }
   } catch (err) {
     next(err);
   }
@@ -153,6 +176,9 @@ export async function createMarketItem(req: Request, res: Response, next: NextFu
 
     const item = await adminService.createMarketItem(req.body);
     res.status(201).json({ item });
+
+    // SSE: Push new shop item to all users
+    sseHub.broadcast('shop:update', { action: 'created', item });
   } catch (err) {
     next(err);
   }
@@ -163,6 +189,9 @@ export async function updateMarketItem(req: Request, res: Response, next: NextFu
     const itemId = req.params.id;
     const item = await adminService.updateMarketItem(itemId, req.body);
     res.status(200).json({ item });
+
+    // SSE: Push updated shop item to all users
+    sseHub.broadcast('shop:update', { action: 'updated', item });
   } catch (err) {
     next(err);
   }
@@ -173,6 +202,9 @@ export async function deleteMarketItem(req: Request, res: Response, next: NextFu
     const itemId = req.params.id;
     const result = await adminService.deleteMarketItem(itemId);
     res.status(200).json(result);
+
+    // SSE: Push item removal to all users
+    sseHub.broadcast('shop:update', { action: 'deleted', itemId });
   } catch (err) {
     next(err);
   }

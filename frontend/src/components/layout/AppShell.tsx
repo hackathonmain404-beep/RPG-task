@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { HeaderHUD } from './HeaderHUD';
 import { 
@@ -21,6 +21,7 @@ import {
 import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal.tsx';
 import { getActivePlatformBroadcast, getPlatformSurgeStatus } from '../../services/api/platform';
+import { useSSE } from '../../hooks/useSSE';
 import type { Broadcast } from '../../types/contract';
 import '../../features/dashboard/dashboard-interactions.css';
 
@@ -79,12 +80,34 @@ const AppShellInner: React.FC = () => {
     };
 
     void loadPlatformTelemetry();
-    const interval = setInterval(loadPlatformTelemetry, 15000);
+    // Keep polling as fallback (longer interval since SSE is primary)
+    const interval = setInterval(loadPlatformTelemetry, 60000);
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
   }, []);
+
+  // SSE real-time handlers (instant updates from admin actions)
+  const sseHandlers = useMemo(() => ({
+    'broadcast:update': (data: any) => {
+      if (data.broadcast) {
+        const dismissedId = sessionStorage.getItem('dismissed_broadcast_id');
+        if (dismissedId !== data.broadcast.id) {
+          setActiveBroadcast(data.broadcast);
+          setIsBroadcastDismissed(false);
+        }
+      }
+    },
+    'broadcast:dismiss': () => {
+      setActiveBroadcast(null);
+    },
+    'surge:update': (data: any) => {
+      setIsSurgeActive(Boolean(data.surge?.active));
+    },
+  } as const), []);
+
+  useSSE(sseHandlers);
 
   const handleDismissBroadcast = (id: string) => {
     sessionStorage.setItem('dismissed_broadcast_id', id);

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ShopItem, InventoryItem, PurchaseResponse, EquipResponse } from '../types/contract';
 import { shopApi } from '../services/api/shop';
 import { useAuth } from './useAuth';
 import { ShopContext } from './shopContextDef';
+import { useSSE } from '../hooks/useSSE';
 
 
 
@@ -85,6 +86,27 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.documentElement.removeAttribute('data-theme');
     }
   }, [user, loadShop, loadInventory]);
+
+  // SSE: Real-time shop updates from admin Market Studio
+  const sseHandlers = useMemo(() => ({
+    'shop:update': (data: any) => {
+      if (data.action === 'created' && data.item) {
+        setShopItems(prev => {
+          // Avoid duplicates
+          if (prev.some(i => i.id === data.item.id)) return prev;
+          return [...prev, data.item];
+        });
+      } else if (data.action === 'updated' && data.item) {
+        setShopItems(prev =>
+          prev.map(i => (i.id === data.item.id ? { ...i, ...data.item } : i))
+        );
+      } else if (data.action === 'deleted' && data.itemId) {
+        setShopItems(prev => prev.filter(i => i.id !== data.itemId));
+      }
+    },
+  } as const), []);
+
+  useSSE(sseHandlers, !!user);
 
   // Purchase item: dispatches POST /api/shop/:itemId/purchase with duplicate click protection
   const purchaseItem = useCallback(

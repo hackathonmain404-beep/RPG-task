@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { feedbackApi } from '../../services/api/feedback';
 import { AuthContext } from '../../context/authContextDef';
+import { useSSE } from '../../hooks/useSSE';
 import type { FeedbackType, Feedback } from '../../types/contract';
 
 export interface FeedbackModalProps {
@@ -164,6 +165,28 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
       setIsLoadingHistory(false);
     }
   };
+
+  // SSE: Real-time feedback reply updates from admin
+  const sseHandlers = useMemo(() => ({
+    'feedback:reply': (data: any) => {
+      if (data.feedbackId) {
+        setHistoryItems(prev =>
+          prev.map(item =>
+            item.id === data.feedbackId
+              ? {
+                  ...item,
+                  adminReply: data.adminReply,
+                  status: data.status || 'RESOLVED',
+                  repliedAt: data.repliedAt,
+                }
+              : item
+          )
+        );
+      }
+    },
+  } as const), []);
+
+  useSSE(sseHandlers, isOpen);
 
   const currentTypeConfig = useMemo(() => {
     return FEEDBACK_TYPES.find(t => t.type === selectedType) || FEEDBACK_TYPES[0];
@@ -808,6 +831,45 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                       >
                         {item.message}
                       </p>
+
+                      {/* Admin Reply Block */}
+                      {item.adminReply && (
+                        <div
+                          style={{
+                            marginTop: '0.5rem',
+                            padding: '0.75rem 0.85rem',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                            border: '1px solid rgba(16, 185, 129, 0.25)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+                            <span style={{
+                              fontSize: '0.7rem',
+                              fontWeight: 700,
+                              color: '#34d399',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                            }}>
+                              🛡️ Admin Reply
+                            </span>
+                            {item.repliedAt && (
+                              <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                                • {formatRelativeTime(item.repliedAt)}
+                              </span>
+                            )}
+                          </div>
+                          <p style={{
+                            margin: 0,
+                            fontSize: '0.82rem',
+                            color: '#a7f3d0',
+                            lineHeight: '1.45',
+                            wordBreak: 'break-word',
+                          }}>
+                            {item.adminReply}
+                          </p>
+                        </div>
+                      )}
 
                       <div
                         style={{
