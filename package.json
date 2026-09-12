@@ -1,0 +1,14 @@
+{
+  "name": "life-rpg-workspace",
+  "private": true,
+  "scripts": {
+    "test": "npm --prefix backend test",
+    "typecheck": "npm --prefix backend run typecheck",
+    "build": "npm --prefix backend run build",
+    "dev": "npm --prefix backend run dev",
+    "seed": "npm --prefix backend run seed"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
