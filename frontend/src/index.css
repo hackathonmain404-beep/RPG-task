@@ -403,6 +403,7 @@ h1, h2, h3, h4, h5, h6 {
 .rpg-input:focus {
   border-color: var(--border-focus);
   background-color: var(--bg-surface);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12), 0 0 16px rgba(56, 189, 248, 0.08);
 }
 
 .rpg-input-error {
@@ -417,6 +418,296 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 0.35rem;
 }
+
+/* ==========================================================================
+   PREMIUM SELECT / DROPDOWN STYLING
+   ========================================================================== */
+select.rpg-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  transition: border-color 0.25s var(--ease-spring),
+              box-shadow 0.25s var(--ease-spring),
+              background-color 0.25s var(--ease-spring),
+              transform 0.2s var(--ease-spring);
+}
+
+select.rpg-input:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.08),
+              0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+select.rpg-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15),
+              0 0 20px rgba(56, 189, 248, 0.1),
+              0 8px 24px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+  background-color: var(--bg-surface-elevated);
+}
+
+select.rpg-input option {
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+select.rpg-input option:hover,
+select.rpg-input option:focus,
+select.rpg-input option:checked {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.08));
+  color: #38bdf8;
+}
+
+/* ==========================================================================
+   INTERACTIVE TEXT HOVER POP ANIMATIONS
+   ========================================================================== */
+
+/* Sidebar Navigation Items — Smooth pop on hover */
+.desktop-sidebar a {
+  position: relative;
+  transition: all 0.32s var(--ease-spring) !important;
+}
+
+.desktop-sidebar a:not(.active):hover {
+  transform: translateX(4px) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #e2e8f0 !important;
+}
+
+.desktop-sidebar a:not(.active):hover span {
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+/* Stat Card Labels — Subtle scale pop on hover */
+.rpg-card .rpg-label {
+  transition: color 0.25s var(--ease-spring),
+              letter-spacing 0.35s var(--ease-spring),
+              text-shadow 0.3s var(--ease-spring);
+  cursor: default;
+}
+
+.rpg-card:hover .rpg-label {
+  color: var(--text-primary);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+}
+
+/* Stat Card Numbers — Pop glow on hover */
+.rpg-card .mono-numbers {
+  transition: transform 0.35s var(--ease-spring),
+              text-shadow 0.35s var(--ease-spring),
+              filter 0.35s var(--ease-spring);
+}
+
+.rpg-card:hover .mono-numbers {
+  transform: scale(1.03) translateY(-1px);
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+  filter: brightness(1.1);
+}
+
+/* Stat Card Description Text — Fade in brighter on hover */
+.rpg-card:hover > p {
+  color: var(--text-secondary) !important;
+  transition: color 0.3s var(--ease-spring);
+}
+
+/* Matrix Task Title — Hover underline reveal */
+.matrix-task-title {
+  transition: color 0.2s var(--ease-spring),
+              text-shadow 0.3s var(--ease-spring);
+  position: relative;
+  cursor: default;
+}
+
+.matrix-task-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #38bdf8, transparent);
+  transition: width 0.35s var(--ease-spring);
+}
+
+.matrix-row:hover .matrix-task-title {
+  color: #e2e8f0;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.12);
+}
+
+.matrix-row:hover .matrix-task-title::after {
+  width: 80%;
+}
+
+/* Matrix Category — Hover color pop */
+.matrix-category-cell {
+  transition: transform 0.25s var(--ease-spring);
+}
+
+.matrix-row:hover .matrix-category-cell {
+  transform: translateX(2px);
+}
+
+.matrix-row:hover .matrix-category-dot {
+  box-shadow: 0 0 8px currentColor;
+  transition: box-shadow 0.3s var(--ease-spring);
+}
+
+/* Matrix Status Pills — Hover micro-glow */
+.matrix-status-pill {
+  transition: transform 0.2s var(--ease-spring),
+              box-shadow 0.25s var(--ease-spring),
+              filter 0.25s var(--ease-spring);
+}
+
+.matrix-status-pill:hover {
+  transform: scale(1.05);
+  filter: brightness(1.15);
+}
+
+.matrix-status-pill.overdue:hover {
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.35);
+}
+
+.matrix-status-pill.done:hover {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
+
+/* Matrix Filter Buttons — Hover pop */
+.matrix-filter-btn {
+  transition: all 0.25s var(--ease-spring) !important;
+}
+
+.matrix-filter-btn:not(.active):hover {
+  color: #e2e8f0 !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  transform: translateY(-1px);
+}
+
+/* Analytics Card Title — Hover shimmer */
+.analytics-card-title {
+  transition: text-shadow 0.3s var(--ease-spring),
+              letter-spacing 0.35s var(--ease-spring);
+}
+
+.analytics-card:hover .analytics-card-title {
+  text-shadow: 0 0 12px rgba(248, 250, 252, 0.1);
+  letter-spacing: 0.01em;
+}
+
+/* Discipline Attribute Cards (Dashboard) — Hover with accent glow */
+.rpg-card:hover > div > span[style*="fontWeight: 700"] {
+  filter: brightness(1.2);
+  transition: filter 0.3s var(--ease-spring);
+}
+
+/* Welcome Banner — Hover subtle lift */
+.rpg-card:hover > div > h1,
+div[style*="linear-gradient(135deg"]:hover h1 {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.06);
+  transition: text-shadow 0.4s var(--ease-spring);
+}
+
+/* Status Tabs (Quest Page) — Hover pop */
+div[role="tablist"] button {
+  transition: all 0.25s var(--ease-spring) !important;
+}
+
+div[role="tablist"] button:hover {
+  transform: translateY(-1px);
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Discipline Filter Pills — Hover scale */
+div[aria-label="Filter quests by discipline"] button {
+  transition: all 0.25s var(--ease-spring) !important;
+}
+
+div[aria-label="Filter quests by discipline"] button:hover {
+  transform: scale(1.04) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Difficulty Tier Buttons (Quest Composer) — Hover glow */
+div[role="radiogroup"] button {
+  transition: all 0.28s var(--ease-spring) !important;
+}
+
+div[role="radiogroup"] button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background-color: var(--bg-surface-elevated) !important;
+}
+
+/* CTA Buttons — Enhanced hover pop */
+.rpg-btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.3),
+              0 0 32px rgba(56, 189, 248, 0.1);
+}
+
+.rpg-btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
+   WINDOW-FRAME NOTIFICATION / REWARD TOAST
+   ========================================================================== */
+.reward-toast-container > div[role="status"] {
+  /* Window frame border */
+  border: 1px solid rgba(168, 85, 247, 0.5) !important;
+  border-top: none !important;
+  border-radius: 0 0 10px 10px !important;
+  overflow: hidden;
+  position: relative;
+}
+
+.reward-toast-container > div[role="status"]::before {
+  /* Window Title Bar */
+  content: '⚔ CITADEL SYSTEM LOG';
+  display: block;
+  width: calc(100% + 2.5rem);
+  margin: -1rem -1.25rem 0.75rem;
+  padding: 0.45rem 0.85rem;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.25), rgba(56, 189, 248, 0.12));
+  border-bottom: 1px solid rgba(168, 85, 247, 0.35);
+  border-top: 1px solid rgba(168, 85, 247, 0.5);
+  border-radius: 10px 10px 0 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(168, 85, 247, 0.8);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.reward-toast-container > div[role="status"]::after {
+  /* Window control dots */
+  content: '● ● ●';
+  position: absolute;
+  top: 0.42rem;
+  right: 0.85rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.35em;
+  color: rgba(168, 85, 247, 0.4);
+  pointer-events: none;
+}
+
 
 /* Badges & Pills */
 .rpg-badge {
