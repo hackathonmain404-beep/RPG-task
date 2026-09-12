@@ -456,11 +456,8 @@ export const LandingPage: React.FC = () => {
           </nav>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Link to="/login" className="rpg-btn rpg-btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
-              Log In
-            </Link>
-            <Link to="/register" className="rpg-btn rpg-btn-primary" style={{ padding: '0.5rem 1.15rem', fontSize: '0.9rem', gap: '0.4rem' }}>
-              Begin Adventure <ArrowRight size={15} />
+            <Link to="/login" className="rpg-btn rpg-btn-primary" style={{ padding: '0.5rem 1.15rem', fontSize: '0.9rem', gap: '0.4rem' }}>
+              Log In <ArrowRight size={15} />
             </Link>
           </div>
         </div>
@@ -720,18 +717,6 @@ export const LandingPage: React.FC = () => {
                   }}
                 >
                   Begin Your Adventure — Free <ArrowRight size={18} />
-                </Link>
-                <Link 
-                  to="/login" 
-                  className="rpg-btn rpg-btn-secondary" 
-                  style={{ 
-                    padding: '0.85rem 1.85rem', 
-                    fontSize: '1.05rem',
-                    backgroundColor: 'rgba(22, 29, 40, 0.7)',
-                    borderColor: 'rgba(255, 255, 255, 0.15)'
-                  }}
-                >
-                  Enter the Citadel
                 </Link>
               </div>
             </div>
@@ -1303,9 +1288,6 @@ export const LandingPage: React.FC = () => {
             <div className="cta-buttons-reveal" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link to="/register" className="rpg-btn rpg-btn-primary" style={{ padding: '0.85rem 2.25rem', fontSize: '1.1rem', boxShadow: '0 0 25px rgba(56, 189, 248, 0.4)' }}>
                 Forge Character Now <ArrowRight size={18} />
-              </Link>
-              <Link to="/login" className="rpg-btn rpg-btn-secondary" style={{ padding: '0.85rem 2.25rem', fontSize: '1.1rem', backgroundColor: 'rgba(22, 29, 40, 0.7)' }}>
-                Enter the Citadel <ArrowRight size={18} />
               </Link>
             </div>
           </div>
