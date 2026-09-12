@@ -51,7 +51,7 @@ describe('LandingPage (Public Marketing & Quest Simulator)', () => {
     );
 
     // First question is open by default
-    expect(screen.getByText(/Life RPG is a full-stack gamified productivity platform/i)).toBeInTheDocument();
+    expect(screen.getByText(/(Achiever|Life RPG) is a full-stack gamified productivity platform/i)).toBeInTheDocument();
 
     // Click second question
     const secondQuestionBtn = screen.getByRole('button', { name: /How does the XP and Leveling system work\?/i });

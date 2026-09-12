@@ -5,6 +5,7 @@ import type {
   CompleteTaskResponse, 
   Attribute 
 } from '../types/contract';
+import { ApiError } from '../types/contract';
 import type { 
   XpProgress, 
   ProgressionActivityItem, 
@@ -14,6 +15,25 @@ import { supabase } from '../lib/supabase';
 import { authApi } from '../services/api/auth';
 import { characterApi } from '../services/api/character';
 import { AuthContext } from './authContextDef';
+
+/**
+ * Probes the backend /api/health endpoint to reliably verify server reachability.
+ */
+export async function pingServerHealth(): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const res = await fetch('/api/health', {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 const DEFAULT_ATTRIBUTES: Attribute[] = [
   { key: 'intellect', displayName: 'Intellect', value: 0 },
@@ -92,9 +112,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         // GET /api/character/history may not be implemented yet
       }
-    } catch {
-      // Backend sync failed — user is authenticated with Supabase but backend is down
-      setServerReachable(false);
+    } catch (err: unknown) {
+      // 1. If 401 or 403: Server is alive and responsive, but auth token is invalid or expired
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        setServerReachable(true);
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          // ignore signout errors
+        }
+        setUser(null);
+        setCharacter(null);
+        return;
+      }
+
+      // 2. For network failure or 5xx, probe actual server health before setting offline
+      const isUp = await pingServerHealth();
+      setServerReachable(isUp);
     }
   }, []);
 
@@ -227,6 +261,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
+  // Probes server reachability on-demand (e.g. from Retry buttons)
+  const checkServerReachability = useCallback(async (): Promise<boolean> => {
+    const isUp = await pingServerHealth();
+    setServerReachable(isUp);
+    return isUp;
+  }, []);
+
+  // Auto-recovery: if backend was momentarily unreachable/restarting, poll until restored
+  useEffect(() => {
+    if (serverReachable) return;
+
+    const interval = setInterval(async () => {
+      const isUp = await pingServerHealth();
+      if (isUp) {
+        setServerReachable(true);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [serverReachable]);
+
   // Listen for Supabase auth state changes
   useEffect(() => {
     let isMounted = true;
@@ -234,6 +289,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Initial session check
     const initAuth = async () => {
       try {
+        // Probe backend health to ensure accurate online/offline state
+        const isUp = await pingServerHealth();
+        if (isMounted) {
+          setServerReachable(isUp);
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
 
@@ -243,13 +304,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           setUser(null);
           setCharacter(null);
-          setServerReachable(true);
         }
       } catch {
         if (isMounted) {
           setUser(null);
           setCharacter(null);
-          setServerReachable(false);
+          const isUp = await pingServerHealth();
+          setServerReachable(isUp);
         }
       } finally {
         if (isMounted) {
@@ -375,6 +436,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         xpProgress,
         recentActivity,
         lastAttributeChange,
+        checkServerReachability,
         signInWithGoogle,
         signInWithGithub,
         signInAsGuest,
