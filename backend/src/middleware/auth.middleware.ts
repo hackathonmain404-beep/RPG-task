@@ -8,6 +8,7 @@ import { tokenBlocklist } from '../utils/tokenBlocklist.js';
 export interface AuthenticatedUser {
   id: string;
   email: string;
+  role?: string;
 }
 
 declare global {
@@ -59,12 +60,19 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
 
   // 3. First check if it's a locally signed JWT (used by automated tests & seed scripts)
   try {
-    const decoded = jwt.verify(token, getJwtSecret()) as { userId?: string; id?: string; email?: string; sub?: string };
+    const decoded = jwt.verify(token, getJwtSecret()) as {
+      userId?: string;
+      id?: string;
+      email?: string;
+      sub?: string;
+      role?: string;
+    };
     const id = decoded.userId || decoded.id || decoded.sub;
     if (id) {
       req.user = {
         id,
         email: decoded.email || '',
+        role: decoded.role || 'USER',
       };
       return next();
     }

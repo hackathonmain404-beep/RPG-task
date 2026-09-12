@@ -14,6 +14,7 @@ import type {
 import { supabase } from '../lib/supabase';
 import { authApi } from '../services/api/auth';
 import { characterApi } from '../services/api/character';
+import { sendMagicLink as sendMagicLinkApi, verifyMagicLink as verifyMagicLinkApi } from '../services/api/magicLink';
 import { AuthContext } from './authContextDef';
 
 /**
@@ -295,6 +296,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setServerReachable(isUp);
         }
 
+        // Check for local JWT auth token (Magic Link auth)
+        const localToken = localStorage.getItem('auth_token');
+        if (localToken) {
+          try {
+            const data = await authApi.getMe();
+            if (!isMounted) return;
+            setUser(data.user);
+            setCharacter({
+              ...data.character,
+              attributes: normalizeAttributes(data.character.attributes),
+            });
+            setServerReachable(true);
+            setIsLoading(false);
+            return;
+          } catch {
+            localStorage.removeItem('auth_token');
+          }
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
 
@@ -401,8 +421,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
+  // Sign in with Magic Link
+  const signInWithMagicLink = useCallback(async (email: string) => {
+    return sendMagicLinkApi(email);
+  }, []);
+
+  // Verify Magic Link Token
+  const verifyMagicLinkToken = useCallback(async (token: string) => {
+    const res = await verifyMagicLinkApi(token);
+    localStorage.setItem('auth_token', res.token);
+    setUser(res.user);
+    try {
+      const me = await authApi.getMe();
+      setUser(me.user);
+      setCharacter({
+        ...me.character,
+        attributes: normalizeAttributes(me.character.attributes),
+      });
+    } catch {
+      // Me endpoint fallback
+    }
+    return res;
+  }, []);
+
   // Sign out
   const logout = useCallback(async () => {
+    localStorage.removeItem('auth_token');
     if (isGuest) {
       setUser(null);
       setCharacter(null);
@@ -425,6 +469,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLastAttributeChange(null);
   }, [isGuest]);
 
+  const isAdmin = Boolean(user && user.role === 'ADMIN');
+
   return (
     <AuthContext.Provider
       value={{
@@ -432,6 +478,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         character,
         isLoading,
         isGuest,
+        isAdmin,
         serverReachable,
         xpProgress,
         recentActivity,
@@ -439,6 +486,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         checkServerReachability,
         signInWithGoogle,
         signInWithGithub,
+        signInWithMagicLink,
+        verifyMagicLinkToken,
         signInAsGuest,
         logout,
         refreshSession,

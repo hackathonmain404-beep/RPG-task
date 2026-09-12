@@ -148,7 +148,22 @@ export async function completeTask(userId: string, taskId: string) {
     }
 
     // 3. Calculate reward from server-defined matrix (NEVER from client)
-    const reward = calculateReward(task.difficulty, task.categoryKey);
+    const baseReward = calculateReward(task.difficulty, task.categoryKey);
+
+    // Apply Global 2X Surge Multiplier if event is currently active in DB
+    const activeSurge = await (tx as any).surgeEvent.findFirst({
+      where: { active: true, expiresAt: { gt: now } },
+    });
+    const multiplier = activeSurge ? Number(activeSurge.multiplier) || 2.0 : 1.0;
+    const finalXp = Math.round(baseReward.xp * multiplier);
+    const finalGold = Math.round(baseReward.gold * multiplier);
+
+    const reward = {
+      ...baseReward,
+      xp: finalXp,
+      gold: finalGold,
+      multiplier,
+    };
 
     // 4. Atomic Compare-And-Swap task completion (prevents duplicate completion race conditions)
     const updateResult = await tx.task.updateMany({

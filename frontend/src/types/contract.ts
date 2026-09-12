@@ -9,6 +9,7 @@ export interface User {
   id: string;
   email: string;
   displayName: string;
+  role?: 'USER' | 'ADMIN' | string;
 }
 
 export interface Attribute {
@@ -100,6 +101,7 @@ export interface CompleteTaskResponse {
     attribute?: {
       key: string;
       amount: number;
+      increment?: number;
     };
   };
   progression?: {
@@ -114,6 +116,8 @@ export interface CompleteTaskResponse {
     current?: number;
     best?: number;
   };
+  character?: Character;
+  levelUp?: boolean;
 }
 
 /* ==========================================================================
@@ -129,6 +133,8 @@ export interface ShopItem {
   name: string;
   description: string;
   itemType: ItemType;
+  category?: string | null;
+  imageUrl?: string | null;
   price: number;
   rarity: ItemRarity;
   metadataJson?: string | Record<string, unknown>;
@@ -206,6 +212,8 @@ export interface Feedback {
   type: FeedbackType;
   message: string;
   status: string;
+  adminReply?: string | null;
+  repliedAt?: string | null;
   createdAt: string;
 }
 
@@ -221,4 +229,135 @@ export interface FeedbackResponse {
 export interface FeedbackListResponse {
   feedbacks: Feedback[];
 }
+
+/* ==========================================================================
+   MAGIC LINK CONTRACT
+   ========================================================================== */
+
+export interface SendMagicLinkRequest {
+  email: string;
+}
+
+export interface SendMagicLinkResponse {
+  success: boolean;
+  message: string;
+  email: string;
+  isAdmin: boolean;
+  verificationToken?: string;
+}
+
+export interface VerifyMagicLinkResponse {
+  token: string;
+  user: User;
+  isAdmin: boolean;
+  redirectTo: string;
+}
+
+/* ==========================================================================
+   ADMIN PANEL CONTRACT
+   ========================================================================== */
+
+export interface AdminUserListItem {
+  id: string;
+  email: string;
+  displayName: string;
+  role: 'USER' | 'ADMIN' | string;
+  createdAt: string;
+  updatedAt: string;
+  character: {
+    level: number;
+    totalXp: number;
+    gold: number;
+    streakCurrent: number;
+  } | null;
+}
+
+export interface GrantEconomyRequest {
+  xp?: number;
+  gold?: number;
+  title?: string;
+}
+
+export interface Broadcast {
+  id: string;
+  type: 'EVENT' | 'INFO' | 'ALERT' | 'PARTY';
+  message: string;
+  actionText?: string | null;
+  actionUrl?: string | null;
+  active: boolean;
+  createdAt: string;
+  expiresAt?: string | null;
+}
+
+export interface SetBroadcastRequest {
+  type: 'EVENT' | 'INFO' | 'ALERT' | 'PARTY';
+  message: string;
+  actionText?: string;
+  actionUrl?: string;
+  expiresInMinutes?: number;
+}
+
+export interface SurgeStatus {
+  active: boolean;
+  multiplier: number;
+  endsAt: string | null;
+  remainingSeconds: number;
+}
+
+export interface StartSurgeRequest {
+  hours: number;
+}
+
+export interface AdminFeedbackItem {
+  id: string;
+  userId: string;
+  userEmail?: string;
+  userName?: string;
+  type: FeedbackType;
+  message: string;
+  status: string;
+  adminReply?: string | null;
+  repliedAt?: string | null;
+  createdAt: string;
+}
+
+export interface MarketItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  itemType: string;
+  category?: string | null;
+  rarity: string;
+  iconName?: string | null;
+  imageUrl?: string | null;
+  active: boolean;
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface CreateMarketItemRequest {
+  name: string;
+  description: string;
+  price: number;
+  itemType?: string;
+  category?: string;
+  rarity?: string;
+  imageUrl?: string;
+  active?: boolean;
+  displayOrder?: number;
+}
+
+export interface UpdateMarketItemRequest {
+  name?: string;
+  description?: string;
+  price?: number;
+  itemType?: string;
+  category?: string;
+  rarity?: string;
+  imageUrl?: string;
+  active?: boolean;
+  displayOrder?: number;
+}
+
 

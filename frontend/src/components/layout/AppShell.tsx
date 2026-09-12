@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { HeaderHUD } from './HeaderHUD';
 import { 
@@ -10,10 +10,18 @@ import {
   Settings,
   Sparkles,
   MessageSquarePlus,
-  Sliders
+  Sliders,
+  X,
+  ExternalLink,
+  AlertTriangle,
+  Info,
+  PartyPopper,
+  Flame
 } from 'lucide-react';
 import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
-import { FeedbackModal } from '../common/FeedbackModal';
+import { FeedbackModal } from '../common/FeedbackModal.tsx';
+import { getActivePlatformBroadcast, getPlatformSurgeStatus } from '../../services/api/platform';
+import type { Broadcast } from '../../types/contract';
 import '../../features/dashboard/dashboard-interactions.css';
 
 interface NavItem {
@@ -38,6 +46,51 @@ const AppShellInner: React.FC = () => {
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
   const navigate = useNavigate();
 
+  // Live Platform Telemetry
+  const [activeBroadcast, setActiveBroadcast] = useState<Broadcast | null>(null);
+  const [isBroadcastDismissed, setIsBroadcastDismissed] = useState<boolean>(false);
+  const [isSurgeActive, setIsSurgeActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPlatformTelemetry = async () => {
+      try {
+        const [bRes, sRes] = await Promise.all([
+          getActivePlatformBroadcast(),
+          getPlatformSurgeStatus(),
+        ]);
+        if (!isMounted) return;
+
+        if (bRes.broadcast && bRes.broadcast.active) {
+          const dismissedId = sessionStorage.getItem('dismissed_broadcast_id');
+          if (dismissedId !== bRes.broadcast.id) {
+            setActiveBroadcast(bRes.broadcast);
+            setIsBroadcastDismissed(false);
+          }
+        } else {
+          setActiveBroadcast(null);
+        }
+
+        setIsSurgeActive(Boolean(sRes.surge?.active));
+      } catch {
+        // Fallback silently if offline
+      }
+    };
+
+    void loadPlatformTelemetry();
+    const interval = setInterval(loadPlatformTelemetry, 15000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const handleDismissBroadcast = (id: string) => {
+    sessionStorage.setItem('dismissed_broadcast_id', id);
+    setIsBroadcastDismissed(true);
+  };
+
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
   };
@@ -46,8 +99,119 @@ const AppShellInner: React.FC = () => {
     setIsSidebarOpen(false);
   };
 
+  const getBroadcastColor = (type: string) => {
+    switch (type) {
+      case 'EVENT': return '#c084fc';
+      case 'ALERT': return '#ef4444';
+      case 'PARTY': return '#10b981';
+      case 'INFO':
+      default: return '#38bdf8';
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-canvas)' }}>
+      {/* 1. Global Platform Broadcast Top Bar */}
+      {activeBroadcast && !isBroadcastDismissed && (
+        <aside
+          role="region"
+          aria-label="Platform Announcement"
+          style={{
+            background: `linear-gradient(90deg, ${getBroadcastColor(activeBroadcast.type)}22 0%, rgba(15, 23, 42, 0.95) 50%, ${getBroadcastColor(activeBroadcast.type)}22 100%)`,
+            borderBottom: `1px solid ${getBroadcastColor(activeBroadcast.type)}55`,
+            color: '#f8fafc',
+            padding: '0.45rem 1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            zIndex: 60,
+            fontSize: '0.85rem',
+            boxShadow: `0 2px 16px ${getBroadcastColor(activeBroadcast.type)}25`,
+            animation: 'fadeIn 0.3s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flex: 1, minWidth: 0 }}>
+            <span style={{ color: getBroadcastColor(activeBroadcast.type), display: 'flex', alignItems: 'center' }}>
+              {activeBroadcast.type === 'EVENT' && <Sparkles size={16} />}
+              {activeBroadcast.type === 'ALERT' && <AlertTriangle size={16} />}
+              {activeBroadcast.type === 'PARTY' && <PartyPopper size={16} />}
+              {activeBroadcast.type === 'INFO' && <Info size={16} />}
+            </span>
+            <span style={{ fontWeight: 700, fontSize: '0.72rem', color: getBroadcastColor(activeBroadcast.type), textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              [{activeBroadcast.type}]
+            </span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>
+              {activeBroadcast.message}
+            </span>
+            {activeBroadcast.actionText && activeBroadcast.actionUrl && (
+              <a
+                href={activeBroadcast.actionUrl}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '4px',
+                  backgroundColor: getBroadcastColor(activeBroadcast.type),
+                  color: '#000000',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  textDecoration: 'none',
+                  flexShrink: 0,
+                }}
+              >
+                <span>{activeBroadcast.actionText}</span>
+                <ExternalLink size={12} />
+              </a>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleDismissBroadcast(activeBroadcast.id)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              padding: '0.2rem',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '4px',
+            }}
+            aria-label="Dismiss Broadcast"
+          >
+            <X size={15} />
+          </button>
+        </aside>
+      )}
+
+      {/* 2. Global 2X Surge Glowing Indicator Bar (if active) */}
+      {isSurgeActive && (
+        <aside
+          role="region"
+          aria-label="Surge Event Status"
+          style={{
+            background: 'linear-gradient(90deg, rgba(234, 88, 12, 0.25) 0%, rgba(249, 115, 22, 0.15) 100%)',
+            borderBottom: '1px solid rgba(249, 115, 22, 0.4)',
+            padding: '0.3rem 1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            color: '#fed7aa',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            letterSpacing: '0.04em',
+            zIndex: 55,
+          }}
+        >
+          <Flame size={14} color="#f97316" />
+          <span>⚡ REALM SURGE ACTIVE: ALL QUEST REWARDS MULTIPLIED BY 2X</span>
+        </aside>
+      )}
+
       {/* Top HUD Bar */}
       <HeaderHUD onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
 

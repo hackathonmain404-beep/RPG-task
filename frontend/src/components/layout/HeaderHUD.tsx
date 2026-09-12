@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useFeedback } from '../../context/FeedbackContext';
-import { LogOut, User, Menu, X, MessageSquarePlus } from 'lucide-react';
+import { LogOut, User, Menu, X, MessageSquarePlus, Crown } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -10,7 +10,7 @@ interface HeaderHUDProps {
 }
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { openFeedback } = useFeedback();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -119,6 +119,39 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             <MessageSquarePlus size={16} />
             <span className="desktop-only">Feedback</span>
           </button>
+
+          {/* Admin Control Center Quick Link — ONLY visible to verified admins */}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              id="header-admin-link"
+              title="Admin Control Center"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.4rem 0.65rem',
+                borderRadius: '8px',
+                background: 'rgba(168, 85, 247, 0.15)',
+                border: '1px solid rgba(168, 85, 247, 0.45)',
+                color: '#d8b4fe',
+                textDecoration: 'none',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(168, 85, 247, 0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(168, 85, 247, 0.15)';
+              }}
+            >
+              <Crown size={14} color="#c084fc" />
+              <span className="desktop-only">Admin</span>
+            </Link>
+          )}
+
           <div
             className="hud-profile-btn"
             style={{

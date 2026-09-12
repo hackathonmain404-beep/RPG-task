@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { User, Character, CompleteTaskResponse } from '../types/contract';
+import type { User, Character, CompleteTaskResponse, SendMagicLinkResponse, VerifyMagicLinkResponse } from '../types/contract';
 
 export interface XpProgress {
   currentLevelXp: number;
@@ -36,6 +36,7 @@ export interface AuthContextType {
   character: Character | null;
   isLoading: boolean;
   isGuest: boolean;
+  isAdmin: boolean;
   serverReachable: boolean;
   xpProgress: XpProgress | null;
   recentActivity: ProgressionActivityItem[];
@@ -43,6 +44,8 @@ export interface AuthContextType {
   checkServerReachability?: () => Promise<boolean>;
   signInWithGoogle: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
+  signInWithMagicLink: (email: string) => Promise<SendMagicLinkResponse>;
+  verifyMagicLinkToken: (token: string) => Promise<VerifyMagicLinkResponse>;
   signInAsGuest: () => void;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;

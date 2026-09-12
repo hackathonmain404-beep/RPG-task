@@ -23,11 +23,16 @@ export async function request<T>(endpoint: string, options: RequestOptions = {})
     defaultHeaders['Content-Type'] = 'application/json';
   }
 
-  // Attach Supabase access token as Bearer token for backend auth
+  // Attach access token as Bearer token for backend auth
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (sessionData.session?.access_token) {
-      defaultHeaders['Authorization'] = `Bearer ${sessionData.session.access_token}`;
+    const localToken = localStorage.getItem('auth_token');
+    if (localToken) {
+      defaultHeaders['Authorization'] = `Bearer ${localToken}`;
+    } else {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session?.access_token) {
+        defaultHeaders['Authorization'] = `Bearer ${sessionData.session.access_token}`;
+      }
     }
   } catch {
     // No session available, proceed without token

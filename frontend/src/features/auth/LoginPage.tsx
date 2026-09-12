@@ -10,17 +10,26 @@ import {
   Check, 
   Loader2, 
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  Mail,
+  Send,
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  useDocumentMetadata('Citadel Login', {
+  useDocumentMetadata('Achiever Login', {
     description: 'Access your persistent Life RPG character, quest log, and daily momentum.',
     noindex: false,
   });
 
-  const { signInWithGoogle, signInWithGithub, signInAsGuest, serverReachable, checkServerReachability } = useAuth();
+  const { signInWithGoogle, signInWithGithub, signInAsGuest, signInWithMagicLink, serverReachable, checkServerReachability } = useAuth();
   const navigate = useNavigate();
+
+  const [emailInput, setEmailInput] = useState('');
+  const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
+  const [magicLinkSentTo, setMagicLinkSentTo] = useState<string | null>(null);
+  const [localDevToken, setLocalDevToken] = useState<string | null>(null);
 
   const [activeProvider, setActiveProvider] = useState<'google' | 'github' | 'guest' | null>(null);
   const [authStatus, setAuthStatus] = useState<'idle' | 'connecting' | 'granted' | 'denied'>('idle');
@@ -60,6 +69,30 @@ export const LoginPage: React.FC = () => {
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  const handleSendMagicLink = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const clean = emailInput.trim();
+    if (!clean) {
+      setErrorMsg('Please enter your email address to continue.');
+      return;
+    }
+
+    setErrorMsg(null);
+    setIsSendingMagicLink(true);
+
+    try {
+      const res = await signInWithMagicLink(clean);
+      setMagicLinkSentTo(clean);
+      if (res.verificationToken) {
+        setLocalDevToken(res.verificationToken);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Failed to send magic link. Please verify your connection.');
+    } finally {
+      setIsSendingMagicLink(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setErrorMsg(null);
@@ -104,7 +137,7 @@ export const LoginPage: React.FC = () => {
     }, 300);
   };
 
-  const isConnecting = authStatus === 'connecting';
+  const isConnecting = authStatus === 'connecting' || isSendingMagicLink;
   const isGranted = authStatus === 'granted';
 
   return (
@@ -178,7 +211,7 @@ export const LoginPage: React.FC = () => {
           }}
         >
           <ShieldCheck size={14} color="#38bdf8" />
-          <span>TLS 256-BIT // RLS: ACTIVE</span>
+          <span>TLS 256-BIT // MAGIC LINK AUTH</span>
         </div>
       </header>
 
@@ -200,6 +233,7 @@ export const LoginPage: React.FC = () => {
           className={`citadel-console-card ${isGranted ? 'citadel-access-granted' : ''}`}
           style={{
             transform: `perspective(1000px) rotateX(${cardTilt.x}deg) rotateY(${cardTilt.y}deg)`,
+            maxWidth: '460px',
           }}
         >
           {/* Technical HUD Corner Brackets */}
@@ -211,16 +245,16 @@ export const LoginPage: React.FC = () => {
           {/* Terminal Console Header */}
           <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
             {/* Luminous Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <img
                 src="/achiever-logo.png"
                 alt="Achiever Logo"
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '10px',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
                   objectFit: 'cover',
-                  boxShadow: '0 0 20px rgba(56, 189, 248, 0.45)',
+                  boxShadow: '0 0 24px rgba(56, 189, 248, 0.5)',
                   border: '1px solid rgba(56, 189, 248, 0.45)',
                 }}
               />
@@ -228,7 +262,7 @@ export const LoginPage: React.FC = () => {
                 style={{
                   fontFamily: 'var(--font-display)',
                   fontWeight: 800,
-                  fontSize: '1.45rem',
+                  fontSize: '1.5rem',
                   letterSpacing: '0.04em',
                   background: 'linear-gradient(90deg, #ffffff 0%, #38bdf8 100%)',
                   WebkitBackgroundClip: 'text',
@@ -254,9 +288,9 @@ export const LoginPage: React.FC = () => {
               }}
             >
               <span className="citadel-led citadel-led-online" aria-hidden="true" />
-              <span>Player Access Terminal</span>
+              <span>Direct Magic Link</span>
               <span style={{ opacity: 0.4 }}>//</span>
-              <span style={{ color: '#38bdf8' }}>Secure Link</span>
+              <span style={{ color: '#38bdf8' }}>Passwordless Portal</span>
             </div>
 
             {/* Title & Subtitle */}
@@ -270,7 +304,7 @@ export const LoginPage: React.FC = () => {
                 lineHeight: 1.2,
               }}
             >
-              Enter the Citadel
+              {magicLinkSentTo ? 'Check your inbox' : 'Enter the Citadel'}
             </h1>
             <p
               style={{
@@ -278,10 +312,12 @@ export const LoginPage: React.FC = () => {
                 fontSize: '0.9rem',
                 lineHeight: 1.55,
                 margin: '0 auto',
-                maxWidth: '340px',
+                maxWidth: '360px',
               }}
             >
-              Resume your quests and claim authoritative progression.
+              {magicLinkSentTo
+                ? `We sent a magic sign-in link to ${magicLinkSentTo}. Click the link to log in instantly.`
+                : 'Enter your email to sign in or create an account with a secure Magic Link.'}
             </p>
           </div>
 
@@ -359,8 +395,258 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Authentication Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* ---------------------------------------------------------------- */}
+          {/* STATE A: MAGIC LINK SENT CONFIRMATION                            */}
+          {/* ---------------------------------------------------------------- */}
+          {magicLinkSentTo ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'center' }}>
+              <div
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0.5rem auto 0.25rem',
+                }}
+              >
+                <Mail size={30} color="#38bdf8" />
+              </div>
+
+              <div
+                style={{
+                  backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '10px',
+                  padding: '1rem',
+                  fontSize: '0.86rem',
+                  color: '#e2e8f0',
+                  lineHeight: 1.5,
+                }}
+              >
+                <div style={{ fontWeight: 600, color: '#38bdf8', marginBottom: '0.25rem' }}>
+                  Magic link is on its way!
+                </div>
+                The single-use link expires in <strong>15 minutes</strong>. Simply click it to authenticate without passwords.
+              </div>
+
+              {/* Dev Simulation Button (Instant testing without SMTP server) */}
+              {localDevToken && (
+                <div
+                  style={{
+                    backgroundColor: 'rgba(124, 58, 237, 0.12)',
+                    border: '1px solid rgba(168, 85, 247, 0.35)',
+                    borderRadius: '10px',
+                    padding: '0.9rem',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#c084fc', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+                    <Sparkles size={14} />
+                    <span>Instant Link Simulator (Active)</span>
+                  </div>
+                  <Link
+                    to={`/auth/verify?token=${localDevToken}`}
+                    id="simulate-magic-link"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      width: '100%',
+                      padding: '0.65rem 1rem',
+                      borderRadius: '8px',
+                      background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+                    }}
+                  >
+                    <span>Click to Enter Citadel / Control Center</span>
+                    <ExternalLink size={14} />
+                  </Link>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleSendMagicLink()}
+                  disabled={isSendingMagicLink}
+                  style={{
+                    flex: 1,
+                    padding: '0.65rem',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#94a3b8',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: isSendingMagicLink ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  <RefreshCw size={13} className={isSendingMagicLink ? 'animate-spin' : ''} />
+                  <span>Resend Link</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMagicLinkSentTo(null);
+                    setLocalDevToken(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.65rem',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#94a3b8',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Different Email
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* ---------------------------------------------------------------- */
+            /* STATE B: PRIMARY MAGIC LINK EMAIL INPUT & ACTION FORM            */
+            /* ---------------------------------------------------------------- */
+            <form onSubmit={handleSendMagicLink} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div>
+                <label
+                  htmlFor="magic-email-input"
+                  style={{
+                    display: 'block',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    color: '#cbd5e1',
+                    marginBottom: '0.45rem',
+                    textAlign: 'left',
+                  }}
+                >
+                  Email
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Mail
+                    size={18}
+                    color="#64748b"
+                    style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+                  />
+                  <input
+                    id="magic-email-input"
+                    type="text"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="name@example.com"
+                    autoComplete="email"
+                    disabled={isSendingMagicLink}
+                    style={{
+                      width: '100%',
+                      padding: '0.85rem 1rem 0.85rem 2.75rem',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      color: '#f8fafc',
+                      fontSize: '0.92rem',
+                      outline: 'none',
+                      transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#38bdf8';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.2)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Primary Action Button: Continue with Magic Link */}
+              <button
+                type="submit"
+                id="btn-magic-link"
+                disabled={isSendingMagicLink || !emailInput.trim()}
+                style={{
+                  width: '100%',
+                  padding: '0.85rem 1.25rem',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.92rem',
+                  border: 'none',
+                  cursor: isSendingMagicLink || !emailInput.trim() ? 'not-allowed' : 'pointer',
+                  opacity: isSendingMagicLink || !emailInput.trim() ? 0.65 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.55rem',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                  transition: 'all 0.2s ease',
+                  marginTop: '0.2rem',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSendingMagicLink && emailInput.trim()) {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(2, 132, 199, 0.5)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(2, 132, 199, 0.35)';
+                }}
+              >
+                {isSendingMagicLink ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Dispatching Magic Link...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    <span>Continue with Magic Link</span>
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* Technical HUD Divider */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              margin: '1.25rem 0 1rem',
+              color: 'var(--text-tertiary)',
+              fontSize: '0.72rem',
+              fontFamily: 'var(--font-mono)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+            }}
+          >
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+            <span>✦ or continue with ✦</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+          </div>
+
+          {/* Secondary OAuth & Guest Buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             {/* Google OAuth Button */}
             <button
               type="button"
@@ -388,7 +674,7 @@ export const LoginPage: React.FC = () => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                   </svg>
-                  <span>Continue with Google</span>
+                  <span>Google</span>
                 </>
               )}
             </button>
@@ -417,29 +703,10 @@ export const LoginPage: React.FC = () => {
                   <svg height="19" width="19" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                     <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
                   </svg>
-                  <span>Continue with GitHub</span>
+                  <span>GitHub</span>
                 </>
               )}
             </button>
-
-            {/* Technical HUD Divider */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                margin: '0.4rem 0',
-                color: 'var(--text-tertiary)',
-                fontSize: '0.72rem',
-                fontFamily: 'var(--font-mono)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-              }}
-            >
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
-              <span>✦ or initialize as guest ✦</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
-            </div>
 
             {/* Guest Mode Button */}
             <button
@@ -471,11 +738,11 @@ export const LoginPage: React.FC = () => {
             {/* Guest Mode Warning Panel */}
             <div
               style={{
-                marginTop: '0.4rem',
-                padding: '0.75rem 0.9rem',
+                marginTop: '0.2rem',
+                padding: '0.65rem 0.85rem',
                 borderRadius: '8px',
                 backgroundColor: 'rgba(245, 158, 11, 0.06)',
-                border: '1px solid rgba(245, 158, 11, 0.22)',
+                border: '1px solid rgba(245, 158, 11, 0.2)',
                 display: 'flex',
                 gap: '0.6rem',
                 alignItems: 'flex-start',
@@ -486,7 +753,7 @@ export const LoginPage: React.FC = () => {
               <div style={{ fontSize: '0.78rem', color: '#fbbf24' }}>
                 Guest progress <strong>won&apos;t be saved</strong> to the database.
                 <div style={{ color: 'var(--text-tertiary)', marginTop: '0.15rem' }}>
-                  Sign in with Google or GitHub to persist your character stats and equipment.
+                  Sign in with Magic Link, Google, or GitHub to persist your character stats.
                 </div>
               </div>
             </div>
@@ -495,7 +762,7 @@ export const LoginPage: React.FC = () => {
           {/* Legal / Policy Links */}
           <div
             style={{
-              marginTop: '1.75rem',
+              marginTop: '1.5rem',
               paddingTop: '1rem',
               borderTop: '1px solid rgba(255, 255, 255, 0.06)',
               textAlign: 'center',
@@ -540,7 +807,7 @@ export const LoginPage: React.FC = () => {
         {/* Motivational Tagline & Status Telemetry */}
         <div
           style={{
-            marginTop: '1.75rem',
+            marginTop: '1.5rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -570,7 +837,7 @@ export const LoginPage: React.FC = () => {
             }}
           >
             <span>● QUEST SYSTEM ONLINE</span>
-            <span>● CLOUD PERSISTENCE READY</span>
+            <span>● MAGIC LINK READY</span>
           </div>
         </div>
       </main>

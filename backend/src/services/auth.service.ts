@@ -12,6 +12,7 @@ export interface AuthSessionUser {
   id: string;
   email: string;
   displayName: string;
+  role?: string;
 }
 
 export interface CharacterSummary {
@@ -111,6 +112,7 @@ export async function syncUser(
           id: user.id,
           email: user.email,
           displayName: user.displayName,
+          role: (user as any).role || 'USER',
         },
         character: {
           level: character.level,
@@ -186,6 +188,7 @@ export async function syncUser(
         id: result.user.id,
         email: result.user.email,
         displayName: result.user.displayName,
+        role: (result.user as any).role || 'USER',
       },
       character: {
         level: result.character.level,
@@ -497,6 +500,7 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
           id: user.id,
           email: user.email,
           displayName: user.displayName,
+          role: (user as any).role || 'USER',
         },
         character: {
           level: user.character.level,

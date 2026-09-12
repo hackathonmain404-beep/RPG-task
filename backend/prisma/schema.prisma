@@ -16,6 +16,7 @@ model User {
   githubUsername String?    @unique
   avatarUrl      String?
   displayName    String
+  role           String     @default("USER") // USER, ADMIN
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   lastActiveAt   DateTime?
@@ -32,6 +33,7 @@ model User {
 
   @@index([email])
   @@index([githubUsername])
+  @@index([role])
 }
 
 model Character {
@@ -136,9 +138,13 @@ model ShopItem {
   itemType       String          // THEME, BADGE, COSMETIC
   price          Int
   rarity         String          @default("common")
+  category       String?         @default("Cosmetic")
+  imageUrl       String?
+  displayOrder   Int             @default(0)
   metadataJson   Json?
   active         Boolean         @default(true)
   createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now()) @updatedAt
 
   inventoryItems InventoryItem[]
 
@@ -224,6 +230,8 @@ model Feedback {
   type      String   // BUG_REPORT, FEATURE_REQUEST, GENERAL
   message   String
   status    String   @default("PENDING") // PENDING, REVIEWED, RESOLVED
+  adminReply String?
+  repliedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -232,4 +240,43 @@ model Feedback {
   @@index([type])
   @@index([status])
 }
+
+model MagicLinkToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([tokenHash])
+}
+
+model Broadcast {
+  id          String   @id @default(cuid())
+  type        String   @default("info") // event, info, alert, party
+  message     String
+  actionLabel String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active])
+}
+
+model SurgeEvent {
+  id            String   @id @default(cuid())
+  multiplier    Float    @default(2.0)
+  durationHours Int      @default(2)
+  active        Boolean  @default(true)
+  startedAt     DateTime @default(now())
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([active, expiresAt])
+}
+
 

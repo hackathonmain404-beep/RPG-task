@@ -11,6 +11,9 @@ import { badgeRouter } from './routes/badge.routes.js';
 import { themeRouter } from './routes/theme.routes.js';
 import { characterRouter } from './routes/character.routes.js';
 import { feedbackRouter } from './routes/feedback.routes.js';
+import { adminRouter } from './routes/admin.routes.js';
+import { magicLinkRouter } from './routes/magicLink.routes.js';
+import { platformRouter } from './routes/platform.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 export const app = express();
@@ -49,6 +52,7 @@ app.use(cookieParser());
 
 // Router setup: mount under both /api and root / for Vercel rewrite resilience
 const apiRouter = express.Router();
+apiRouter.use('/auth/magic-link', magicLinkRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/health', healthRouter);
 apiRouter.use('/tasks', taskRouter);
@@ -58,6 +62,10 @@ apiRouter.use('/badges', badgeRouter);
 apiRouter.use('/themes', themeRouter);
 apiRouter.use('/character', characterRouter);
 apiRouter.use('/feedback', feedbackRouter);
+apiRouter.use('/admin', adminRouter);
+apiRouter.use('/platform', platformRouter);
+apiRouter.use('/broadcast', platformRouter);
+apiRouter.use('/surge', platformRouter);
 
 // Mount router under both prefixes
 app.use('/api', apiRouter);

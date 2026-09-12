@@ -5,10 +5,14 @@ import { AppShell } from '../components/layout/AppShell';
 import { RouteLoadingFallback } from '../components/common/RouteLoadingFallback';
 
 
+import { AdminRoute } from '../features/admin/AdminRoute';
+
 // Route-level code splitting for optimal initial bundle weight
 const LandingPage = lazy(() => import('../features/landing/LandingPage').then(m => ({ default: m.LandingPage })));
 const LoginPage = lazy(() => import('../features/auth/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('../features/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const VerifyMagicLinkPage = lazy(() => import('../features/auth/VerifyMagicLinkPage').then(m => ({ default: m.VerifyMagicLinkPage })));
+const AdminPanelPage = lazy(() => import('../features/admin/AdminPanelPage').then(m => ({ default: m.AdminPanelPage })));
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const QuestsPage = lazy(() => import('../features/quests/QuestsPage').then(m => ({ default: m.QuestsPage })));
 const CharacterPage = lazy(() => import('../features/character/CharacterPage').then(m => ({ default: m.CharacterPage })));
@@ -36,13 +40,26 @@ export const AppRoutes: React.FC = () => {
         <Route path="/quests" element={<QuestsInfoPage />} />
         <Route path="/rewards" element={<RewardsInfoPage />} />
 
-        {/* Guest-only Auth routes (redirects to /app/dashboard if already authenticated) */}
+        {/* Magic Link Verification endpoint */}
+        <Route path="/auth/verify" element={<VerifyMagicLinkPage />} />
+
+        {/* Guest-only Auth routes */}
         <Route element={<GuestOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
 
-        {/* Protected Authenticated Routes */}
+        {/* Hidden Admin Panel (Strictly protected by server-verified role=ADMIN) */}
+        <Route
+          path="/admin/*"
+          element={
+            <AdminRoute>
+              <AdminPanelPage />
+            </AdminRoute>
+          }
+        />
+
+        {/* Protected Authenticated Routes for Players */}
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<AppShell />}>
             <Route index element={<Navigate to="/app/dashboard" replace />} />

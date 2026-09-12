@@ -14,8 +14,12 @@ import {
   ShoppingBag
 } from 'lucide-react';
 
-const CATEGORIES = [
+const BASE_CATEGORIES = [
   { id: 'all', label: 'All Items' },
+  { id: 'weapon', label: 'Weapons' },
+  { id: 'armor', label: 'Armor' },
+  { id: 'consumable', label: 'Consumables' },
+  { id: 'cosmetic', label: 'Cosmetics' },
   { id: 'theme', label: 'Themes' },
   { id: 'frame', label: 'Avatar Frames' },
   { id: 'badge', label: 'Badges' },
@@ -47,10 +51,23 @@ export const ShopPage: React.FC = () => {
 
   const gold = character?.gold ?? 0;
 
+  // Dynamic category list including base categories + any new categories from Market Studio
+  const dynamicCategories = React.useMemo(() => {
+    const extra = shopItems
+      .map(i => (i.category || i.itemType || '').toLowerCase())
+      .filter(c => c && !BASE_CATEGORIES.some(b => b.id === c));
+    const uniqueExtra = Array.from(new Set(extra)).map(c => ({
+      id: c,
+      label: c.charAt(0).toUpperCase() + c.slice(1),
+    }));
+    return [...BASE_CATEGORIES, ...uniqueExtra];
+  }, [shopItems]);
+
   // Filter items by category tab
   const filteredItems = shopItems.filter(item => {
     if (selectedCategory === 'all') return true;
-    return item.itemType.toLowerCase() === selectedCategory.toLowerCase();
+    const cat = (item.category || item.itemType || '').toLowerCase();
+    return cat === selectedCategory.toLowerCase() || item.itemType.toLowerCase() === selectedCategory.toLowerCase();
   });
 
   const handleInitiatePurchase = (item: ShopItem) => {
@@ -237,7 +254,7 @@ export const ShopPage: React.FC = () => {
 
       {/* 2. Category Filter Tabs */}
       <nav aria-label="Shop Categories" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-        {CATEGORIES.map(cat => {
+        {dynamicCategories.map(cat => {
           const isSelected = selectedCategory === cat.id;
           return (
             <button
