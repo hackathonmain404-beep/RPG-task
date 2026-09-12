@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  lastActiveAt DateTime?
+
+  character    Character?
+
+  @@index([email])
+}
+
+model Character {
+  id               String      @id @default(cuid())
+  userId           String      @unique
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  level            Int         @default(1)
+  totalXp          Int         @default(0)
+  gold             Int         @default(50)
+  streakCurrent    Int         @default(0)
+  streakBest       Int         @default(0)
+  lastActivityDate DateTime?
+
+  attributes       Attribute[]
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model Attribute {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  key         String    // intellect, strength, wisdom, charisma, vitality
+  displayName String    // Intellect, Strength, Wisdom, Charisma, Vitality
+  value       Int       @default(10)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([characterId, key])
+  @@index([characterId])
+}

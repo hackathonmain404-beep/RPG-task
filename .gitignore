@@ -24,5 +24,7 @@ pnpm-debug.log*
 # Database & IDE
 *.sqlite
 *.sqlite3
+.pgdata/
+backend/.pgdata/
 .vscode/
 .idea/
