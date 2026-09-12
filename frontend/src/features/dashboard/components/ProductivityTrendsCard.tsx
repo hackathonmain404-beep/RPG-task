@@ -13,8 +13,10 @@ interface DayPoint {
 }
 
 export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ tasks = [] }) => {
-  const [hoveredPoint, setHoveredPoint] = useState<DayPoint | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+  const [activePoint, setActivePoint] = useState<DayPoint | null>(null);
+  const [displayPoint, setDisplayPoint] = useState<DayPoint | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 250, y: 80 });
+  const [isHovered, setIsHovered] = useState(false);
 
   const height = 180;
   const baselineY = 145;
@@ -120,24 +122,31 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
       </div>
 
       <div className="chart-container">
-        {hoveredPoint && tooltipPos && (
-          <div
-            className="analytics-tooltip"
-            style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
-          >
-            <strong style={{ color: '#ffffff' }}>{hoveredPoint.label}</strong>
-            <div>Completed: <span style={{ color: '#10b981', fontWeight: 600 }}>{hoveredPoint.completed}</span></div>
-            <div>Overdue / Failed: <span style={{ color: '#f43f5e', fontWeight: 600 }}>{hoveredPoint.failed}</span></div>
-          </div>
-        )}
+        {/* Floating tooltip with velvety smooth gliding and fade transitions */}
+        <div
+          className={`analytics-tooltip ${isHovered ? 'visible' : ''}`}
+          style={{
+            left: `${tooltipPos.x}px`,
+            top: `${tooltipPos.y}px`,
+          }}
+          aria-hidden={!isHovered}
+        >
+          {displayPoint && (
+            <>
+              <strong style={{ color: '#ffffff' }}>{displayPoint.label}</strong>
+              <div>Completed: <span style={{ color: '#10b981', fontWeight: 600 }}>{displayPoint.completed}</span></div>
+              <div>Overdue / Failed: <span style={{ color: '#f43f5e', fontWeight: 600 }}>{displayPoint.failed}</span></div>
+            </>
+          )}
+        </div>
 
         <svg
           className="chart-svg"
           viewBox="0 0 500 180"
           preserveAspectRatio="none"
           onMouseLeave={() => {
-            setHoveredPoint(null);
-            setTooltipPos(null);
+            setActivePoint(null);
+            setIsHovered(false);
           }}
         >
           <defs>
@@ -159,20 +168,33 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
             y1={baselineY}
             x2="470"
             y2={baselineY}
-            stroke="rgba(255, 255, 255, 0.08)"
-            strokeWidth="1"
+            className="chart-baseline-grid"
           />
 
-          {/* Vertical Guide Crosshair when hovering */}
-          {hoveredPoint && (
+          {/* Gliding Vertical Guide Crosshair */}
+          <g
+            className="chart-crosshair-group"
+            style={{
+              transform: `translateX(${activePoint ? activePoint.x : (displayPoint ? displayPoint.x : 250)}px)`,
+              opacity: isHovered ? 1 : 0,
+            }}
+          >
+            <rect
+              x={-18}
+              y={20}
+              width={36}
+              height={baselineY - 15}
+              rx={4}
+              className="chart-crosshair-halo"
+            />
             <line
-              x1={hoveredPoint.x}
+              x1={0}
               y1={25}
-              x2={hoveredPoint.x}
+              x2={0}
               y2={baselineY}
               className="chart-vertical-crosshair"
             />
-          )}
+          </g>
 
           {/* Area Fill for Overdue / Failed */}
           {days.some(d => d.failed > 0) && (
@@ -204,45 +226,47 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
 
           {/* Interactive hover targets & points */}
           {days.map((day) => {
-            const isHovered = hoveredPoint?.label === day.label;
+            const isPointActive = activePoint?.label === day.label;
             const ptY = day.completed > 0 ? getY(day.completed) : day.failed > 0 ? getY(day.failed) : baselineY;
             return (
               <g
                 key={day.label}
                 style={{ cursor: 'pointer' }}
                 onMouseEnter={(e) => {
-                  const rect = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
-                  if (rect) {
+                  const svg = e.currentTarget.ownerSVGElement;
+                  if (svg) {
+                    const rect = svg.getBoundingClientRect();
                     const scaleX = rect.width / 500;
                     const scaleY = rect.height / 180;
                     setTooltipPos({
                       x: day.x * scaleX,
-                      y: ptY * scaleY - 6,
+                      y: ptY * scaleY - 8,
                     });
                   }
-                  setHoveredPoint(day);
+                  setActivePoint(day);
+                  setDisplayPoint(day);
+                  setIsHovered(true);
                 }}
               >
-                {/* Transparent hit area */}
+                {/* Seamless transparent hit area (full 70px wide column with 0 dead zone) */}
                 <rect
-                  x={day.x - 25}
+                  x={day.x - 35}
                   y={0}
-                  width={50}
+                  width={70}
                   height={height}
                   fill="transparent"
                 />
 
                 {/* Visible node point if count > 0 or hovered */}
-                {(day.completed > 0 || day.failed > 0 || isHovered) && (
+                {(day.completed > 0 || day.failed > 0 || isPointActive) && (
                   <circle
                     cx={day.x}
                     cy={ptY}
-                    r={isHovered ? 5.5 : 3.5}
+                    r={isPointActive ? 5.5 : 3.5}
                     fill={day.failed > 0 ? '#f43f5e' : '#10b981'}
                     stroke="#0b0f17"
-                    strokeWidth="2"
-                    className="chart-node-glow"
-                    filter={isHovered ? 'drop-shadow(0 0 6px #10b981)' : undefined}
+                    strokeWidth={isPointActive ? 2.5 : 2}
+                    className={`chart-node-glow ${isPointActive ? 'is-active' : ''} ${day.failed > 0 ? 'is-failed' : 'is-completed'}`}
                   />
                 )}
 
@@ -251,10 +275,7 @@ export const ProductivityTrendsCard: React.FC<ProductivityTrendsCardProps> = ({ 
                   x={day.x}
                   y={height - 10}
                   textAnchor="middle"
-                  fill={isHovered ? '#f8fafc' : '#64748b'}
-                  fontSize="11"
-                  fontWeight={isHovered ? '700' : '400'}
-                  fontFamily="Inter, sans-serif"
+                  className={`chart-axis-label ${isPointActive ? 'is-active' : ''}`}
                 >
                   {day.label}
                 </text>
