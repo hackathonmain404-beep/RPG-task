@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import type { ShopItem } from '../../types/contract';
-import { Coins, AlertCircle, Loader2, X } from 'lucide-react';
+import { Coins, AlertCircle, Loader2, X, ShieldCheck } from 'lucide-react';
+import { ItemVisualPreview } from './components/ItemVisualPreview';
 
-interface PurchaseConfirmModalProps {
+export interface PurchaseConfirmModalProps {
   item: ShopItem | null;
   isOpen: boolean;
   isProcessing: boolean;
@@ -42,18 +43,7 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
 
   return (
     <div
-      className="level-up-backdrop"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 1500,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem',
-      }}
+      className="armory-modal-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget && !isProcessing) {
           onClose();
@@ -65,26 +55,30 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="purchase-dialog-title"
-        className="rpg-card"
-        style={{
-          width: '100%',
-          maxWidth: '480px',
-          backgroundColor: 'var(--bg-surface-elevated)',
-          border: '1px solid var(--border-strong)',
-          borderRadius: '16px',
-          padding: '1.75rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.25rem',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8)',
-          animation: 'fadeIn 0.2s ease-out',
-        }}
+        className="armory-modal-dialog"
       >
         {/* Modal Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 id="purchase-dialog-title" style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-            Confirm Citadel Acquisition
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ShieldCheck size={18} color="#38bdf8" />
+            </div>
+            <h2 id="purchase-dialog-title" style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+              Confirm Citadel Acquisition
+            </h2>
+          </div>
+
           <button
             type="button"
             onClick={onClose}
@@ -94,7 +88,10 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
               border: 'none',
               color: 'var(--text-tertiary)',
               cursor: isProcessing ? 'not-allowed' : 'pointer',
-              padding: '0.25rem',
+              padding: '0.35rem',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '6px',
             }}
             aria-label="Close dialog"
           >
@@ -105,47 +102,77 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
         {/* Item Summary Card */}
         <div
           style={{
-            padding: '1rem',
-            borderRadius: '10px',
-            backgroundColor: 'var(--bg-surface-sunken)',
-            border: '1px solid var(--border-subtle)',
+            padding: '1.1rem',
+            borderRadius: '12px',
+            backgroundColor: '#0a0e16',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.5rem',
+            gap: '0.75rem',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
-              {item.name}
-            </span>
-            <span
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            {/* Visual Thumbnail */}
+            <div
               style={{
-                fontSize: '0.75rem',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                padding: '0.15rem 0.5rem',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                color: 'var(--border-focus)',
+                width: '64px',
+                height: '64px',
+                borderRadius: '8px',
+                backgroundColor: '#070a10',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                flexShrink: 0,
               }}
             >
-              {item.itemType}
-            </span>
+              <div style={{ transform: 'scale(0.55)' }}>
+                <ItemVisualPreview item={item} />
+              </div>
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                  {item.name}
+                </span>
+                <span
+                  className={`armory-tag-rarity ${item.rarity?.toLowerCase() || 'common'}`}
+                >
+                  {item.rarity}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0', lineHeight: 1.4 }}>
+                {item.description}
+              </p>
+            </div>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-            {item.description}
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-gold)', marginTop: '0.5rem' }}>
-            <Coins size={18} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Price:</span>
-            <span className="mono-numbers" style={{ fontSize: '1.15rem', fontWeight: 800 }}>
-              {item.price.toLocaleString()} Gold
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingTop: '0.65rem',
+              borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            }}
+          >
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', fontWeight: 700 }}>
+              Requisition Cost
             </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-gold)' }}>
+              <Coins size={18} />
+              <span className="mono-numbers" style={{ fontSize: '1.25rem', fontWeight: 900 }}>
+                {item.price.toLocaleString()}
+              </span>
+              <span style={{ fontSize: '0.8rem', color: '#fde68a', fontWeight: 700 }}>Gold</span>
+            </div>
           </div>
         </div>
 
         {/* Transaction Notice */}
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+        <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.45 }}>
           Acquiring this item will dispatch an authoritative purchase request to the Citadel database. Your wallet will only be debited upon verified server confirmation.
         </p>
 
@@ -160,9 +187,9 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
               padding: '0.75rem 1rem',
               borderRadius: '8px',
               backgroundColor: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
               color: '#fca5a5',
-              fontSize: '0.85rem',
+              fontSize: '0.86rem',
             }}
           >
             <AlertCircle size={18} color="var(--status-danger)" style={{ flexShrink: 0 }} />
@@ -171,13 +198,13 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
         )}
 
         {/* Dialog Actions */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.35rem' }}>
           <button
             type="button"
             onClick={onClose}
             disabled={isProcessing}
             className="rpg-button secondary"
-            style={{ padding: '0.6rem 1.25rem' }}
+            style={{ padding: '0.6rem 1.25rem', fontSize: '0.88rem' }}
           >
             Cancel
           </button>
@@ -186,19 +213,16 @@ export const PurchaseConfirmModal: React.FC<PurchaseConfirmModalProps> = ({
             type="button"
             onClick={onConfirm}
             disabled={isProcessing}
-            className="rpg-button primary"
+            className="armory-btn-acquire"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.6rem 1.5rem',
-              fontWeight: 700,
+              padding: '0.6rem 1.6rem',
+              fontSize: '0.9rem',
             }}
             aria-busy={isProcessing}
           >
             {isProcessing ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 size={16} className="sync-icon-spinning" />
                 <span>Confirming...</span>
               </>
             ) : (

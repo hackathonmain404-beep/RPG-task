@@ -1,28 +1,45 @@
-import React from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import type { ShopItem } from '../../types/contract';
-import { Palette, Shield, Award, Crown, Coins, Check, Sparkles, Loader2 } from 'lucide-react';
+import { ItemVisualPreview } from './components/ItemVisualPreview';
+import { 
+  Coins, 
+  Check, 
+  Loader2, 
+  Sparkles, 
+  Palette, 
+  Shield, 
+  Award, 
+  Crown,
+  Info
+} from 'lucide-react';
 
-interface ShopItemCardProps {
+export interface ShopItemCardProps {
   item: ShopItem;
   isOwned: boolean;
   isEquipped: boolean;
   isPending: boolean;
+  playerGold?: number;
+  isJustAcquired?: boolean;
   onInitiatePurchase: (item: ShopItem) => void;
   onEquip?: (item: ShopItem) => void;
+  onInspect?: (item: ShopItem) => void;
+  index?: number;
 }
 
-const TYPE_ICONS: Record<string, React.FC<{ size?: number; color?: string }>> = {
+const TYPE_ICONS: Record<string, React.FC<{ size?: number; color?: string; className?: string }>> = {
   theme: Palette,
   frame: Shield,
   badge: Award,
   title: Crown,
+  cosmetic: Sparkles,
 };
 
-const RARITY_COLORS: Record<string, { badgeBg: string; textColor: string; label: string }> = {
-  common: { badgeBg: 'rgba(148, 163, 184, 0.15)', textColor: '#94a3b8', label: 'Common' },
-  rare: { badgeBg: 'rgba(59, 130, 246, 0.15)', textColor: '#38bdf8', label: 'Rare' },
-  epic: { badgeBg: 'rgba(168, 85, 247, 0.15)', textColor: '#c084fc', label: 'Epic' },
-  legendary: { badgeBg: 'rgba(245, 158, 11, 0.15)', textColor: '#fde047', label: 'Legendary' },
+const RARITY_LABELS: Record<string, string> = {
+  common: 'Common',
+  uncommon: 'Uncommon',
+  rare: 'Rare',
+  epic: 'Epic',
+  legendary: 'Legendary',
 };
 
 export const ShopItemCard: React.FC<ShopItemCardProps> = ({
@@ -30,121 +47,166 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
   isOwned,
   isEquipped,
   isPending,
+  playerGold = 0,
+  isJustAcquired = false,
   onInitiatePurchase,
   onEquip,
+  onInspect,
+  index = 0,
 }) => {
-  const Icon = TYPE_ICONS[item.itemType.toLowerCase()] || Sparkles;
-  const rarity = RARITY_COLORS[item.rarity.toLowerCase()] || RARITY_COLORS.common;
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [tiltStyle, setTiltStyle] = useState<React.CSSProperties>({});
+  const [isHovered, setIsHovered] = useState(false);
+
+  const typeKey = item.itemType.toLowerCase();
+  const Icon = TYPE_ICONS[typeKey] || Sparkles;
+  const rarityKey = item.rarity?.toLowerCase() || 'common';
+  const rarityLabel = RARITY_LABELS[rarityKey] || (item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1));
+
+  const hasEnoughGold = playerGold >= item.price;
+
+  // 3D Perspective Tilt and Cursor-following Lighting (Desktop only)
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Max 3.5 degrees tilt
+    const rotateX = ((centerY - y) / centerY) * 3.5;
+    const rotateY = ((x - centerX) / centerX) * 3.5;
+
+    setTiltStyle({
+      transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-8px) scale(1.015)`,
+      ['--mouse-x' as any]: `${x}px`,
+      ['--mouse-y' as any]: `${y}px`,
+    });
+  }, []);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setTiltStyle({
+      transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)',
+      ['--mouse-x' as any]: '50%',
+      ['--mouse-y' as any]: '50%',
+    });
+  };
+
+  const animationDelayStyle = {
+    animationDelay: `${Math.min(index * 50, 400)}ms`,
+  };
 
   return (
     <div
-      className={`rpg-card rarity-${item.rarity.toLowerCase()}`}
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`armory-card armory-card-anim rarity-${rarityKey} ${isJustAcquired ? 'purchase-success-active' : ''}`}
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '1.25rem',
-        borderRadius: '12px',
-        backgroundColor: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        position: 'relative',
-        gap: '1rem',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        ...tiltStyle,
+        ...animationDelayStyle,
+      }}
+      tabIndex={0}
+      role="region"
+      aria-label={`${item.name}, ${rarityLabel} ${item.itemType}, ${item.price} Gold`}
+      onKeyDown={e => {
+        if (e.key === 'Enter' && onInspect && e.target === e.currentTarget) {
+          onInspect(item);
+        }
       }}
     >
+      {/* Interactive Cursor-following Spotlight Overlay */}
+      <div className="armory-card-spotlight" aria-hidden="true" />
+
       <div>
-        {/* Top Header: Type & Rarity Badge */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              color: 'var(--text-tertiary)',
-            }}
-          >
-            <Icon size={14} color="var(--text-tertiary)" />
-            {item.itemType}
-          </span>
-          <span
-            style={{
-              fontSize: '0.7rem',
-              fontWeight: 800,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              padding: '0.2rem 0.55rem',
-              borderRadius: '4px',
-              backgroundColor: rarity.badgeBg,
-              color: rarity.textColor,
-            }}
-          >
-            {rarity.label}
-          </span>
+        {/* Upper Visual Presentation Area */}
+        <div
+          className="armory-visual-container"
+          onClick={() => onInspect?.(item)}
+          title="Click to inspect item details"
+        >
+          {/* Top Tags Overlay: Type & Rarity */}
+          <div className="armory-card-tags-overlay">
+            <span className="armory-tag-type">
+              <Icon size={12} color="var(--text-tertiary, #64748b)" aria-hidden="true" />
+              <span>{item.itemType}</span>
+            </span>
+
+            <span className={`armory-tag-rarity ${rarityKey}`}>
+              {rarityLabel}
+            </span>
+          </div>
+
+          {/* Procedural Visual Preview Graphic */}
+          <ItemVisualPreview item={item} />
         </div>
 
-        {/* Item Title */}
-        <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: '0 0 0.35rem', color: 'var(--text-primary)' }}>
-          {item.name}
-        </h3>
+        {/* Item Title & Lore Body */}
+        <div className="armory-card-body">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+            <h3 className="armory-item-title">
+              {item.name}
+            </h3>
+            {onInspect && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onInspect(item);
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: isHovered ? '#38bdf8' : 'var(--text-tertiary, #64748b)',
+                  cursor: 'pointer',
+                  padding: '0.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'color 0.2s ease',
+                }}
+                title="View item lore & specifications"
+                aria-label={`Inspect ${item.name}`}
+              >
+                <Info size={16} />
+              </button>
+            )}
+          </div>
 
-        {/* Lore / Description */}
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, minHeight: '2.5rem', lineHeight: 1.4 }}>
-          {item.description}
-        </p>
+          <p className="armory-item-desc" title={item.description}>
+            {item.description}
+          </p>
+        </div>
       </div>
 
-      {/* Bottom Section: Price & Actions */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingTop: '0.85rem',
-          borderTop: '1px solid var(--border-subtle)',
-          gap: '0.75rem',
-          flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-gold)' }}>
-          <Coins size={18} />
-          <span className="mono-numbers" style={{ fontSize: '1.25rem', fontWeight: 900 }}>
+      {/* Card Footer: Price & Primary Action */}
+      <div className="armory-card-footer">
+        {/* Authoritative Price Display */}
+        <div className="armory-price-box" aria-label={`Price: ${item.price} Gold`}>
+          <Coins size={18} aria-hidden="true" />
+          <span className="armory-price-num mono-numbers">
             {item.price.toLocaleString()}
           </span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>Gold</span>
+          <span className="armory-price-unit">Gold</span>
         </div>
 
-        <div>
+        {/* Action States */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {isEquipped ? (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                color: 'var(--status-success)',
-                backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                padding: '0.45rem 0.85rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-              }}
-            >
-              <Check size={16} />
-              Equipped
+            <span className="armory-badge-equipped">
+              <Check size={14} aria-hidden="true" />
+              <span>Equipped</span>
             </span>
           ) : isOwned ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span
-                style={{
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  color: 'var(--text-tertiary)',
-                  padding: '0.4rem 0.6rem',
-                }}
-              >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <span className="armory-badge-owned">
                 Owned
               </span>
               {onEquip && (
@@ -152,11 +214,14 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
                   type="button"
                   onClick={() => onEquip(item)}
                   disabled={isPending}
-                  className="rpg-button secondary"
-                  style={{ padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}
+                  className="armory-btn-equip"
                   aria-label={`Equip ${item.name}`}
                 >
-                  {isPending ? <Loader2 size={14} className="animate-spin" /> : 'Equip'}
+                  {isPending ? (
+                    <Loader2 size={14} className="sync-icon-spinning" aria-hidden="true" />
+                  ) : (
+                    <span>Equip</span>
+                  )}
                 </button>
               )}
             </div>
@@ -165,21 +230,14 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({
               type="button"
               onClick={() => onInitiatePurchase(item)}
               disabled={isPending}
-              className="rpg-button primary"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.5rem 1rem',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-              }}
+              className={`armory-btn-acquire ${!hasEnoughGold && !isPending ? 'insufficient-funds' : ''}`}
               aria-label={`Purchase ${item.name} for ${item.price} Gold`}
               aria-busy={isPending}
+              title={!hasEnoughGold ? 'Earn more Gold in Citadel Quests to acquire this item.' : undefined}
             >
               {isPending ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={14} className="sync-icon-spinning" aria-hidden="true" />
                   <span>Processing...</span>
                 </>
               ) : (

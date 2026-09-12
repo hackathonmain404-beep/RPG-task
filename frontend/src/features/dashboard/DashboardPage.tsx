@@ -194,11 +194,11 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <h1 className="welcome-headline-animated" style={{ fontSize: '2.1rem', marginBottom: '0.5rem', fontWeight: 800 }}>
-            Welcome, Adventurer {user?.displayName || 'Hero'}!
+            Welcome back, Achiever!
           </h1>
 
           <p className="welcome-desc-animated" style={{ color: 'var(--text-secondary)', maxWidth: '600px', fontSize: '1rem', lineHeight: 1.55 }}>
-            Your character session is securely verified with the server. Today&apos;s momentum awaits your command.
+            Your journey continues. Make your next move count.
           </p>
         </div>
 
@@ -324,17 +324,23 @@ export const DashboardPage: React.FC = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
           {attributes.map(attr => {
-            const config = ATTR_CONFIG[attr.key.toLowerCase()] || {
+            const attrKey = attr.key.toLowerCase();
+            const config = ATTR_CONFIG[attrKey] || {
               icon: Brain,
               color: 'var(--text-secondary)',
               focus: attr.displayName,
             };
             const Icon = config.icon;
             return (
-              <div key={attr.key} className="rpg-card interactive-stat-card" style={{ padding: '1rem' }}>
+              <div
+                key={attr.key}
+                className={`discipline-stat-card discipline-card-${attrKey}`}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <Icon size={18} color={config.color} />
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem', color: config.color }}>
+                  <div className="discipline-icon-wrapper">
+                    <Icon size={18} color={config.color} />
+                  </div>
+                  <span className="discipline-card-title" style={{ color: config.color }}>
                     {attr.displayName}
                   </span>
                 </div>
@@ -352,8 +358,8 @@ export const DashboardPage: React.FC = () => {
                     />
                   </div>
                   <span
-                    className="mono-numbers"
-                    style={{ fontSize: '0.75rem', fontWeight: 700, color: config.color, minWidth: '24px', textAlign: 'right' }}
+                    className="mono-numbers discipline-card-number"
+                    style={{ color: config.color }}
                   >
                     {attr.value}
                   </span>
