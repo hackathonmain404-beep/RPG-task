@@ -36,9 +36,8 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
     >
       <div
         style={{
-          maxWidth: '1440px',
-          margin: '0 auto',
-          padding: '0.75rem 1.25rem',
+          width: '100%',
+          padding: '0.75rem 1.5rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',

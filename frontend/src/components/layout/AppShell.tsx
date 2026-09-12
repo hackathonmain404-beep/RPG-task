@@ -48,9 +48,7 @@ export const AppShell: React.FC = () => {
         style={{
           display: 'flex',
           flex: 1,
-          maxWidth: '1440px',
           width: '100%',
-          margin: '0 auto',
           position: 'relative',
         }}
       >
