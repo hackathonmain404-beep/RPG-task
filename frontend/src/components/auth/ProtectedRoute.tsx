@@ -7,7 +7,10 @@ export const ProtectedRoute: React.FC = () => {
   const { user, isLoading, isGuest } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  // Only display the full-screen verification loader on initial load before
+  // any session is loaded into state. When user is browsing live, tab switching
+  // or window minimize/focus will never show this blocking screen.
+  if (isLoading && !user && !isGuest) {
     return (
       <div
         style={{

@@ -28,6 +28,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   user: { id: 'usr_1', email: 'adventurer@citadel.com', displayName: 'ValiantCoder' },
   character: mockCharacter,
   isLoading: false,
+  isGuest: false,
   serverReachable: true,
   xpProgress: {
     currentLevelXp: 450,
@@ -49,6 +50,7 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   lastAttributeChange: null,
   signInWithGoogle: vi.fn(),
   signInWithGithub: vi.fn(),
+  signInAsGuest: vi.fn(),
   logout: vi.fn(),
   refreshSession: vi.fn(),
   refreshCharacter: vi.fn(),

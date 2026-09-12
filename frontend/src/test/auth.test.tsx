@@ -11,12 +11,14 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
   user: null,
   character: null,
   isLoading: false,
+  isGuest: false,
   serverReachable: true,
   xpProgress: null,
   recentActivity: [],
   lastAttributeChange: null,
   signInWithGoogle: vi.fn(),
   signInWithGithub: vi.fn(),
+  signInAsGuest: vi.fn(),
   logout: vi.fn(),
   refreshSession: vi.fn(),
   refreshCharacter: vi.fn(),
@@ -37,8 +39,8 @@ describe('LoginPage', () => {
       </AuthContext.Provider>
     );
 
-    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Continue with GitHub/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Google/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /GitHub/i })).toBeInTheDocument();
   });
 
   it('renders the Enter the Citadel heading', () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import type { 
   User, 
   Character, 
@@ -41,6 +41,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [xpProgress, setXpProgress] = useState<XpProgress | null>(null);
   const [recentActivity, setRecentActivity] = useState<ProgressionActivityItem[]>([]);
   const [lastAttributeChange, setLastAttributeChange] = useState<AttributeChangeNotice | null>(null);
+  const activeUserRef = useRef<User | null>(null);
+
+  useEffect(() => {
+    activeUserRef.current = user;
+  }, [user]);
 
   // Synchronize the Supabase-authenticated user with our Prisma backend
   const syncWithBackend = useCallback(async () => {
@@ -261,15 +266,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!isMounted) return;
 
         if (event === 'SIGNED_IN' && session) {
-          setIsLoading(true);
+          // Only show the blocking verification screen if user logs in for the 1st time
+          // (i.e. no user loaded in memory yet). During live browsing, tab switching or
+          // window minimizing will never show the full-screen verifying screen.
+          const isInitialLogin = !activeUserRef.current;
+          if (isInitialLogin) {
+            setIsLoading(true);
+          }
           await syncWithBackend();
-          setIsLoading(false);
+          if (isInitialLogin) {
+            setIsLoading(false);
+          }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setCharacter(null);
           setXpProgress(null);
           setRecentActivity([]);
           setLastAttributeChange(null);
+          setIsLoading(false);
         } else if (event === 'TOKEN_REFRESHED' && session) {
           // Token refreshed silently, no action needed
         }
