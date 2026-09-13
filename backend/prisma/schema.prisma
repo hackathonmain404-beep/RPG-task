@@ -30,6 +30,7 @@ model User {
   userThemes       UserTheme[]
   activityLogs     ActivityLog[]
   feedbacks        Feedback[]
+  chatMessages     CommunityChatMessage[]
 
   @@index([email])
   @@index([githubUsername])
@@ -279,4 +280,14 @@ model SurgeEvent {
   @@index([active, expiresAt])
 }
 
+model CommunityChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+}
 
