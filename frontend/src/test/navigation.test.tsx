@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { HeaderHUD } from '../components/layout/HeaderHUD';
 import { SettingsPage } from '../features/settings/SettingsPage';
@@ -48,8 +48,8 @@ describe('HeaderHUD', () => {
   });
 });
 
-describe('SettingsPage (Adventurer Identity & Account)', () => {
-  it('renders user details, identity fields, and session management', () => {
+describe('SettingsPage (Theme Switcher & Account)', () => {
+  it('renders user details and theme switcher presets', () => {
     const mockAuth = createMockAuthContext();
     render(
       <AuthContext.Provider value={mockAuth}>
@@ -61,13 +61,16 @@ describe('SettingsPage (Adventurer Identity & Account)', () => {
 
     expect(screen.getByDisplayValue('ValiantCoder')).toBeInTheDocument();
     expect(screen.getByText('test@citadel.com')).toBeInTheDocument();
-    expect(screen.getByText('Adventurer Identity')).toBeInTheDocument();
-    expect(screen.getByText('Session Management')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Sign Out of Life RPG/i })).toBeInTheDocument();
+    expect(screen.getByText('Dark Citadel')).toBeInTheDocument();
+    expect(screen.getByText('Neon Outpost')).toBeInTheDocument();
+    expect(screen.getByText('Mystic Forest')).toBeInTheDocument();
+    expect(screen.getByText('Solaris Gold')).toBeInTheDocument();
 
-    // Verify HUD Theme Customizer is completely removed
-    expect(screen.queryByText('HUD Theme Customizer')).not.toBeInTheDocument();
-    expect(screen.queryByText('PRE-GIVEN STARTER THEMES')).not.toBeInTheDocument();
-    expect(screen.queryByText('Dark Citadel')).not.toBeInTheDocument();
+    // Click Neon Outpost theme
+    const neonThemeBtn = screen.getByRole('button', { name: /Neon Outpost/i });
+    fireEvent.click(neonThemeBtn);
+
+    // Verify data-theme attribute set on document.documentElement
+    expect(document.documentElement.getAttribute('data-theme')).toBe('neon_outpost');
   });
 });

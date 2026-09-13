@@ -303,25 +303,27 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
             </div>
 
             <div className="feedback-header-actions">
-              {/* Switch Tab between compose and history */}
-              <button
-                type="button"
-                onClick={() => setTab(t => (t === 'create' ? 'history' : 'create'))}
-                className={`feedback-tab-toggle ${tab === 'history' ? 'active-history' : 'idle-history'}`}
-                title={tab === 'create' ? 'View past submissions' : 'Compose new feedback'}
-              >
-                {tab === 'create' ? (
-                  <>
-                    <History size={14} />
-                    <span>Submissions</span>
-                  </>
-                ) : (
-                  <>
-                    <PenLine size={14} />
-                    <span>Write</span>
-                  </>
-                )}
-              </button>
+              {/* Switch Tab between compose and history (admin only) */}
+              {auth?.isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setTab(t => (t === 'create' ? 'history' : 'create'))}
+                  className={`feedback-tab-toggle ${tab === 'history' ? 'active-history' : 'idle-history'}`}
+                  title={tab === 'create' ? 'View past submissions' : 'Compose new feedback'}
+                >
+                  {tab === 'create' ? (
+                    <>
+                      <History size={14} />
+                      <span>Submissions</span>
+                    </>
+                  ) : (
+                    <>
+                      <PenLine size={14} />
+                      <span>Write</span>
+                    </>
+                  )}
+                </button>
+              )}
 
               {/* Close Button with 45deg Hover Rotation */}
               <button
@@ -459,7 +461,6 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                   <span>{successMessage}</span>
                 </div>
               )}
->>>>>>> 8972449 (feat(ui): redesign settings command center and feedback popup into interactive HUDs)
 
               {/* Actions Footer */}
               <div className="feedback-footer">
