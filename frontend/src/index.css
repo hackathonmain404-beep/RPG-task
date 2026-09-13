@@ -9,6 +9,16 @@
   --bg-surface-elevated: #161d28;
   --bg-surface-sunken: #06080b;
 
+  /* Theme System Mappings */
+  --theme-primary: var(--color-xp, #38bdf8);
+  --theme-secondary: var(--color-gold, #f59e0b);
+  --theme-background: var(--bg-canvas, #090c10);
+  --theme-surface: var(--bg-surface, #0f141c);
+  --theme-surface-hover: var(--bg-surface-elevated, #161d28);
+  --theme-text: var(--text-primary, #f8fafc);
+  --theme-text-muted: var(--text-secondary, #94a3b8);
+  --theme-border: var(--border-subtle, rgba(255, 255, 255, 0.08));
+
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.18);
@@ -917,11 +927,10 @@ div[role="radiogroup"] button:hover {
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
   }
   .app-main-content {
-    padding: 1.25rem 1rem calc(4.75rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
+    padding: 1.25rem clamp(0.75rem, 3.5vw, 1.25rem) calc(5.25rem + env(safe-area-inset-bottom, 0px)) clamp(0.75rem, 3.5vw, 1.25rem) !important;
   }
   .floating-system-control {
-    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)) !important;
-    right: 1rem !important;
+    display: none !important;
   }
 }
 
@@ -964,7 +973,8 @@ div[role="radiogroup"] button:hover {
 /* 7. Small Mobile (<=360px) */
 @media (max-width: 360px) {
   .hud-brand-name {
-    display: none !important;
+    font-size: 1.05rem !important;
+    letter-spacing: -0.01em !important;
   }
   .hud-user-name {
     max-width: 65px;

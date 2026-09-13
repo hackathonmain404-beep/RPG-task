@@ -27,7 +27,8 @@ import {
   BookOpen, 
   Heart,
   ChevronDown,
-  Database
+  Database,
+  Sliders
 } from 'lucide-react';
 
 // Attribute icon/color map
@@ -52,6 +53,7 @@ interface StatCardProps {
   icon: React.ReactNode;
   iconClassName: string;
   cardTypeClass: string;
+  headerAction?: React.ReactNode;
   value: React.ReactNode;
   valueColor?: string;
   subValue?: React.ReactNode;
@@ -68,6 +70,7 @@ const InteractiveStatCard: React.FC<StatCardProps> = ({
   icon,
   iconClassName,
   cardTypeClass,
+  headerAction,
   value,
   valueColor = '#ffffff',
   subValue,
@@ -86,24 +89,27 @@ const InteractiveStatCard: React.FC<StatCardProps> = ({
       onMouseLeave={handleMouseLeave}
       className={`interactive-stat-card ${cardTypeClass}`}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
         <span className="rpg-label">{label}</span>
-        <div className={`stat-icon-box ${iconClassName}`}>
-          {icon}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          {headerAction}
+          <div className={`stat-icon-box ${iconClassName}`}>
+            {icon}
+          </div>
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-        <span className="mono-numbers" style={{ fontSize: '2rem', fontWeight: 800, color: valueColor }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <span className="mono-numbers" style={{ fontSize: 'clamp(1.75rem, 5vw, 2.15rem)', fontWeight: 800, color: valueColor, lineHeight: 1 }}>
           {value}
         </span>
         {subValue && (
-          <span style={{ fontSize: '0.85rem', color: subValueColor || 'var(--text-secondary)', fontWeight: 600 }}>
+          <span style={{ fontSize: '0.82rem', color: subValueColor || 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.01em' }}>
             {subValue}
           </span>
         )}
       </div>
       {progressBar && (
-        <div className="rpg-progress-track" style={{ height: '4px', marginTop: '0.5rem' }}>
+        <div className="rpg-progress-track" style={{ height: '6px', marginTop: '0.65rem', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
           <div
             className="rpg-progress-fill mini-bar-animated"
             style={{
@@ -116,7 +122,7 @@ const InteractiveStatCard: React.FC<StatCardProps> = ({
         </div>
       )}
       {footerText && (
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '0.4rem' }}>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.45rem', lineHeight: 1.4 }}>
           {footerText}
         </p>
       )}
@@ -158,7 +164,7 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="dashboard-main-flow" style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
       {/* Reward Toast */}
       {lastRewardNotice && (
         <div className="reward-toast-container">
@@ -172,42 +178,27 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* Welcome / Session Banner */}
-      <div
-        className="anim-entrance-3"
-        style={{
-          background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%)',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
-          borderRadius: '16px',
-          padding: 'clamp(1.25rem, 3vw, 2rem)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1.25rem',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
-        }}
-      >
-        <div style={{ minWidth: 0, flex: 1 }}>
+      <div className="welcome-banner-card anim-entrance-3">
+        <div className="welcome-content-block">
           <div className="session-badge-live">
-            <Sparkles size={13} className="session-badge-live-icon" />
-            <span>CITADEL ACTIVE SESSION</span>
+            <Sparkles size={12} className="session-badge-live-icon" />
+            <span>CITADEL • ACTIVE SESSION</span>
           </div>
 
-          <h1 className="welcome-headline-animated" style={{ fontSize: 'clamp(1.4rem, 4vw, 2.1rem)', marginBottom: '0.5rem', fontWeight: 800 }}>
+          <h1 className="welcome-headline-animated">
             Welcome back, Achiever!
           </h1>
 
-          <p className="welcome-desc-animated" style={{ color: 'var(--text-secondary)', maxWidth: '600px', fontSize: '1rem', lineHeight: 1.55 }}>
+          <p className="welcome-desc-animated">
             Your journey continues. Make your next move count.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="welcome-action-group">
           <Link
             to="/app/character"
             className="btn-character-sheet"
             id="dashboard-character-sheet-btn"
-            style={{ minHeight: '42px' }}
           >
             <span>Character Sheet</span>
             <ArrowRight size={16} className="btn-cta-arrow" />
@@ -217,11 +208,11 @@ export const DashboardPage: React.FC = () => {
 
       {/* Quick Metrics Grid (4 Stat Cards with 3D Tilt & Cursor Light) */}
       <div
-        className="anim-entrance-4"
+        className="anim-entrance-4 dashboard-metrics-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
-          gap: '1.25rem',
+          gap: '1rem',
         }}
       >
         {/* Metric 1: Level + XP Progress */}
@@ -230,24 +221,34 @@ export const DashboardPage: React.FC = () => {
           cardTypeClass="card-player-level"
           iconClassName="stat-icon-shield"
           icon={<Shield size={18} color="#a855f7" />}
+          headerAction={
+            <Link
+              to="/app/settings"
+              className="stat-card-header-action"
+              title="Citadel System & Accessibility"
+              aria-label="System Settings"
+            >
+              <Sliders size={14} />
+            </Link>
+          }
           value={level}
           subValue={`${Math.round(xpPercent)}% to next`}
           subValueColor="var(--color-xp)"
           progressBar={{
             percent: xpPercent,
-            gradient: 'linear-gradient(90deg, #a855f7, #c084fc)',
+            gradient: 'var(--theme-primary, var(--color-xp, #a855f7))',
           }}
         />
 
-        {/* Metric 2: Total XP */}
+        {/* Metric 2: Total XP / Experience */}
         <InteractiveStatCard
-          label="Authoritative EXP"
+          label="Experience"
           cardTypeClass="card-auth-xp"
           iconClassName="stat-icon-sparkles"
           icon={<Sparkles size={18} color="#38bdf8" />}
           value={totalXp.toLocaleString()}
           subValue="XP"
-          footerText="Verified PostgreSQL record"
+          footerText="Your current experience"
         />
 
         {/* Metric 3: Gold */}

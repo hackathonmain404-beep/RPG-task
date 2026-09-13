@@ -77,18 +77,125 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.25rem 0.65rem;
+  padding: 0.22rem 0.6rem;
   border-radius: 9999px;
   background-color: rgba(56, 189, 248, 0.12);
   border: 1px solid rgba(56, 189, 248, 0.3);
   color: #38bdf8;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.65rem;
+  white-space: nowrap;
   animation: sessionStatusPulse 4s ease-in-out infinite;
   transition: all 0.2s ease;
+}
+
+/* Responsive Welcome Banner Card */
+.welcome-banner-card {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 16px;
+  padding: clamp(1.15rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.15rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .welcome-banner-card {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+.welcome-content-block {
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+}
+
+.welcome-headline-animated {
+  font-size: clamp(1.35rem, 5.2vw, 2.1rem);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  margin-bottom: 0.45rem;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.welcome-desc-animated {
+  font-size: clamp(0.88rem, 3.6vw, 1rem);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 600px;
+}
+
+.welcome-action-group {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .welcome-action-group {
+    width: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .btn-character-sheet {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+  }
+}
+
+/* Quick Settings Action inside Stat Card Header */
+.stat-card-header-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary, #94a3b8);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stat-card-header-action:hover {
+  background-color: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  transform: scale(1.06);
+}
+
+/* Mobile Header Action: Hide square Feedback button on mobile <=767px */
+@media (max-width: 767px) {
+  .hud-feedback-btn.desktop-only-action {
+    display: none !important;
+  }
+}
+
+/* Flow gap for dashboard */
+.dashboard-main-flow {
+  gap: 1.15rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-main-flow {
+    gap: 1.75rem;
+  }
 }
 
 .session-badge-live:hover {
@@ -346,6 +453,49 @@
   position: relative;
 }
 
+/* Shift account profile out of mobile header bar (<=767px) into mobile drawer */
+@media (max-width: 767px) {
+  .hud-profile-container.desktop-only-profile {
+    display: none !important;
+  }
+}
+
+/* Mobile Drawer Smooth Slide-in & Fade */
+@keyframes mobileDrawerFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mobileDrawerSlideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.mobile-drawer-overlay {
+  animation: mobileDrawerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mobile-drawer-panel {
+  animation: mobileDrawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-drawer-overlay,
+  .mobile-drawer-panel {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 .hud-profile-btn {
   display: inline-flex;
   align-items: center;
@@ -425,50 +575,6 @@
 .hud-profile-chevron.is-open {
   transform: rotate(180deg);
   color: #38bdf8;
-}
-
-/* Desktop vs Mobile Account Trigger Presentation */
-.hud-profile-desktop-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.hud-profile-mobile-content {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  transition: color 200ms ease;
-}
-
-.hud-profile-btn:hover .hud-profile-mobile-content,
-.hud-profile-btn.is-open .hud-profile-mobile-content {
-  color: #38bdf8;
-}
-
-@media (max-width: 768px) {
-  .hud-profile-desktop-content {
-    display: none !important;
-  }
-
-  .hud-profile-mobile-content {
-    display: flex !important;
-  }
-
-  .hud-profile-btn {
-    padding: 0.45rem !important;
-    min-width: 40px !important;
-    min-height: 40px !important;
-    justify-content: center !important;
-    border-radius: 10px !important;
-  }
-
-  .hud-profile-dropdown {
-    right: 0 !important;
-    width: min(300px, 92vw) !important;
-    max-width: calc(100vw - 1rem) !important;
-  }
 }
 
 /* Profile Dropdown Menu */
