@@ -55,6 +55,7 @@ export interface AuthContextType {
   clearAttributeChangeNotice: () => void;
   setEquippedAvatar?: (avatarUrl: string | null) => void;
   updateProfile?: (data: { displayName?: string; avatarUrl?: string | null }) => Promise<void>;
+  revalidateUserData?: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

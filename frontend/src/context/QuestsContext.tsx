@@ -113,13 +113,24 @@ function computeGuestProgression(currentTotalXp: number, xpGained: number, curre
 }
 
 export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, character, isGuest, reconcileCompletion } = useAuth();
+  const { user, character, isGuest, reconcileCompletion, revalidateUserData } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingTaskIds, setPendingTaskIds] = useState<Set<string>>(new Set());
   const [lastRewardNotice, setLastRewardNotice] = useState<RewardNotice | null>(null);
   const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
+
+  // Listen to global logout event to cleanly isolate user state
+  useEffect(() => {
+    const handleLogout = () => {
+      setTasks([]);
+      setError(null);
+      setPendingTaskIds(new Set());
+    };
+    window.addEventListener('liferpg-user-logged-out', handleLogout);
+    return () => window.removeEventListener('liferpg-user-logged-out', handleLogout);
+  }, []);
 
   const loadTasks = useCallback(async () => {
     if (!user) {
@@ -221,6 +232,13 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const newTask = await tasksApi.createTask(data);
     setTasks(prev => [newTask, ...prev]);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('liferpg-user-data-synced', {
+          detail: { type: 'quest_created', taskId: newTask.id, userId: user?.id },
+        })
+      );
+    }
     return newTask;
   };
 
@@ -251,6 +269,13 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const updated = await tasksApi.updateTask(id, data);
     setTasks(prev => prev.map(t => (t.id === id ? updated : t)));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('liferpg-user-data-synced', {
+          detail: { type: 'quest_updated', taskId: id, userId: user?.id },
+        })
+      );
+    }
     return updated;
   };
 
@@ -271,6 +296,13 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       await tasksApi.deleteTask(id);
       setTasks(prev => prev.filter(t => t.id !== id));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('liferpg-user-data-synced', {
+            detail: { type: 'quest_deleted', taskId: id, userId: user?.id },
+          })
+        );
+      }
     } finally {
       setPendingTaskIds(prev => {
         const next = new Set(prev);
@@ -401,6 +433,19 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Reconcile character progression on AuthContext
       const completedTask = tasks.find(t => t.id === id);
       reconcileCompletion(res, completedTask?.title);
+
+      // Force background synchronization of full character sheet & dependent UI
+      if (revalidateUserData) {
+        void revalidateUserData();
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('liferpg-user-data-synced', {
+            detail: { type: 'quest_completed', taskId: id, userId: user?.id },
+          })
+        );
+      }
 
       // Trigger temporary reward notification
       if (res.rewards) {

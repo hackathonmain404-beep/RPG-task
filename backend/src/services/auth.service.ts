@@ -26,6 +26,7 @@ export interface CharacterSummary {
   streakCurrent: number;
   streakBest: number;
   title?: string | null;
+  attributes?: any[];
 }
 
 export interface SyncResult {
@@ -71,7 +72,7 @@ export async function syncUser(
     // Check if user already exists
     const user = (await prisma.user.findUnique({
       where: { id: supabaseUserId },
-      include: { character: true } as any,
+      include: { character: { include: { attributes: true } } } as any,
     })) as any;
 
     if (user) {
@@ -110,10 +111,16 @@ export async function syncUser(
               ],
             },
           },
+          include: { attributes: true },
         });
       }
 
       const title = await getUserLatestTitle(user.id);
+      const attributes = ((character as any).attributes || []).map((a: any) => ({
+        key: a.key,
+        displayName: a.displayName,
+        value: a.value,
+      }));
 
       return {
         user: {
@@ -131,6 +138,7 @@ export async function syncUser(
           streakCurrent: character.streakCurrent,
           streakBest: character.streakBest,
           title,
+          attributes,
         },
       };
     }
@@ -208,6 +216,13 @@ export async function syncUser(
         streakCurrent: result.character.streakCurrent,
         streakBest: result.character.streakBest,
         title,
+        attributes: [
+          { key: 'intellect', displayName: 'Intellect', value: 0 },
+          { key: 'strength', displayName: 'Strength', value: 0 },
+          { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+          { key: 'charisma', displayName: 'Charisma', value: 0 },
+          { key: 'vitality', displayName: 'Vitality', value: 0 },
+        ],
       },
     };
   } catch (err: unknown) {
@@ -505,7 +520,7 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { character: true },
+      include: { character: { include: { attributes: true } } },
     });
 
     if (user) {
@@ -519,11 +534,26 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
             gold: 50,
             streakCurrent: 0,
             streakBest: 0,
+            attributes: {
+              create: [
+                { key: 'intellect', displayName: 'Intellect', value: 0 },
+                { key: 'strength', displayName: 'Strength', value: 0 },
+                { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+                { key: 'charisma', displayName: 'Charisma', value: 0 },
+                { key: 'vitality', displayName: 'Vitality', value: 0 },
+              ],
+            },
           },
+          include: { attributes: true },
         });
       }
 
       const title = await getUserLatestTitle(user.id);
+      const attributes = ((character as any).attributes || []).map((a: any) => ({
+        key: a.key,
+        displayName: a.displayName,
+        value: a.value,
+      }));
 
       return {
         user: {
@@ -541,6 +571,7 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
           streakCurrent: character.streakCurrent,
           streakBest: character.streakBest,
           title,
+          attributes,
         },
       };
     }

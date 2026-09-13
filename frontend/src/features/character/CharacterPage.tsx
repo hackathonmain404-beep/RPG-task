@@ -31,6 +31,11 @@ export const CharacterPage: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
+  // Authoritatively synchronize character sheet with database on mount
+  React.useEffect(() => {
+    void refreshCharacter();
+  }, [refreshCharacter]);
+
   const level = character?.level ?? 1;
   const totalXp = character?.totalXp ?? 0;
   const gold = character?.gold ?? 0;

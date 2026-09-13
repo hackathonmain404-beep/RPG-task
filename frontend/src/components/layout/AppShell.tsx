@@ -23,6 +23,9 @@ import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal.tsx';
 import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { useAuth } from '../../context/useAuth';
+import { ShopContext } from '../../context/shopContextDef';
+import { QuestsContext } from '../../context/questsContextDef';
 import { PageTransition } from '../common/PageTransition';
 import { RouteLoadingBoundary } from '../common/RouteLoadingBoundary';
 import { getActivePlatformBroadcast, getPlatformSurgeStatus } from '../../services/api/platform';
@@ -82,12 +85,29 @@ const AppShellInner: React.FC = () => {
   });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
+  const { user, refreshCharacter } = useAuth();
+  const shopContext = React.useContext(ShopContext);
+  const questsContext = React.useContext(QuestsContext);
   const location = useLocation();
   const [pendingPath, setPendingPath] = useState<string | null>(null);
 
+  // Authoritative database synchronization when navigating between sections
   useEffect(() => {
     setPendingPath(null);
-  }, [location.pathname]);
+    if (!user) return;
+
+    const path = location.pathname;
+    if (path.includes('/inventory')) {
+      void shopContext?.loadInventory();
+    } else if (path.includes('/shop')) {
+      void shopContext?.loadShop();
+      void shopContext?.loadInventory();
+    } else if (path.includes('/quests')) {
+      void questsContext?.loadTasks();
+    } else if (path.includes('/character') || path.includes('/settings') || path.includes('/dashboard')) {
+      void refreshCharacter();
+    }
+  }, [location.pathname, user, shopContext, questsContext, refreshCharacter]);
 
   const toggleSidebar = () => {
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {

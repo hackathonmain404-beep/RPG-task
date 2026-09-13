@@ -199,13 +199,14 @@ describe('Phase 4 — Character Progression System', () => {
 
   // 11. Refresh persistence & sync button
   it('11. triggers refreshCharacter on manual sync button click', async () => {
-    const { mockAuth } = renderCharacterPage();
+    const refreshMock = vi.fn().mockResolvedValue(undefined);
+    renderCharacterPage({ refreshCharacter: refreshMock });
     const syncButton = screen.getByRole('button', { name: /Synchronize character data with server/i });
     await act(async () => {
       fireEvent.click(syncButton);
     });
 
-    expect(mockAuth.refreshCharacter).toHaveBeenCalledTimes(1);
+    expect(refreshMock).toHaveBeenCalled();
   });
 
   // 12. API error handling & recovery

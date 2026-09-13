@@ -172,6 +172,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [syncWithBackend]);
 
+  // Central authoritative user data revalidation against real PostgreSQL database
+  const revalidateUserData = useCallback(async () => {
+    const active = activeUserRef.current;
+    if (!active) return;
+
+    try {
+      // 1. Fetch current profile from /api/auth/me
+      try {
+        const me = await authApi.getMe();
+        if (me?.user) {
+          setUser(prev => ({ ...(prev || {}), ...me.user }));
+        }
+      } catch {
+        // Fallback
+      }
+
+      // 2. Fetch authoritative character sheet from /api/character
+      try {
+        const charData = await characterApi.getCharacter();
+        if (charData) {
+          const normalized = normalizeAttributes(charData.attributes);
+          setCharacter(prev => {
+            if (!prev) return { ...charData, attributes: normalized };
+            return {
+              ...prev,
+              level: charData.level ?? prev.level,
+              totalXp: charData.totalXp ?? prev.totalXp,
+              gold: charData.gold ?? prev.gold,
+              streakCurrent: charData.streakCurrent ?? prev.streakCurrent,
+              streakBest: charData.streakBest ?? prev.streakBest,
+              title: charData.title ?? prev.title,
+              attributes: normalized,
+            };
+          });
+        }
+      } catch {
+        // Fallback
+      }
+
+      // 3. Fetch recent progression activity feed
+      try {
+        const historyData = await characterApi.getHistory();
+        if (Array.isArray(historyData) && historyData.length > 0) {
+          setRecentActivity(
+            historyData.map((item, idx) => ({
+              id: item.id || `hist_${idx}`,
+              type: (item.type as ProgressionActivityItem['type']) || 'quest_completed',
+              title: item.title,
+              timestamp: item.timestamp,
+              xpGained: item.xpGained,
+              goldGained: item.goldGained,
+              attributeGained: item.attributeGained,
+              levelBefore: item.levelBefore,
+              levelAfter: item.levelAfter,
+              streakCurrent: item.streakCurrent,
+            }))
+          );
+        }
+      } catch {
+        // Non-critical
+      }
+
+      setServerReachable(true);
+
+      // Broadcast sync event to all subscriber contexts
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('liferpg-user-data-synced', {
+            detail: { userId: active.id, timestamp: Date.now() },
+          })
+        );
+      }
+    } catch {
+      // Server probe
+    }
+  }, []);
+
   // Reconciles authoritative rewards and progression returned by completion endpoint
   const reconcileCompletion = useCallback((res: CompleteTaskResponse, taskTitle?: string) => {
     let attrNotice: AttributeChangeNotice | null = null;
@@ -359,12 +436,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoading(false);
           }
         } else if (event === 'SIGNED_OUT') {
+          const currentId = activeUserRef.current?.id;
+          try {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('liferpg_active_theme_id');
+            localStorage.removeItem('liferpg_owned_themes');
+            if (currentId) {
+              localStorage.removeItem(`liferpg_owned_themes_${currentId}`);
+            }
+            if (typeof document !== 'undefined') {
+              document.documentElement.setAttribute('data-theme', 'default');
+              if (document.body) {
+                document.body.setAttribute('data-theme', 'default');
+              }
+            }
+          } catch {}
           setUser(null);
           setCharacter(null);
           setXpProgress(null);
           setRecentActivity([]);
           setLastAttributeChange(null);
           setIsLoading(false);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('liferpg-user-logged-out'));
+          }
         } else if (event === 'TOKEN_REFRESHED' && session) {
           // Token refreshed silently, no action needed
         }
@@ -376,6 +471,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, [syncWithBackend]);
+
+  // Auto-sync when returning to application / window gains focus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && activeUserRef.current && !isGuest) {
+        void revalidateUserData();
+      }
+    };
+    const handleFocus = () => {
+      if (activeUserRef.current && !isGuest) {
+        void revalidateUserData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [revalidateUserData, isGuest]);
 
   // OAuth sign-in: Google
   const signInWithGoogle = useCallback(async () => {
@@ -461,9 +577,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return res;
   }, []);
 
-  // Sign out
+  // Sign out — purge all private user state and caches
   const logout = useCallback(async () => {
-    localStorage.removeItem('auth_token');
+    const currentId = activeUserRef.current?.id;
+    try {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('liferpg_active_theme_id');
+      localStorage.removeItem('liferpg_owned_themes');
+      if (currentId) {
+        localStorage.removeItem(`liferpg_owned_themes_${currentId}`);
+      }
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-theme', 'default');
+        if (document.body) {
+          document.body.setAttribute('data-theme', 'default');
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+
     if (isGuest) {
       setUser(null);
       setCharacter(null);
@@ -471,8 +604,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setXpProgress(null);
       setRecentActivity([]);
       setLastAttributeChange(null);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('liferpg-user-logged-out'));
+      }
       return;
     }
+
     try {
       await authApi.logout();
     } catch {
@@ -484,6 +621,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setXpProgress(null);
     setRecentActivity([]);
     setLastAttributeChange(null);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('liferpg-user-logged-out'));
+    }
   }, [isGuest]);
 
   const setEquippedAvatar = useCallback((avatarUrl: string | null) => {
@@ -515,6 +655,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         attributes: normalizeAttributes(res.character.attributes || prev?.attributes),
       } as Character));
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('liferpg-user-data-synced', {
+          detail: { type: 'profile_updated', userId: res?.user?.id },
+        })
+      );
+    }
   }, [isGuest]);
 
   const isAdmin = Boolean(user && user.role === 'ADMIN');
@@ -545,6 +692,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearAttributeChangeNotice,
         setEquippedAvatar,
         updateProfile,
+        revalidateUserData,
       }}
     >
       {children}

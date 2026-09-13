@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useQuests } from '../../context/useQuests';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
-import { characterApi, type CharacterResponse } from '../../services/api/character';
 import { RewardToast } from '../../components/common/RewardToast';
 import { LevelUpOverlay } from '../../components/common/LevelUpOverlay';
 import type { Attribute } from '../../types/contract';
@@ -128,10 +127,9 @@ const InteractiveStatCard: React.FC<StatCardProps> = ({
 export const DashboardPage: React.FC = () => {
   useDocumentMetadata('Command Citadel | Achiever', { noindex: true });
 
-  const { character, xpProgress, isLoading: authLoading } = useAuth();
+  const { character, xpProgress, isLoading: authLoading, refreshCharacter } = useAuth();
   const { tasks, lastRewardNotice, clearRewardNotice, levelUpEvent, clearLevelUpEvent } = useQuests();
 
-  const [charData, setCharData] = useState<CharacterResponse | null>(null);
   const [isMatrixOpen, setIsMatrixOpen] = useState(false);
 
   const level = character?.level || 1;
@@ -142,20 +140,14 @@ export const DashboardPage: React.FC = () => {
   // Server-authoritative XP progress
   const xpPercent = xpProgress?.progressPercent ?? 0;
 
-  // Fetch character attributes
+  // Revalidate character sheet with database on mount
   useEffect(() => {
-    let ignore = false;
-    characterApi.getCharacter()
-      .then(data => { if (!ignore) setCharData(data); })
-      .catch(() => { /* supplementary data for dashboard */ });
-    return () => { ignore = true; };
-  }, []);
+    void refreshCharacter();
+  }, [refreshCharacter]);
 
-  const attributes: Attribute[] = charData?.attributes && charData.attributes.length > 0
-    ? charData.attributes
-    : (character?.attributes && character.attributes.length > 0)
-      ? character.attributes
-      : DEFAULT_ATTRIBUTES;
+  const attributes: Attribute[] = (character?.attributes && character.attributes.length > 0)
+    ? character.attributes
+    : DEFAULT_ATTRIBUTES;
 
   if (authLoading && !character) {
     return (

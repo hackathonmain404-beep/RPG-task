@@ -25,7 +25,7 @@ export function mapItemIdToThemeKey(itemId?: string): string {
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, reconcilePurchase, setEquippedAvatar } = useAuth();
+  const { user, reconcilePurchase, setEquippedAvatar, revalidateUserData } = useAuth();
 
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -50,6 +50,29 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.addEventListener('liferpg-theme-changed', onThemeChange);
     return () => window.removeEventListener('liferpg-theme-changed', onThemeChange);
   }, []);
+
+  // Listen to centralized user-data-synced & logout events
+  useEffect(() => {
+    const onUserDataSynced = () => {
+      if (user) {
+        void loadInventory();
+      }
+    };
+    const onUserLoggedOut = () => {
+      setInventory([]);
+      setShopItems([]);
+      setEquippedTheme('default');
+      setPendingPurchaseItemIds(new Set());
+      setPendingEquipItemIds(new Set());
+    };
+
+    window.addEventListener('liferpg-user-data-synced', onUserDataSynced);
+    window.addEventListener('liferpg-user-logged-out', onUserLoggedOut);
+    return () => {
+      window.removeEventListener('liferpg-user-data-synced', onUserDataSynced);
+      window.removeEventListener('liferpg-user-logged-out', onUserLoggedOut);
+    };
+  }, [user]);
 
   // Load shop catalog from GET /api/shop
   const loadShop = useCallback(async () => {
@@ -203,14 +226,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             shopItem: matchingShopItem,
           };
           setInventory(prev => [newItem, ...prev.filter(i => (i.itemId || i.shopItemId) !== itemId && i.id !== res.inventoryItem?.id)]);
-          // Resync with backend database
+          // Resync with backend database & trigger centralized progression sync
           void loadInventory();
+          if (revalidateUserData) {
+            void revalidateUserData();
+          }
 
-          // Cache theme ownership locally and fire cross-event
+          // Cache theme ownership locally (scoped by user ID) and fire cross-event
           if (matchingShopItem && (matchingShopItem.itemType?.toUpperCase() === 'THEME' || matchingShopItem.sku?.startsWith('theme_') || matchingShopItem.name?.toLowerCase().includes('theme'))) {
             const themeSlug = mapItemIdToThemeKey(matchingShopItem.sku || matchingShopItem.name);
+            const storageKey = user?.id ? `liferpg_owned_themes_${user.id}` : 'liferpg_owned_themes';
             try {
-              const cached = localStorage.getItem('liferpg_owned_themes');
+              const cached = localStorage.getItem(storageKey);
               const arr = cached ? JSON.parse(cached) : [];
               const set = new Set(Array.isArray(arr) ? arr : []);
               set.add(themeSlug);
@@ -219,7 +246,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 set.add('cyberpunk');
                 set.add('cyberpunk-neon');
               }
-              localStorage.setItem('liferpg_owned_themes', JSON.stringify(Array.from(set)));
+              localStorage.setItem(storageKey, JSON.stringify(Array.from(set)));
             } catch {
               // Ignore
             }
@@ -236,7 +263,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
     },
-    [pendingPurchaseItemIds, shopItems, reconcilePurchase]
+    [pendingPurchaseItemIds, shopItems, reconcilePurchase, revalidateUserData, user?.id]
   );
 
   // Equip item: dispatches POST /api/inventory/:itemId/equip with server confirmation
@@ -351,7 +378,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (hasInInv) return true;
 
       try {
-        const cached = localStorage.getItem('liferpg_owned_themes');
+        const storageKey = user?.id ? `liferpg_owned_themes_${user.id}` : 'liferpg_owned_themes';
+        const cached = localStorage.getItem(storageKey);
         if (cached) {
           const arr: string[] = JSON.parse(cached);
           const sku = matchingShop?.sku || itemId;
@@ -369,7 +397,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return false;
     },
-    [inventory, shopItems]
+    [inventory, shopItems, user?.id]
   );
 
   const isEquipped = useCallback(

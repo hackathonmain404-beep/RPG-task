@@ -18,7 +18,6 @@ import {
 const CATEGORIES = [
   { id: 'all', label: 'All Items' },
   { id: 'theme', label: 'Themes' },
-  { id: 'frame', label: 'Frames' },
   { id: 'badge', label: 'Badges' },
   { id: 'title', label: 'Titles' },
   { id: 'consumable', label: 'Consumables & Potions' },
@@ -47,16 +46,24 @@ export const InventoryPage: React.FC = () => {
     void loadInventory();
   }, [loadInventory]);
 
-  // Filter inventory items by category
+  // Filter inventory items by category (frames completely excluded)
   const filteredItems = inventory.filter(item => {
-    if (selectedCategory === 'all') return true;
     const targetId = item.itemId || item.shopItemId || '';
     const rawType = (item.shopItem?.itemType || (targetId.startsWith('theme_') ? 'theme' : 'item')).toLowerCase();
+    const rawSku = (item.shopItem?.sku || targetId || '').toLowerCase();
+    const rawCat = ((item.shopItem as any)?.category || '').toLowerCase();
+
+    // Frames are completely excluded from inventory as requested
+    if (rawType === 'frame' || rawSku.startsWith('frame_') || rawCat === 'frame') {
+      return false;
+    }
+
+    if (selectedCategory === 'all') return true;
     if (selectedCategory === 'consumable') {
       return rawType === 'potion' || rawType === 'consumable';
     }
     if (selectedCategory === 'gear') {
-      return !['theme', 'frame', 'badge', 'title', 'potion', 'consumable'].includes(rawType);
+      return !['theme', 'badge', 'title', 'potion', 'consumable'].includes(rawType);
     }
     return rawType === selectedCategory.toLowerCase();
   });
@@ -140,7 +147,7 @@ export const InventoryPage: React.FC = () => {
               Adventurer Vault &amp; Inventory
             </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0.2rem 0 0' }}>
-              Equip owned cosmetics, HUD themes, avatar frames, and milestone relics.
+              Equip owned cosmetics, HUD themes, and milestone relics.
             </p>
           </div>
         </div>
