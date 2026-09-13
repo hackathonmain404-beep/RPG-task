@@ -92,6 +92,86 @@
   --color-xp: #fb923c;
 }
 
+[data-theme="cyberpunk"], [data-theme="theme_cyberpunk"] {
+  --bg-canvas: #090516;
+  --bg-surface: #11101F;
+  --bg-surface-elevated: #1B1630;
+  --bg-surface-sunken: #05020c;
+  --border-subtle: #3B315C;
+  --border-strong: rgba(255, 43, 214, 0.35);
+  --border-focus: #FF2BD6;
+  --text-primary: #F5F3FF;
+  --text-secondary: #9D94B5;
+  --color-xp: #FF2BD6;
+  --color-xp-bg: rgba(255, 43, 214, 0.15);
+  --glow-xp: 0 0 16px rgba(255, 43, 214, 0.45);
+  --color-gold: #8B5CF6;
+}
+
+[data-theme="dark-matrix"], [data-theme="dark_matrix"], [data-theme="theme_dark_matrix"] {
+  --bg-canvas: #070B12;
+  --bg-surface: #0F1722;
+  --bg-surface-elevated: #151F2E;
+  --bg-surface-sunken: #04070c;
+  --border-subtle: #263244;
+  --border-strong: rgba(0, 255, 156, 0.35);
+  --border-focus: #00FF9C;
+  --text-primary: #E5E7EB;
+  --text-secondary: #8994A5;
+  --color-xp: #00FF9C;
+  --color-xp-bg: rgba(0, 255, 156, 0.15);
+  --glow-xp: 0 0 16px rgba(0, 255, 156, 0.45);
+  --color-gold: #00C77A;
+}
+
+[data-theme="retro"], [data-theme="theme_retro"] {
+  --bg-canvas: #171322;
+  --bg-surface: #211B32;
+  --bg-surface-elevated: #2C2342;
+  --bg-surface-sunken: #0e0b16;
+  --border-subtle: #514466;
+  --border-strong: rgba(255, 210, 31, 0.35);
+  --border-focus: #FFD21F;
+  --text-primary: #FFF7D6;
+  --text-secondary: #A99DB8;
+  --color-xp: #FFD21F;
+  --color-xp-bg: rgba(255, 210, 31, 0.15);
+  --glow-xp: 0 0 16px rgba(255, 210, 31, 0.45);
+  --color-gold: #FF8A00;
+}
+
+[data-theme="lofi"], [data-theme="theme_lofi"] {
+  --bg-canvas: #17131F;
+  --bg-surface: #242033;
+  --bg-surface-elevated: #302940;
+  --bg-surface-sunken: #0f0b15;
+  --border-subtle: #594C68;
+  --border-strong: rgba(215, 139, 203, 0.35);
+  --border-focus: #D78BCB;
+  --text-primary: #F2EAF4;
+  --text-secondary: #A99CAF;
+  --color-xp: #D78BCB;
+  --color-xp-bg: rgba(215, 139, 203, 0.15);
+  --glow-xp: 0 0 16px rgba(215, 139, 203, 0.45);
+  --color-gold: #9F7AEA;
+}
+
+[data-theme="cyberpunk-neon"], [data-theme="cyberpunk_neon"], [data-theme="theme_cyberpunk_neon"] {
+  --bg-canvas: #080312;
+  --bg-surface: #130A24;
+  --bg-surface-elevated: #201039;
+  --bg-surface-sunken: #04010a;
+  --border-subtle: #245A78;
+  --border-strong: rgba(0, 217, 255, 0.35);
+  --border-focus: #00D9FF;
+  --text-primary: #F5F3FF;
+  --text-secondary: #A49BB8;
+  --color-xp: #00D9FF;
+  --color-xp-bg: rgba(0, 217, 255, 0.15);
+  --glow-xp: 0 0 16px rgba(0, 217, 255, 0.45);
+  --color-gold: #FF2BD6;
+}
+
 /* Rarity Tiers (Armory & Vault) */
 .rarity-common {
   border-color: rgba(148, 163, 184, 0.35) !important;
