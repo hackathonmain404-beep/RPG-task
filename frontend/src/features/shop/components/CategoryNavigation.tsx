@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ShopItem } from '../../../types/contract';
-import { Sparkles, Palette, Shield, Award, Crown, UserCheck } from 'lucide-react';
+import { Sparkles, Palette, Award, Crown, UserCheck } from 'lucide-react';
 
 interface CategoryNavigationProps {
   selectedCategory: string;
@@ -12,7 +12,6 @@ export const CATEGORIES = [
   { id: 'all', label: 'All Items', icon: Sparkles },
   { id: 'avatar', label: 'Avatars', icon: UserCheck },
   { id: 'theme', label: 'Themes', icon: Palette },
-  { id: 'frame', label: 'Avatar Frames', icon: Shield },
   { id: 'badge', label: 'Badges', icon: Award },
   { id: 'title', label: 'Titles', icon: Crown },
 ];
@@ -31,9 +30,6 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
         const itemCatLower = (item.category || '').toLowerCase();
         if (catId === 'avatar') {
           return itemTypeLower === 'avatar' || itemCatLower === 'avatar' || itemIdLower.startsWith('avatar_');
-        }
-        if (catId === 'frame') {
-          return (itemTypeLower === 'frame' || (itemTypeLower === 'cosmetic' && !itemIdLower.startsWith('avatar_') && itemCatLower !== 'avatar') || itemCatLower === 'frame' || itemIdLower.startsWith('frame_'));
         }
         return itemTypeLower === catId.toLowerCase() || itemCatLower === catId.toLowerCase();
       }

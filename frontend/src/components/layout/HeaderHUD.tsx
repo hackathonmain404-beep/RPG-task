@@ -76,7 +76,8 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               onClick={onToggleSidebar}
               className="rpg-btn rpg-btn-secondary hud-hamburger-btn"
               style={{ padding: '0.45rem', display: 'flex', border: 'none', minWidth: '40px', minHeight: '40px', alignItems: 'center', justifyContent: 'center' }}
-              aria-label={isSidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              aria-label="Toggle Navigation Sidebar (B)"
+              title="Toggle Navigation Sidebar (B)"
               aria-expanded={isSidebarOpen}
             >
               {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}

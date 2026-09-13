@@ -37,16 +37,6 @@ const DEMO_CATALOG = [
     active: true,
   },
   {
-    id: 'frame_golden',
-    sku: 'frame_golden',
-    name: 'Golden Frame',
-    description: 'A shimmering golden border for your profile',
-    itemType: 'COSMETIC',
-    price: 300,
-    rarity: 'epic',
-    active: true,
-  },
-  {
     id: 'badge_shadow',
     sku: 'badge_shadow',
     name: 'Shadow Badge',
@@ -131,15 +121,43 @@ const DEMO_CATALOG = [
 ];
 
 export async function getShopCatalog() {
+  let catalog: any[] = [];
   try {
     const items = await prisma.shopItem.findMany({
       where: { active: true },
       orderBy: { price: 'asc' },
     });
-    return items.length > 0 ? items : DEMO_CATALOG;
+    catalog = items.length > 0 ? items : DEMO_CATALOG;
   } catch {
-    return DEMO_CATALOG;
+    catalog = DEMO_CATALOG;
   }
+
+  // Filter out frame cosmetics and deduplicate by normalized name
+  const seenNames = new Set<string>();
+  const sanitizedCatalog = [];
+
+  for (const item of catalog) {
+    const sku = (item.sku || '').toLowerCase();
+    const type = (item.itemType || '').toLowerCase();
+    const name = (item.name || '').trim();
+    const normName = name.toLowerCase();
+    const cat = ((item as any).category || '').toLowerCase();
+
+    // Never show avatar frames
+    if (sku.startsWith('frame_') || type === 'frame' || cat === 'frame' || normName.includes('frame')) {
+      continue;
+    }
+
+    // Never show duplicate themes or items
+    if (seenNames.has(normName)) {
+      continue;
+    }
+
+    seenNames.add(normName);
+    sanitizedCatalog.push(item);
+  }
+
+  return sanitizedCatalog;
 }
 
 /**

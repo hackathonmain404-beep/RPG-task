@@ -425,27 +425,6 @@ export const SettingsPage: React.FC = () => {
                   <span>Upload Picture</span>
                 </button>
 
-                <Link
-                  to="/app/shop"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    padding: '0.45rem 0.85rem',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-                    border: '1px solid rgba(168, 85, 247, 0.4)',
-                    color: '#c084fc',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <Sparkles size={14} />
-                  <span>Forge AI Avatar</span>
-                </Link>
-
                 {avatarPreview && (
                   <button
                     type="button"

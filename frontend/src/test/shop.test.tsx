@@ -32,11 +32,11 @@ const mockShopItems: ShopItem[] = [
     active: true,
   },
   {
-    id: 'frame_bastion',
-    sku: 'FRM-BAST-01',
-    name: 'Midnight Bastion Frame',
-    description: 'Hardened obsidian armor border forged in the Citadel gates.',
-    itemType: 'frame',
+    id: 'badge_shadow',
+    sku: 'BDG-SHAD-01',
+    name: 'Shadow Badge',
+    description: 'Hardened obsidian badge forged in the Citadel gates.',
+    itemType: 'badge',
     price: 75,
     rarity: 'common',
     active: true,
@@ -46,8 +46,8 @@ const mockShopItems: ShopItem[] = [
 const mockInventory: InventoryItem[] = [
   {
     id: 'inv_1',
-    shopItemId: 'frame_bastion',
-    itemId: 'frame_bastion',
+    shopItemId: 'badge_shadow',
+    itemId: 'badge_shadow',
     purchasedAt: '2026-09-12T10:00:00Z',
     equipped: true,
     shopItem: mockShopItems[2],
@@ -112,8 +112,8 @@ const createMockShopContext = (overrides: Partial<ShopContextType> = {}): ShopCo
     inventoryItem: { id: 'inv_new', itemId: 'theme_neon' },
   }),
   equipItem: vi.fn().mockResolvedValue({ success: true, equippedItemId: 'theme_neon' }),
-  isOwned: (id: string) => id === 'frame_bastion' || id === 'theme_mystic',
-  isEquipped: (id: string) => id === 'frame_bastion',
+  isOwned: (id: string) => id === 'badge_shadow' || id === 'theme_mystic',
+  isEquipped: (id: string) => id === 'badge_shadow',
   ...overrides,
 });
 
@@ -167,7 +167,7 @@ describe('Phase 5 — Shop, Inventory & Rewards System', () => {
   it('1. renders the Citadel Armory header and catalog', () => {
     renderShopPage();
     expect(screen.getByRole('heading', { level: 1, name: /The Citadel Armory/i })).toBeInTheDocument();
-    expect(screen.getByText(/Acquire cosmetic themes, avatar frames/i)).toBeInTheDocument();
+    expect(screen.getByText(/Acquire cosmetic themes, avatars/i)).toBeInTheDocument();
   });
 
   // 2. Items display correctly
@@ -269,7 +269,7 @@ describe('Phase 5 — Shop, Inventory & Rewards System', () => {
     renderInventoryPage();
     expect(screen.getByRole('heading', { level: 1, name: /Adventurer Vault & Inventory/i })).toBeInTheDocument();
     expect(screen.getByText(/Equipped Theme/i)).toBeInTheDocument();
-    expect(screen.getByText('Midnight Bastion Frame')).toBeInTheDocument();
+    expect(screen.getByText('Shadow Badge')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
@@ -316,11 +316,11 @@ describe('Phase 5 — Shop, Inventory & Rewards System', () => {
     fireEvent.click(themesTab);
 
     expect(screen.getByText('Mystic Forest Theme')).toBeInTheDocument();
-    expect(screen.queryByText('Midnight Bastion Frame')).not.toBeInTheDocument();
+    expect(screen.queryByText('Shadow Badge')).not.toBeInTheDocument();
 
     const badgesTab = screen.getByRole('button', { name: /^Badges$/i });
     fireEvent.click(badgesTab);
-    expect(screen.getByText(/No owned items matching the "badge" category/i)).toBeInTheDocument();
+    expect(screen.getByText('Shadow Badge')).toBeInTheDocument();
   });
 
   // 14. Error handling in Shop catalog loading
@@ -355,7 +355,7 @@ describe('Phase 5 — Shop, Inventory & Rewards System', () => {
     const searchInput = screen.getByRole('textbox', { name: /Filter armory items by keyword/i });
     fireEvent.change(searchInput, { target: { value: 'Obsidian' } });
 
-    expect(screen.getByText('Midnight Bastion Frame')).toBeInTheDocument();
+    expect(screen.getByText('Shadow Badge')).toBeInTheDocument();
     expect(screen.queryByText('Neon Outpost Theme')).not.toBeInTheDocument();
   });
 
@@ -396,10 +396,10 @@ describe('Phase 5 — Shop, Inventory & Rewards System', () => {
     expect(mysticImg).toHaveAttribute('src', '/assets/items/theme_mystic.svg');
     expect(mysticImg).toHaveStyle({ objectFit: 'contain' });
 
-    const bastionImg = screen.getByRole('img', { name: /Midnight Bastion Frame/i });
-    expect(bastionImg).toBeInTheDocument();
-    expect(bastionImg).toHaveAttribute('src', '/assets/items/frame_bastion.svg');
-    expect(bastionImg).toHaveStyle({ objectFit: 'contain' });
+    const shadowImg = screen.getByRole('img', { name: /Shadow Badge/i });
+    expect(shadowImg).toBeInTheDocument();
+    expect(shadowImg).toHaveAttribute('src', '/assets/items/badge_shadow.svg');
+    expect(shadowImg).toHaveStyle({ objectFit: 'contain' });
   });
 
   // 21. No fake placeholder text in the image area

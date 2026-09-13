@@ -875,13 +875,22 @@ div[role="radiogroup"] button:hover {
 /* 2. Standard Desktop & Laptop (>=1024px) */
 @media (min-width: 1024px) {
   .hud-hamburger-btn {
-    display: none !important;
+    display: flex !important;
   }
   .mobile-bottom-nav {
     display: none !important;
   }
   .desktop-sidebar {
     display: flex !important;
+  }
+  .desktop-sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border-right: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
   }
 }
 

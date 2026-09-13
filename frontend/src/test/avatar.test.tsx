@@ -221,7 +221,7 @@ describe('Avatar System & Gemini Generation', () => {
     });
   });
 
-  it('renders Forge AI Avatar button in Citadel Armory ShopPage and opens modal', () => {
+  it('does not render Forge AI Avatar button in Citadel Armory ShopPage', () => {
     const mockAuth = createMockAuthContext();
     const mockShop = createMockShopContext();
 
@@ -235,11 +235,8 @@ describe('Avatar System & Gemini Generation', () => {
       </AuthContext.Provider>
     );
 
-    const forgeTrigger = screen.getByRole('button', { name: /Forge AI Avatar/i });
-    expect(forgeTrigger).toBeInTheDocument();
-
-    fireEvent.click(forgeTrigger);
-    expect(screen.getByText(/Neural Forge: AI Avatar Synthesis/i)).toBeInTheDocument();
+    const forgeTrigger = screen.queryByRole('button', { name: /Forge AI Avatar/i });
+    expect(forgeTrigger).not.toBeInTheDocument();
   });
 
   it('filters shop items by Avatars category and displays avatar cards', () => {

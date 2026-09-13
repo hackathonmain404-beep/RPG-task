@@ -73,6 +73,13 @@ const prefetchRoute = (path: string) => {
 
 const AppShellInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('citadel_desktop_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
   const location = useLocation();
@@ -82,11 +89,29 @@ const AppShellInner: React.FC = () => {
     setPendingPath(null);
   }, [location.pathname]);
 
+  const toggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      setIsDesktopSidebarCollapsed(prev => {
+        const next = !prev;
+        try {
+          localStorage.setItem('citadel_desktop_sidebar_collapsed', String(next));
+        } catch {}
+        return next;
+      });
+    } else {
+      setIsSidebarOpen(prev => !prev);
+    }
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   // Global Keyboard Shortcuts (1-7, N, F, B, ?, Esc)
   useKeyboardShortcuts({
     onToggleShortcutsModal: () => setIsShortcutsOpen(prev => !prev),
     onOpenFeedback: openFeedback,
-    onToggleSidebar: () => setIsSidebarOpen(prev => !prev),
+    onToggleSidebar: toggleSidebar,
   });
 
   // Live Platform Telemetry
@@ -154,14 +179,6 @@ const AppShellInner: React.FC = () => {
   const handleDismissBroadcast = (id: string) => {
     sessionStorage.setItem('dismissed_broadcast_id', id);
     setIsBroadcastDismissed(true);
-  };
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(prev => !prev);
-  };
-
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
   };
 
   const getBroadcastColor = (type: string) => {
@@ -292,16 +309,22 @@ const AppShellInner: React.FC = () => {
         {/* Desktop Sidebar Navigation */}
         <aside
           style={{
-            width: '240px',
+            width: isDesktopSidebarCollapsed ? 0 : '240px',
+            minWidth: isDesktopSidebarCollapsed ? 0 : '240px',
             backgroundColor: 'var(--bg-surface)',
-            borderRight: '1px solid var(--border-subtle)',
-            padding: '1.5rem 1rem',
+            borderRight: isDesktopSidebarCollapsed ? 'none' : '1px solid var(--border-subtle)',
+            padding: isDesktopSidebarCollapsed ? 0 : '1.5rem 1rem',
             display: 'flex',
             flexDirection: 'column',
             gap: '0.4rem',
             flexShrink: 0,
+            overflow: 'hidden',
+            opacity: isDesktopSidebarCollapsed ? 0 : 1,
+            pointerEvents: isDesktopSidebarCollapsed ? 'none' : 'auto',
+            transition: 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), padding 0.25s ease, opacity 0.2s ease',
+            whiteSpace: 'nowrap',
           }}
-          className="desktop-sidebar anim-entrance-2"
+          className={`desktop-sidebar anim-entrance-2 ${isDesktopSidebarCollapsed ? 'collapsed' : ''}`}
         >
           <div
             style={{

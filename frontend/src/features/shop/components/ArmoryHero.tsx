@@ -35,7 +35,7 @@ export const ArmoryHero: React.FC<ArmoryHeroProps> = ({ itemCount }) => {
         </h1>
 
         <p className="armory-subtitle">
-          Acquire cosmetic themes, avatar frames, and milestone relics verified by the backend.
+          Acquire cosmetic themes, avatars, badges, and milestone relics verified by the backend.
         </p>
       </div>
     </div>

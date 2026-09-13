@@ -10,11 +10,10 @@ import { ShopToolbar, type SortOption } from './components/ShopToolbar';
 import { ShopItemCard } from './ShopItemCard';
 import { PurchaseConfirmModal } from './PurchaseConfirmModal';
 import { ItemDetailsModal } from './components/ItemDetailsModal';
-import { AiAvatarGeneratorModal } from './components/AiAvatarGeneratorModal';
 import { ShopLoadingState } from './components/ShopLoadingState';
 import { ShopEmptyState } from './components/ShopEmptyState';
 import { ShopErrorState } from './components/ShopErrorState';
-import { CheckCircle2, Sparkles } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import './shop-armory.css';
 
 const RARITY_WEIGHTS: Record<string, number> = {
@@ -52,13 +51,36 @@ export const ShopPage: React.FC = () => {
   const [purchaseModalError, setPurchaseModalError] = useState<string | null>(null);
   const [purchaseSuccessMessage, setPurchaseSuccessMessage] = useState<string | null>(null);
   const [justAcquiredItemId, setJustAcquiredItemId] = useState<string | null>(null);
-  const [isAiModalOpen, setIsAiModalOpen] = useState<boolean>(false);
 
   const gold = character?.gold ?? 0;
 
+  // Filter out any frame items and deduplicate shop items by name
+  const sanitizedShopItems = useMemo(() => {
+    const seenNames = new Set<string>();
+    return shopItems.filter(item => {
+      const typeLower = (item.itemType || '').toLowerCase();
+      const catLower = (item.category || '').toLowerCase();
+      const idLower = (item.id || '').toLowerCase();
+      const skuLower = (item.sku || '').toLowerCase();
+      const nameLower = (item.name || '').trim().toLowerCase();
+
+      // Filter out frames
+      if (typeLower === 'frame' || catLower === 'frame' || idLower.startsWith('frame_') || skuLower.startsWith('frame_') || nameLower.includes('frame')) {
+        return false;
+      }
+
+      // Deduplicate by name
+      if (seenNames.has(nameLower)) {
+        return false;
+      }
+      seenNames.add(nameLower);
+      return true;
+    });
+  }, [shopItems]);
+
   // Filter and Sort Items
   const processedItems = useMemo(() => {
-    let result = [...shopItems];
+    let result = [...sanitizedShopItems];
 
     // 1. Filter by category
     if (selectedCategory !== 'all') {
@@ -68,9 +90,6 @@ export const ShopPage: React.FC = () => {
         const itemIdLower = (item.id || '').toLowerCase();
         if (selectedCategory === 'avatar') {
           return itemTypeLower === 'avatar' || itemCatLower === 'avatar' || itemIdLower.startsWith('avatar_');
-        }
-        if (selectedCategory === 'frame') {
-          return (itemTypeLower === 'frame' || (itemTypeLower === 'cosmetic' && !itemIdLower.startsWith('avatar_') && itemCatLower !== 'avatar') || itemCatLower === 'frame' || itemIdLower.startsWith('frame_'));
         }
         return itemTypeLower === selectedCategory.toLowerCase() || itemCatLower === selectedCategory.toLowerCase();
       });
@@ -102,7 +121,7 @@ export const ShopPage: React.FC = () => {
     }
 
     return result;
-  }, [shopItems, selectedCategory, searchQuery, sortBy]);
+  }, [sanitizedShopItems, selectedCategory, searchQuery, sortBy]);
 
   const handleInitiatePurchase = (item: ShopItem) => {
     setPurchaseModalError(null);
@@ -175,7 +194,7 @@ export const ShopPage: React.FC = () => {
 
       {/* 1. Armory Header Banner with Treasury Pod */}
       <header className="armory-hero-banner anim-entrance-1">
-        <ArmoryHero itemCount={shopItems.length} />
+        <ArmoryHero itemCount={sanitizedShopItems.length} />
         <TreasuryPanel
           gold={gold}
           isLoading={isLoadingShop}
@@ -222,33 +241,8 @@ export const ShopPage: React.FC = () => {
           <CategoryNavigation
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
-            shopItems={shopItems}
+            shopItems={sanitizedShopItems}
           />
-
-          <button
-            type="button"
-            onClick={() => setIsAiModalOpen(true)}
-            className="rpg-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.5rem 1rem',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.25))',
-              border: '1px solid rgba(56, 189, 248, 0.5)',
-              color: '#38bdf8',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)',
-              transition: 'all 0.2s ease',
-            }}
-            aria-label="Forge AI Avatar"
-          >
-            <Sparkles size={16} color="#38bdf8" />
-            <span>Forge AI Avatar</span>
-          </button>
         </div>
 
         <ShopToolbar
@@ -314,12 +308,6 @@ export const ShopPage: React.FC = () => {
         onClose={() => setSelectedItemForDetails(null)}
         onInitiatePurchase={handleInitiatePurchase}
         onEquip={handleEquip}
-      />
-
-      {/* 6. AI Avatar Generator Modal */}
-      <AiAvatarGeneratorModal
-        isOpen={isAiModalOpen}
-        onClose={() => setIsAiModalOpen(false)}
       />
     </div>
   );
