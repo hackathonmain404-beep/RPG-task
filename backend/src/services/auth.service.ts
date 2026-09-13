@@ -17,7 +17,6 @@ export interface AuthSessionUser {
   avatarUrl?: string | null;
   role?: string;
   title?: string | null;
-  avatarUrl?: string | null;
 }
 
 export interface CharacterSummary {
@@ -205,7 +204,6 @@ export async function syncUser(
         avatarUrl: (result.user as any).avatarUrl || null,
         role: (result.user as any).role || 'USER',
         title,
-        avatarUrl: result.user.avatarUrl || null,
       },
       character: {
         level: result.character.level,
@@ -539,7 +537,6 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
           avatarUrl: (user as any).avatarUrl || null,
           role: (user as any).role || 'USER',
           title,
-          avatarUrl: user.avatarUrl || null,
         },
         character: {
           level: character.level,

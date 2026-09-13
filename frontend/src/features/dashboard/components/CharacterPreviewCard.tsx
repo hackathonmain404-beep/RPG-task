@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { User, ArrowRight, ShieldCheck, Dumbbell, Brain, Heart, Sparkles, BookOpen } from 'lucide-react';
 import { useAuth } from '../../../context/useAuth';
 import type { Character, Attribute } from '../../../types/contract';
-import { useAuth } from '../../../context/useAuth';
 
 interface CharacterPreviewCardProps {
   character?: Character | null;

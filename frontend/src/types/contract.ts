@@ -195,12 +195,14 @@ export interface EquipResponse {
 export interface GenerateAvatarRequest {
   prompt?: string;
   archetype?: string;
+  styleCategory?: string;
 }
 
 export interface GenerateAvatarResponse {
   success: boolean;
   avatar: ShopItem;
-  inventoryItem: {
+  avatarUrl?: string;
+  inventoryItem?: {
     id: string;
     itemId: string;
   };

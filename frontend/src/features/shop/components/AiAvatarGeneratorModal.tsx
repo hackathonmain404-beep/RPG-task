@@ -97,8 +97,6 @@ export const AiAvatarGeneratorModal: React.FC<AiAvatarGeneratorModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentArch = ARCHETYPES.find(a => a.id === selectedArchetype) || ARCHETYPES[0];
-
   const handleArchetypeSelect = (arch: ArchetypeOption) => {
     setSelectedArchetype(arch.id);
     setPrompt(arch.defaultPrompt);
