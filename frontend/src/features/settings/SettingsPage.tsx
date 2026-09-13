@@ -236,8 +236,8 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Title Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      {/* Title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
         <div
           style={{
             width: '40px',
@@ -247,14 +247,15 @@ export const SettingsPage: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
           <SettingsIcon size={22} color="#38bdf8" />
         </div>
         <div>
-          <h1 style={{ fontSize: '1.75rem' }}>Citadel Settings</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Configure your adventurer identity, profile avatar, cosmetics, and session preferences.
+          <h1 style={{ fontSize: 'clamp(1.35rem, 4vw, 1.75rem)', margin: 0 }}>Citadel Settings</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0.2rem 0 0' }}>
+            Configure your adventurer profile, avatar, cosmetics, and session preferences.
           </p>
         </div>
       </div>
@@ -548,14 +549,12 @@ export const SettingsPage: React.FC = () => {
               className="rpg-btn rpg-btn-primary"
               style={{
                 padding: '0.7rem 1.5rem',
-                fontSize: '0.92rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
                 opacity: (!hasUnsavedChanges && !isSaving) ? 0.6 : 1,
                 cursor: (!hasUnsavedChanges && !isSaving) ? 'not-allowed' : 'pointer',
               }}
-              id="save-profile-btn"
             >
               {isSaving ? (
                 <>
@@ -578,7 +577,7 @@ export const SettingsPage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Palette size={18} color="#a855f7" />
-            <h2 style={{ fontSize: '1.15rem' }}>HUD Theme Customizer</h2>
+            <h2 style={{ fontSize: '1.15rem', margin: 0 }}>HUD Theme Customizer</h2>
           </div>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: '#34d399', fontWeight: 700, padding: '0.2rem 0.55rem', borderRadius: '6px', backgroundColor: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
             <Sparkles size={12} />
@@ -589,7 +588,7 @@ export const SettingsPage: React.FC = () => {
           Personalize your Life RPG dashboard and workstation. These starter themes are permanently unlocked and ready to equip.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1rem' }}>
           {PREGIVEN_HUD_THEMES.map(theme => {
             const activeSlug = themeContext?.activeTheme?.slug || (typeof document !== 'undefined' ? document.documentElement.getAttribute('data-theme') : null) || 'dark-citadel';
             const isSelected = 
@@ -674,10 +673,10 @@ export const SettingsPage: React.FC = () => {
           onClick={handleLogout}
           disabled={isLoggingOut}
           className="rpg-btn rpg-btn-danger"
-          style={{ padding: '0.65rem 1.25rem' }}
+          style={{ padding: '0.65rem 1.25rem', minHeight: '44px' }}
         >
           <LogOut size={16} />
-          {isLoggingOut ? 'Invalidating Session...' : 'Sign Out of Life RPG'}
+          <span>{isLoggingOut ? 'Invalidating Session...' : 'Sign Out of Life RPG'}</span>
         </button>
       </div>
     </div>

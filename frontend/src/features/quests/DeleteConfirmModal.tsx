@@ -56,10 +56,10 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         className="rpg-card"
         style={{
           width: '100%',
-          maxWidth: '440px',
+          maxWidth: 'min(92vw, 440px)',
           border: '1px solid rgba(239, 68, 68, 0.35)',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
-          padding: '1.75rem',
+          padding: 'clamp(1.25rem, 3.5vw, 1.75rem)',
           textAlign: 'center',
         }}
         onClick={e => e.stopPropagation()}
@@ -89,13 +89,13 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           This will permanently remove the quest from the Citadel board.
         </p>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={onClose}
             disabled={isDeleting}
             className="rpg-btn rpg-btn-secondary"
-            style={{ padding: '0.65rem 1.25rem' }}
+            style={{ padding: '0.65rem 1.25rem', minHeight: '42px', flex: '1 1 120px' }}
           >
             Keep Quest
           </button>
@@ -104,7 +104,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             onClick={onConfirm}
             disabled={isDeleting}
             className="rpg-btn rpg-btn-danger"
-            style={{ padding: '0.65rem 1.25rem' }}
+            style={{ padding: '0.65rem 1.25rem', minHeight: '42px', flex: '1 1 120px' }}
           >
             {isDeleting ? 'Abandoning...' : 'Abandon Quest'}
           </button>

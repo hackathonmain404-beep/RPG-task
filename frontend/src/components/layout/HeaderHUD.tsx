@@ -61,7 +61,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
       <div
         style={{
           width: '100%',
-          padding: '0.75rem 1.5rem',
+          padding: '0.75rem clamp(0.75rem, 2.5vw, 1.5rem)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -75,7 +75,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               type="button"
               onClick={onToggleSidebar}
               className="rpg-btn rpg-btn-secondary hud-hamburger-btn"
-              style={{ padding: '0.4rem', display: 'flex', border: 'none' }}
+              style={{ padding: '0.45rem', display: 'flex', border: 'none', minWidth: '40px', minHeight: '40px', alignItems: 'center', justifyContent: 'center' }}
               aria-label={isSidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
               aria-expanded={isSidebarOpen}
             >

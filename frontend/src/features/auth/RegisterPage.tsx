@@ -74,7 +74,7 @@ export const RegisterPage: React.FC = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2.5rem 1.5rem',
+        padding: 'clamp(1.25rem, 3vw, 2.5rem) clamp(0.75rem, 2.5vw, 1.5rem)',
         backgroundColor: 'var(--bg-canvas)',
       }}
     >
@@ -112,7 +112,8 @@ export const RegisterPage: React.FC = () => {
         className="rpg-card"
         style={{
           width: '100%',
-          maxWidth: '480px',
+          maxWidth: 'min(480px, 94vw)',
+          padding: 'clamp(1.25rem, 3vw, 2rem)',
           border: '1px solid var(--border-strong)',
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
         }}
@@ -136,7 +137,7 @@ export const RegisterPage: React.FC = () => {
           >
             <Sparkles size={12} /> Character Forge
           </div>
-          <h1 style={{ fontSize: '1.75rem', marginBottom: '0.35rem' }}>Create Your Adventurer</h1>
+          <h1 style={{ fontSize: 'clamp(1.35rem, 4vw, 1.75rem)', marginBottom: '0.35rem' }}>Create Your Adventurer</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
             Choose your starter discipline, then sign in to forge your character.
           </p>

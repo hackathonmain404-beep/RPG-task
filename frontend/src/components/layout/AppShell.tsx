@@ -367,21 +367,23 @@ const AppShellInner: React.FC = () => {
               right: 0,
               bottom: 0,
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              zIndex: 40,
+              zIndex: 90,
               backdropFilter: 'blur(4px)',
             }}
           >
             <div
               onClick={e => e.stopPropagation()}
               style={{
-                width: '260px',
+                width: 'min(280px, 85vw)',
                 height: '100%',
                 backgroundColor: 'var(--bg-surface)',
                 borderRight: '1px solid var(--border-strong)',
-                padding: '1.5rem 1rem',
+                padding: '1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) 1rem',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.5rem',
+                overflowY: 'auto',
+                boxShadow: '0 0 30px rgba(0, 0, 0, 0.8)',
               }}
             >
               {NAV_ITEMS.map(item => {
@@ -403,6 +405,7 @@ const AppShellInner: React.FC = () => {
                       color: isActive ? '#ffffff' : 'var(--text-secondary)',
                       backgroundColor: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
                       border: isActive ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
+                      minHeight: '44px',
                     })}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -433,6 +436,7 @@ const AppShellInner: React.FC = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   textAlign: 'left',
+                  minHeight: '44px',
                 }}
                 aria-label="Open Feedback Modal"
               >
@@ -466,11 +470,13 @@ const AppShellInner: React.FC = () => {
           right: 0,
           backgroundColor: 'var(--bg-surface)',
           borderTop: '1px solid var(--border-subtle)',
-          padding: '0.5rem 0.75rem',
+          padding: '0.4rem 0.25rem calc(0.4rem + env(safe-area-inset-bottom, 0px)) 0.25rem',
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
-          zIndex: 40,
+          zIndex: 80,
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
         }}
         className="mobile-bottom-nav"
         aria-label="Mobile Navigation"
@@ -485,16 +491,20 @@ const AppShellInner: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.2rem',
+                justifyContent: 'center',
+                gap: '0.15rem',
                 textDecoration: 'none',
                 color: isActive ? '#38bdf8' : 'var(--text-secondary)',
-                fontSize: '0.7rem',
+                fontSize: '0.65rem',
                 fontWeight: 600,
-                padding: '0.35rem',
+                padding: '0.3rem 0.35rem',
+                minWidth: '44px',
+                minHeight: '44px',
+                flexShrink: 0,
               })}
             >
-              <Icon size={20} />
-              <span>{item.label}</span>
+              <Icon size={18} />
+              <span style={{ letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{item.label}</span>
             </NavLink>
           );
         })}
