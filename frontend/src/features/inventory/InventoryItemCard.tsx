@@ -102,6 +102,7 @@ export const InventoryItemCard: React.FC<InventoryItemCardProps> = ({
           paddingTop: '0.85rem',
           borderTop: '1px solid var(--border-subtle)',
           gap: '0.75rem',
+          flexWrap: 'wrap',
         }}
       >
         <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
@@ -122,6 +123,7 @@ export const InventoryItemCard: React.FC<InventoryItemCardProps> = ({
                 padding: '0.45rem 0.85rem',
                 borderRadius: '8px',
                 border: '1px solid rgba(16, 185, 129, 0.3)',
+                minHeight: '38px',
               }}
             >
               <Check size={16} />
@@ -139,6 +141,7 @@ export const InventoryItemCard: React.FC<InventoryItemCardProps> = ({
                 gap: '0.4rem',
                 padding: '0.45rem 1rem',
                 fontSize: '0.85rem',
+                minHeight: '38px',
               }}
               aria-label={`Equip ${itemName}`}
               aria-busy={isPending}

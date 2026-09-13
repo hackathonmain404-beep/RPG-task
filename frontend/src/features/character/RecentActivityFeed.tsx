@@ -72,7 +72,7 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ activity
                 }}
               >
                 {/* Left Side: Icon & Title */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: '220px', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 'min(100%, 200px)', flex: 1 }}>
                   <div
                     style={{
                       width: '36px',

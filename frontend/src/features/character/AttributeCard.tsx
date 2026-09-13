@@ -87,8 +87,8 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
       }}
     >
       {/* Top Row: Icon, Title, Domain, and Level Value */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.85rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 0, flex: 1 }}>
           <div
             style={{
               width: '42px',
@@ -104,8 +104,8 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
           >
             <Icon size={22} color={meta.colorVar} />
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 {attribute.displayName}
               </h3>
@@ -130,7 +130,7 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
         </div>
 
         {/* Current Authoritative Value */}
-        <div style={{ textAlign: 'right', minWidth: '70px' }}>
+        <div style={{ textAlign: 'right', minWidth: '60px', flexShrink: 0 }}>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', display: 'block', fontWeight: 600 }}>
             Rank
           </span>

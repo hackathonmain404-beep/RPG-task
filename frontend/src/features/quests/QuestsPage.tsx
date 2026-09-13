@@ -141,12 +141,12 @@ export const QuestsPage: React.FC = () => {
           background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(56, 189, 248, 0.12) 100%)',
           border: '1px solid rgba(56, 189, 248, 0.25)',
           borderRadius: '16px',
-          padding: '2rem',
+          padding: 'clamp(1rem, 3vw, 2rem)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '1.5rem',
+          gap: '1.25rem',
         }}
       >
         <div>
@@ -167,10 +167,10 @@ export const QuestsPage: React.FC = () => {
           >
             <Scroll size={13} /> Active Campaign Ledger
           </div>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             Quest Board &amp; Task Engine
           </h1>
-          <p style={{ color: 'var(--text-secondary)', maxWidth: '640px', fontSize: '1rem', lineHeight: 1.5 }}>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: '640px', fontSize: 'clamp(0.85rem, 2vw, 1rem)', lineHeight: 1.5 }}>
             Formulate, execute, and conquer daily trials. Every completed quest invokes authoritative server progression with verified XP and Gold yields.
           </p>
         </div>
@@ -189,7 +189,7 @@ export const QuestsPage: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
           gap: '1rem',
         }}
       >

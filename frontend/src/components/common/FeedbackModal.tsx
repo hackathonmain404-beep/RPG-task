@@ -275,6 +275,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
         style={{
           width: '100%',
           maxWidth: '520px',
+          maxHeight: 'min(92vh, 92dvh)',
           backgroundColor: '#101626',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '16px',
@@ -288,7 +289,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
         {/* Modal Header */}
         <div
           style={{
-            padding: '1.25rem 1.5rem',
+            padding: 'clamp(1rem, 2.5vw, 1.25rem) clamp(1rem, 3vw, 1.5rem)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
             display: 'flex',
             alignItems: 'center',
@@ -407,7 +408,17 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
         {/* Modal Body */}
         {tab === 'create' ? (
-          <form onSubmit={handleSubmit} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              padding: 'clamp(1rem, 2.5vw, 1.25rem) clamp(1rem, 3vw, 1.5rem)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.25rem',
+              overflowY: 'auto',
+              maxHeight: 'calc(min(92vh, 92dvh) - 75px)',
+            }}
+          >
             {/* Section 1: Feedback Type Cards */}
             <div>
               <label
@@ -427,7 +438,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))',
                   gap: '0.75rem',
                 }}
                 role="radiogroup"
@@ -664,6 +675,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                   opacity: message.trim().length === 0 || isSubmitting ? 0.5 : 1,
                   boxShadow: message.trim().length > 0 && !isSubmitting ? '0 4px 14px rgba(109, 40, 217, 0.4)' : 'none',
                   transition: 'all 0.15s ease',
+                  minHeight: '40px',
                 }}
                 onMouseEnter={e => {
                   if (message.trim().length > 0 && !isSubmitting) {
@@ -690,7 +702,16 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
           </form>
         ) : (
           /* History Tab View (matching screenshot 2) */
-          <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '460px', overflowY: 'auto' }}>
+          <div
+            style={{
+              padding: 'clamp(1rem, 2.5vw, 1.25rem) clamp(1rem, 3vw, 1.5rem)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              maxHeight: 'calc(min(92vh, 92dvh) - 75px)',
+              overflowY: 'auto',
+            }}
+          >
             {/* Filter Pills */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               {[

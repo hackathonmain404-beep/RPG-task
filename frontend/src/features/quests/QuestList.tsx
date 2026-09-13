@@ -87,12 +87,12 @@ export const QuestList: React.FC<QuestListProps> = ({
           backgroundColor: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
           borderRadius: '12px',
-          padding: '1.25rem',
+          padding: 'clamp(0.85rem, 2.5vw, 1.25rem)',
         }}
       >
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           {/* Search Input */}
-          <div style={{ position: 'relative', flex: '1 1 260px' }}>
+          <div style={{ position: 'relative', flex: '1 1 min(100%, 240px)' }}>
             <input
               type="text"
               value={searchQuery}
@@ -117,6 +117,8 @@ export const QuestList: React.FC<QuestListProps> = ({
               padding: '0.25rem',
               borderRadius: '8px',
               border: '1px solid var(--border-subtle)',
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
             }}
             role="tablist"
             aria-label="Filter quests by status"
@@ -135,6 +137,7 @@ export const QuestList: React.FC<QuestListProps> = ({
                 fontSize: '0.85rem',
                 fontWeight: 600,
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
               }}
             >
               All ({tasks.length})
@@ -153,6 +156,7 @@ export const QuestList: React.FC<QuestListProps> = ({
                 fontSize: '0.85rem',
                 fontWeight: 600,
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
               }}
             >
               Active ({activeCount})
@@ -171,6 +175,7 @@ export const QuestList: React.FC<QuestListProps> = ({
                 fontSize: '0.85rem',
                 fontWeight: 600,
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
               }}
             >
               Completed ({completedCount})
@@ -185,6 +190,7 @@ export const QuestList: React.FC<QuestListProps> = ({
             gap: '0.5rem',
             overflowX: 'auto',
             paddingBottom: '0.25rem',
+            scrollbarWidth: 'none',
           }}
           aria-label="Filter quests by discipline"
         >

@@ -65,14 +65,15 @@ export const CharacterPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '1.5rem',
+          gap: '1.25rem',
           flexWrap: 'wrap',
+          padding: 'clamp(1rem, 3vw, 1.5rem)',
           background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-elevated) 100%)',
           border: '1px solid var(--border-strong)',
           position: 'relative',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', minWidth: 0, flex: 1 }}>
           {/* Avatar frame */}
           <div
             style={{
@@ -91,9 +92,9 @@ export const CharacterPage: React.FC = () => {
             <User size={40} color="#38bdf8" />
           </div>
 
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem' }}>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: 'clamp(1.35rem, 4vw, 1.75rem)', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
                 {user?.displayName || 'Valiant Adventurer'}
               </h1>
               <span
@@ -109,7 +110,7 @@ export const CharacterPage: React.FC = () => {
                 Level {level}
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
               <span>{user?.email}</span>
               <span>·</span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: 'var(--status-success)' }}>
@@ -131,6 +132,7 @@ export const CharacterPage: React.FC = () => {
             gap: '0.5rem',
             padding: '0.55rem 1rem',
             fontSize: '0.85rem',
+            minHeight: '42px',
           }}
           aria-label="Synchronize character data with server"
         >
@@ -152,6 +154,7 @@ export const CharacterPage: React.FC = () => {
             justifyContent: 'space-between',
             gap: '1rem',
             padding: '1rem 1.25rem',
+            flexWrap: 'wrap',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -168,7 +171,7 @@ export const CharacterPage: React.FC = () => {
           <button
             onClick={handleManualRefresh}
             className="rpg-button secondary"
-            style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem' }}
+            style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', minHeight: '38px' }}
           >
             Retry
           </button>
@@ -180,7 +183,7 @@ export const CharacterPage: React.FC = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
             gap: '1.25rem',
           }}
         >

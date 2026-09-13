@@ -1098,7 +1098,7 @@
     font-size: 1.55rem;
   }
   .armory-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   }
 }
 
@@ -1106,6 +1106,8 @@
   .armory-hero-banner {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
   }
   .armory-treasury-cluster {
     width: 100%;
@@ -1114,11 +1116,17 @@
   .armory-controls-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
   .armory-categories-nav {
     overflow-x: auto;
     width: 100%;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.35rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .armory-categories-nav::-webkit-scrollbar {
+    display: none;
   }
   .armory-toolbar-cluster {
     width: 100%;
@@ -1129,6 +1137,50 @@
   }
   .armory-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .armory-hero-banner {
+    padding: 1rem 0.85rem;
+  }
+  .armory-title {
+    font-size: 1.35rem;
+  }
+  .armory-subtitle {
+    font-size: 0.82rem;
+  }
+  .armory-toolbar-cluster {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .armory-sort-select {
+    width: 100%;
+  }
+  .armory-card {
+    padding: 0.85rem;
+  }
+  .armory-modal-dialog {
+    width: min(94vw, 540px) !important;
+    max-width: min(94vw, 540px) !important;
+    padding: 1.25rem 1rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .armory-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .armory-card-actions {
+    width: 100%;
+  }
+  .armory-card-actions button {
+    width: 100%;
+    justify-content: center;
   }
 }
 

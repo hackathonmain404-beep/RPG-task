@@ -151,7 +151,7 @@ export const LoginPage: React.FC = () => {
   const isGranted = authStatus === 'granted';
 
   return (
-    <div className="citadel-auth-canvas" style={{ padding: '1.25rem 1.5rem 2rem' }}>
+    <div className="citadel-auth-canvas" style={{ padding: 'clamp(1rem, 3vw, 1.5rem) clamp(0.75rem, 2.5vw, 1.5rem) 2rem' }}>
       {/* Background Geometric Citadel Gate Portal */}
       <div className="citadel-portal-container" aria-hidden="true">
         <div className="citadel-portal-ring-outer" />
@@ -170,6 +170,8 @@ export const LoginPage: React.FC = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
           padding: '0.5rem 0',
         }}
       >
@@ -306,7 +308,7 @@ export const LoginPage: React.FC = () => {
             {/* Title & Subtitle */}
             <h1
               style={{
-                fontSize: '1.85rem',
+                fontSize: 'clamp(1.4rem, 4vw, 1.85rem)',
                 fontWeight: 800,
                 color: 'var(--text-primary)',
                 marginBottom: '0.45rem',
