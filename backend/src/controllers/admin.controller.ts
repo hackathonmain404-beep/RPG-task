@@ -154,6 +154,9 @@ export async function replyFeedback(req: Request, res: Response, next: NextFunct
         adminReply: updated.adminReply,
         status: updated.status,
         repliedAt: updated.repliedAt,
+        type: updated.type,
+        message: updated.message,
+        feedback: updated,
       });
     }
   } catch (err) {

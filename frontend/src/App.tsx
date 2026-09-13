@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { QuestsProvider } from './context/QuestsContext';
 import { ShopProvider } from './context/ShopContext';
 import { ThemeProvider } from './context/ThemeProvider';
+import { NotificationProvider } from './context/NotificationContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { AppRoutes } from './app/routes';
 
@@ -15,7 +16,9 @@ export const App: React.FC = () => {
           <ThemeProvider>
             <QuestsProvider>
               <ShopProvider>
-                <AppRoutes />
+                <NotificationProvider>
+                  <AppRoutes />
+                </NotificationProvider>
               </ShopProvider>
             </QuestsProvider>
           </ThemeProvider>

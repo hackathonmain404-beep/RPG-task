@@ -74,7 +74,7 @@ export const CharacterPage: React.FC = () => {
     <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* 1. Character Hero Header */}
       <header
-        className="rpg-card"
+        className="rpg-card character-hero-card"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -90,6 +90,7 @@ export const CharacterPage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', minWidth: 0, flex: 1 }}>
           {/* Avatar frame */}
           <div
+            className="character-avatar-frame"
             style={{
               width: '76px',
               height: '76px',
@@ -121,7 +122,7 @@ export const CharacterPage: React.FC = () => {
                 {user?.displayName || 'Valiant Adventurer'}
               </h1>
               <span
-                className="rpg-badge"
+                className="rpg-badge character-level-badge"
                 style={{
                   backgroundColor: 'rgba(168, 85, 247, 0.2)',
                   color: 'var(--color-xp)',
@@ -205,13 +206,13 @@ export const CharacterPage: React.FC = () => {
           }}
         >
           {/* Vitals Card 1: Level & XP Progression */}
-          <div className="rpg-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div className="rpg-card character-vitals-card vitals-card-xp" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-xp)' }}>
                 <Sparkles size={18} />
                 <span style={{ fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase' }}>Ascension Tier</span>
               </div>
-              <span className="mono-numbers" style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-xp)' }}>
+              <span className="mono-numbers vitals-stat-value" style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-xp)' }}>
                 Lvl {level}
               </span>
             </div>
@@ -250,7 +251,7 @@ export const CharacterPage: React.FC = () => {
           </div>
 
           {/* Vitals Card 2: Streak System UI */}
-          <div className="rpg-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div className="rpg-card character-vitals-card vitals-card-streak" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-streak)' }}>
                 <Flame size={18} />
@@ -271,7 +272,7 @@ export const CharacterPage: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
-              <span className="mono-numbers" style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-streak)', lineHeight: 1 }}>
+              <span className="mono-numbers vitals-stat-value" style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-streak)', lineHeight: 1 }}>
                 🔥 {streakCurrent}
               </span>
               <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -290,7 +291,7 @@ export const CharacterPage: React.FC = () => {
           </div>
 
           {/* Vitals Card 3: Citadel Gold & Wealth */}
-          <div className="rpg-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div className="rpg-card character-vitals-card vitals-card-gold" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-gold)' }}>
                 <Coins size={18} />
@@ -311,7 +312,7 @@ export const CharacterPage: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-              <span className="mono-numbers" style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-gold)', lineHeight: 1 }}>
+              <span className="mono-numbers vitals-stat-value" style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-gold)', lineHeight: 1 }}>
                 {gold.toLocaleString()}
               </span>
               <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>

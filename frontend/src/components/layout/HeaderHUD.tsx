@@ -4,6 +4,7 @@ import { useAuth } from '../../context/useAuth';
 import { useShop } from '../../context/useShop';
 import { useFeedback } from '../../context/FeedbackContext';
 import { useLeaderboard } from '../../context/LeaderboardContext';
+import { NotificationsDropdown } from './NotificationsDropdown';
 import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, Settings, Trophy } from 'lucide-react';
 
 interface HeaderHUDProps {
@@ -163,8 +164,11 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           </Link>
         </div>
 
-        {/* Right: Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
+        {/* Right: Notifications, Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
         <div className="hud-right-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Notifications Bell Dropdown — directly to the left of Feedback button */}
+          <NotificationsDropdown />
+
           {/* Feedback Trigger — immediately to the left of player profile */}
           <button
             type="button"

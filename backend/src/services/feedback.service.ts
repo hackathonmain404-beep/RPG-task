@@ -7,6 +7,8 @@ export interface FeedbackRecord {
   type: string;
   message: string;
   status: string;
+  adminReply?: string | null;
+  repliedAt?: Date | string | null;
   createdAt: Date;
   updatedAt: Date;
   user?: {

@@ -58,6 +58,7 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ activity
             return (
               <div
                 key={item.id}
+                className="activity-log-item"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -68,7 +69,6 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ activity
                   border: isLevelUp ? '1px solid rgba(168, 85, 247, 0.3)' : '1px solid var(--border-subtle)',
                   gap: '1rem',
                   flexWrap: 'wrap',
-                  transition: 'background-color 0.2s ease',
                 }}
               >
                 {/* Left Side: Icon & Title */}

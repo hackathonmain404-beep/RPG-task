@@ -1786,6 +1786,27 @@ div[role="radiogroup"] button:hover {
   .quest-action-btn:hover {
     transform: none;
   }
+  .character-hero-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  .character-vitals-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  .character-vitals-card:active {
+    transform: scale(0.98);
+  }
+  .attribute-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  .attribute-card:active {
+    transform: scale(0.98);
+  }
+  .activity-log-item:hover {
+    transform: none;
+  }
 }
 
 /* ==========================================================================
@@ -2205,6 +2226,390 @@ div[role="radiogroup"] button:hover {
 
 .attribute-card-updated {
   animation: attributeGlow 1.5s ease-in-out;
+}
+
+/* ==========================================================================
+   CHARACTER SECTION — ADDICTIVE HOVER PHYSICS & AESTHETICS
+   ========================================================================== */
+
+/* 1. Character Hero Header Card */
+.character-hero-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.character-hero-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent);
+  opacity: 0.6;
+  transition: opacity 320ms ease, background 320ms ease;
+  pointer-events: none;
+}
+
+.character-hero-card:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 18px 38px -6px rgba(0, 0, 0, 0.7), 0 0 26px -2px rgba(56, 189, 248, 0.22);
+}
+
+.character-hero-card:hover::after {
+  opacity: 1;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.8), transparent);
+}
+
+.character-avatar-frame {
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 300ms ease;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+}
+
+.character-hero-card:hover .character-avatar-frame {
+  transform: scale(1.06) translate3d(0, -1px, 0);
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.55), 0 0 0 3px rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8 !important;
+}
+
+.character-level-badge {
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 300ms ease,
+              background-color 300ms ease;
+}
+
+.character-hero-card:hover .character-level-badge {
+  transform: scale(1.08);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.45);
+}
+
+/* 2. Core Vitals Cards (Ascension Tier, Momentum Streak, Citadel Treasury) */
+.character-vitals-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  cursor: default;
+}
+
+.character-vitals-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  opacity: 0.4;
+  transition: opacity 320ms ease, background 320ms ease;
+  pointer-events: none;
+}
+
+.character-vitals-card:hover::after {
+  opacity: 1;
+}
+
+.character-vitals-card .vitals-stat-value {
+  transition: text-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.character-vitals-card svg {
+  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 360ms ease;
+  will-change: transform;
+}
+
+/* Vitals Card 1: Ascension Tier / XP (Amethyst Purple) */
+.vitals-card-xp:hover {
+  transform: translate3d(0, -4.5px, 0);
+  border-color: rgba(168, 85, 247, 0.55);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 28px -2px rgba(168, 85, 247, 0.28);
+  background-color: rgba(24, 16, 32, 0.98);
+}
+.vitals-card-xp:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.8), transparent);
+}
+.vitals-card-xp:hover svg {
+  transform: translate3d(0, -2px, 0) scale(1.18);
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
+}
+.vitals-card-xp:hover .vitals-stat-value {
+  filter: brightness(1.15);
+  text-shadow: 0 0 18px rgba(216, 180, 254, 0.45);
+}
+.vitals-card-xp:hover .rpg-progress-fill {
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.8);
+}
+
+/* Vitals Card 2: Momentum Streak (Crimson / Flame) */
+.vitals-card-streak:hover {
+  transform: translate3d(0, -4.5px, 0);
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 28px -2px rgba(239, 68, 68, 0.28);
+  background-color: rgba(30, 18, 20, 0.98);
+}
+.vitals-card-streak:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.8), transparent);
+}
+.vitals-card-streak:hover svg {
+  transform: translate3d(0, -2px, 0) scale(1.18);
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
+}
+.vitals-card-streak:hover .vitals-stat-value {
+  filter: brightness(1.15);
+  text-shadow: 0 0 18px rgba(252, 165, 165, 0.45);
+}
+
+/* Vitals Card 3: Citadel Treasury / Gold (Radiant Gold) */
+.vitals-card-gold:hover {
+  transform: translate3d(0, -4.5px, 0);
+  border-color: rgba(245, 158, 11, 0.55);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 28px -2px rgba(245, 158, 11, 0.28);
+  background-color: rgba(28, 23, 16, 0.98);
+}
+.vitals-card-gold:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.8), transparent);
+}
+.vitals-card-gold:hover svg {
+  transform: translate3d(0, -2px, 0) scale(1.18);
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+}
+.vitals-card-gold:hover .vitals-stat-value {
+  filter: brightness(1.15);
+  text-shadow: 0 0 18px rgba(254, 240, 138, 0.45);
+}
+
+/* 3. Five Core Attribute Cards — Discipline Indicator Bars & Signature Auras */
+.attribute-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Left Discipline Indicator Accent Bar */
+.attribute-card::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3.5px;
+  border-radius: 0 4px 4px 0;
+  opacity: 0.55;
+  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              width 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* Specular Top Sheen Gradient */
+.attribute-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  opacity: 0;
+  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.attribute-card:hover {
+  transform: translate3d(0, -3.5px, 0);
+}
+
+.attribute-card:hover::before {
+  opacity: 1;
+  width: 4.5px;
+}
+
+.attribute-card:hover::after {
+  opacity: 1;
+}
+
+.attribute-card .attr-icon-box {
+  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 300ms ease,
+              filter 300ms ease;
+  will-change: transform;
+}
+
+.attribute-card .attr-title {
+  transition: color 260ms ease;
+}
+
+.attribute-card:hover .attr-title {
+  color: #ffffff !important;
+}
+
+.attribute-card .attr-rank-value {
+  transition: filter 280ms ease, text-shadow 280ms ease;
+}
+
+.attribute-card .attr-domain-badge {
+  transition: transform 260ms ease, filter 260ms ease;
+}
+
+.attribute-card:hover .attr-domain-badge {
+  transform: scale(1.05);
+  filter: brightness(1.15);
+}
+
+.attribute-card:hover .attr-rank-value {
+  filter: brightness(1.18);
+  text-shadow: 0 0 14px currentColor;
+}
+
+.attribute-card:hover .attr-icon-box {
+  transform: translate3d(0, -2px, 0) scale(1.1);
+  filter: brightness(1.2);
+}
+
+/* Discipline Specific Aura & Accents */
+
+/* 1. Intellect (Cyan / Sky Blue) */
+.attr-card-intellect::before { background-color: #38bdf8; }
+.attr-card-intellect:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 26px -2px rgba(56, 189, 248, 0.25);
+  background-color: rgba(18, 25, 38, 0.98);
+}
+.attr-card-intellect:hover::before {
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+}
+.attr-card-intellect:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.75), transparent);
+}
+.attr-card-intellect:hover .attr-icon-box {
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+
+/* 2. Strength (Ruby Red) */
+.attr-card-strength::before { background-color: #ef4444; }
+.attr-card-strength:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 26px -2px rgba(239, 68, 68, 0.25);
+  background-color: rgba(30, 20, 22, 0.98);
+}
+.attr-card-strength:hover::before {
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.8);
+}
+.attr-card-strength:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.75), transparent);
+}
+.attr-card-strength:hover .attr-icon-box {
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.45);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+/* 3. Wisdom (Emerald Green) */
+.attr-card-wisdom::before { background-color: #10b981; }
+.attr-card-wisdom:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 26px -2px rgba(16, 185, 129, 0.25);
+  background-color: rgba(14, 26, 20, 0.98);
+}
+.attr-card-wisdom:hover::before {
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.8);
+}
+.attr-card-wisdom:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.75), transparent);
+}
+.attr-card-wisdom:hover .attr-icon-box {
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.45);
+  border-color: rgba(16, 185, 129, 0.6);
+}
+
+/* 4. Charisma (Amethyst Purple) */
+.attr-card-charisma::before { background-color: #a855f7; }
+.attr-card-charisma:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 26px -2px rgba(168, 85, 247, 0.25);
+  background-color: rgba(26, 18, 34, 0.98);
+}
+.attr-card-charisma:hover::before {
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.8);
+}
+.attr-card-charisma:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.75), transparent);
+}
+.attr-card-charisma:hover .attr-icon-box {
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+  border-color: rgba(168, 85, 247, 0.6);
+}
+
+/* 5. Vitality (Rose Crimson) */
+.attr-card-vitality::before { background-color: #f43f5e; }
+.attr-card-vitality:hover {
+  border-color: rgba(244, 63, 94, 0.5);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 26px -2px rgba(244, 63, 94, 0.25);
+  background-color: rgba(32, 18, 24, 0.98);
+}
+.attr-card-vitality:hover::before {
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.8);
+}
+.attr-card-vitality:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(244, 63, 94, 0.75), transparent);
+}
+.attr-card-vitality:hover .attr-icon-box {
+  box-shadow: 0 0 18px rgba(244, 63, 94, 0.45);
+  border-color: rgba(244, 63, 94, 0.6);
+}
+
+/* 4. Activity Log Items */
+.activity-log-item {
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 240ms ease,
+              border-color 240ms ease,
+              box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  cursor: default;
+}
+
+.activity-log-item:hover {
+  transform: translate3d(0, -2px, 0);
+  background-color: var(--bg-surface) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 14px rgba(56, 189, 248, 0.12);
+}
+
+.activity-log-item:hover span[style*="borderRadius: '4px'"] {
+  transform: scale(1.05);
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==========================================================================
