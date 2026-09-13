@@ -658,14 +658,75 @@
   text-decoration: none;
   cursor: pointer;
   box-sizing: border-box;
+  color: #c084fc;
   transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
               background-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
               border-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
-              color 250ms ease;
+              color 250ms ease,
+              box-shadow 250ms ease;
+}
+
+.hud-dropdown-item:link,
+.hud-dropdown-item:visited {
+  text-decoration: none;
 }
 
 .hud-dropdown-item .hud-item-icon {
-  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), filter 250ms ease;
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), filter 250ms ease, color 250ms ease;
+}
+
+/* Account Settings Item */
+.hud-dropdown-settings,
+a.hud-dropdown-settings,
+a.hud-dropdown-settings:visited {
+  color: #c084fc;
+}
+
+.hud-dropdown-settings:hover,
+.hud-dropdown-settings:focus-visible {
+  background-color: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #ffffff;
+  transform: translateX(4px);
+  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.22);
+}
+
+.hud-dropdown-settings:hover .hud-item-icon,
+.hud-dropdown-settings:focus-visible .hud-item-icon {
+  filter: drop-shadow(0 0 7px #c084fc);
+  transform: scale(1.18) rotate(45deg);
+  color: #e9d5ff;
+}
+
+.hud-dropdown-settings:active {
+  transform: translateX(2px) scale(0.98);
+}
+
+/* Character Sheet Item */
+.hud-dropdown-character,
+a.hud-dropdown-character,
+a.hud-dropdown-character:visited {
+  color: #c084fc;
+}
+
+.hud-dropdown-character:hover,
+.hud-dropdown-character:focus-visible {
+  background-color: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #ffffff;
+  transform: translateX(4px);
+  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.22);
+}
+
+.hud-dropdown-character:hover .hud-item-icon,
+.hud-dropdown-character:focus-visible .hud-item-icon {
+  filter: drop-shadow(0 0 7px #c084fc);
+  transform: scale(1.18);
+  color: #e9d5ff;
+}
+
+.hud-dropdown-character:active {
+  transform: translateX(2px) scale(0.98);
 }
 
 /* Feedback Item */

@@ -439,15 +439,6 @@ export const SettingsPage: React.FC = () => {
                   <span>Upload Picture</span>
                 </button>
 
-                <Link
-                  to="/app/shop"
-                  className="avatar-btn avatar-btn-forge"
-                  title="Forge an AI avatar in the Citadel Armory"
-                >
-                  <Sparkles size={14} className="forge-sparkle-icon" />
-                  <span>Forge AI Avatar</span>
-                </Link>
-
                 {avatarPreview && (
                   <button
                     type="button"

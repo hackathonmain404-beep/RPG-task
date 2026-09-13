@@ -352,28 +352,6 @@
   color: #ffffff;
 }
 
-.avatar-btn-forge {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.16) 0%, rgba(139, 92, 246, 0.12) 100%);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  color: #c084fc;
-}
-
-.avatar-btn-forge:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(139, 92, 246, 0.2) 100%);
-  border-color: rgba(168, 85, 247, 0.7);
-  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.3);
-  color: #f3e8ff;
-}
-
-.avatar-btn-forge:hover .forge-sparkle-icon {
-  transform: rotate(15deg) scale(1.15);
-}
-
-.forge-sparkle-icon {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 .avatar-btn-remove {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.25);
