@@ -918,19 +918,37 @@ div[role="radiogroup"] button:hover {
 }
 
 /* 4. Tablet Portrait & Mobile (<768px) */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .desktop-sidebar {
     display: none !important;
   }
   .mobile-bottom-nav {
     display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 100 !important;
+    background: rgba(11, 17, 29, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(56, 189, 248, 0.16) !important;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.6) !important;
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
   }
   .app-main-content {
-    padding: 1.25rem clamp(0.75rem, 3.5vw, 1.25rem) calc(5.25rem + env(safe-area-inset-bottom, 0px)) clamp(0.75rem, 3.5vw, 1.25rem) !important;
+    padding: 1rem clamp(0.75rem, 3vw, 1rem) calc(70px + env(safe-area-inset-bottom, 0px) + 1.25rem) clamp(0.75rem, 3vw, 1rem) !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   .floating-system-control {
     display: none !important;
+  }
+  .rpg-card {
+    border-radius: 16px !important;
+    border: 1px solid rgba(56, 189, 248, 0.18) !important;
+    background: rgba(13, 20, 32, 0.95) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
   }
 }
 

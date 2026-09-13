@@ -1130,9 +1130,15 @@
   }
   .armory-toolbar-cluster {
     width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
   }
+  .armory-search-wrap,
   .armory-search-input {
+    width: 100%;
+  }
+  .armory-sort-select {
     width: 100%;
   }
   .armory-grid {

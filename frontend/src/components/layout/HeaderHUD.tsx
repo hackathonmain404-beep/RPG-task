@@ -52,7 +52,9 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
   return (
     <header
       style={{
-        backgroundColor: 'var(--bg-surface)',
+        backgroundColor: 'rgba(15, 20, 28, 0.92)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid var(--border-subtle)',
         position: 'sticky',
         top: 0,
