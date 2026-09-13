@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { HeaderHUD } from './HeaderHUD';
 import { 
   LayoutDashboard, 
@@ -17,10 +17,15 @@ import {
   AlertTriangle,
   Info,
   PartyPopper,
-  Flame
+  Flame,
+  Keyboard
 } from 'lucide-react';
 import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal.tsx';
+import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { PageTransition } from '../common/PageTransition';
+import { RouteLoadingBoundary } from '../common/RouteLoadingBoundary';
 import { getActivePlatformBroadcast, getPlatformSurgeStatus } from '../../services/api/platform';
 import { useSSE } from '../../hooks/useSSE';
 import type { Broadcast } from '../../types/contract';
@@ -44,10 +49,47 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/app/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
 ];
 
+const routePreloaders: Record<string, () => Promise<unknown>> = {
+  '/app/dashboard': () => import('../../features/dashboard/DashboardPage'),
+  '/app/quests': () => import('../../features/quests/QuestsPage'),
+  '/app/character': () => import('../../features/character/CharacterPage'),
+  '/app/shop': () => import('../../features/shop/ShopPage'),
+  '/app/themes': () => import('../../features/themes/ThemeMarketplacePage'),
+  '/app/inventory': () => import('../../features/inventory/InventoryPage'),
+  '/app/settings': () => import('../../features/settings/SettingsPage'),
+  '/app/feedback': () => import('../../features/feedback/FeedbackPage'),
+};
+const prefetchedRoutes = new Set<string>();
+
+const prefetchRoute = (path: string) => {
+  if (prefetchedRoutes.has(path)) return;
+  const preloader = routePreloaders[path];
+  if (preloader) {
+    prefetchedRoutes.add(path);
+    preloader().catch(() => {
+      prefetchedRoutes.delete(path);
+    });
+  }
+};
+
 const AppShellInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingPath(null);
+  }, [location.pathname]);
+
+  // Global Keyboard Shortcuts (1-7, N, F, B, ?, Esc)
+  useKeyboardShortcuts({
+    onToggleShortcutsModal: () => setIsShortcutsOpen(prev => !prev),
+    onOpenFeedback: openFeedback,
+    onToggleSidebar: () => setIsSidebarOpen(prev => !prev),
+  });
 
   // Live Platform Telemetry
   const [activeBroadcast, setActiveBroadcast] = useState<Broadcast | null>(null);
@@ -290,11 +332,15 @@ const AppShellInner: React.FC = () => {
 
           {NAV_ITEMS.map(item => {
             const Icon = item.icon;
+            const isPending = pendingPath === item.to;
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+                onMouseEnter={() => prefetchRoute(item.to)}
+                onFocus={() => prefetchRoute(item.to)}
+                onClick={() => setPendingPath(item.to)}
+                className={({ isActive }) => `sidebar-nav-item ${(isActive || isPending) ? 'active' : ''}`}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                   <Icon size={18} className={`nav-icon ${item.iconClass}`} />
@@ -322,6 +368,7 @@ const AppShellInner: React.FC = () => {
           <button
             type="button"
             onClick={openFeedback}
+            onFocus={() => prefetchRoute('/app/feedback')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -329,9 +376,9 @@ const AppShellInner: React.FC = () => {
               width: '100%',
               padding: '0.7rem 0.85rem',
               borderRadius: '8px',
-              backgroundColor: 'transparent',
-              border: '1px solid transparent',
-              color: 'var(--text-secondary)',
+              backgroundColor: isFeedbackOpen || location.pathname === '/app/feedback' ? 'rgba(139, 92, 246, 0.18)' : 'transparent',
+              border: isFeedbackOpen || location.pathname === '/app/feedback' ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid transparent',
+              color: isFeedbackOpen || location.pathname === '/app/feedback' ? '#c084fc' : 'var(--text-secondary)',
               fontSize: '0.9rem',
               fontWeight: 600,
               fontFamily: 'var(--font-display)',
@@ -340,14 +387,19 @@ const AppShellInner: React.FC = () => {
               transition: 'all var(--duration-fast) ease',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.12)';
-              e.currentTarget.style.color = '#c084fc';
-              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+              prefetchRoute('/app/feedback');
+              if (!isFeedbackOpen && location.pathname !== '/app/feedback') {
+                e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.12)';
+                e.currentTarget.style.color = '#c084fc';
+                e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+              }
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-              e.currentTarget.style.borderColor = 'transparent';
+              if (!isFeedbackOpen && location.pathname !== '/app/feedback') {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+                e.currentTarget.style.borderColor = 'transparent';
+              }
             }}
             aria-label="Open Feedback Modal"
           >
@@ -355,25 +407,58 @@ const AppShellInner: React.FC = () => {
             <span>Feedback</span>
           </button>
 
-          <div
+          {/* Keyboard Shortcuts Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setIsShortcutsOpen(true)}
             style={{
-              marginTop: 'auto',
-              padding: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              padding: '0.65rem 0.85rem',
               borderRadius: '8px',
-              backgroundColor: 'var(--bg-surface-elevated)',
-              border: '1px solid var(--border-subtle)',
+              backgroundColor: 'transparent',
+              border: '1px solid transparent',
+              color: 'var(--text-secondary)',
+              fontSize: '0.88rem',
+              fontWeight: 600,
+              fontFamily: 'var(--font-display)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all var(--duration-fast) ease',
+              marginTop: '0.25rem',
             }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = 'rgba(56, 189, 248, 0.1)';
+              e.currentTarget.style.color = '#38bdf8';
+              e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.25)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.borderColor = 'transparent';
+            }}
+            aria-label="View Keyboard Shortcuts"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-              <Sparkles size={16} color="#f59e0b" />
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                Phase 3 Active
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <Keyboard size={18} />
+              <span>Shortcuts</span>
             </div>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              RPG progression with server-authoritative XP, level-up celebrations, and reward feedback.
-            </p>
-          </div>
+            <kbd
+              style={{
+                fontSize: '0.7rem',
+                padding: '0.1rem 0.35rem',
+                backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '4px',
+                color: '#38bdf8',
+                fontWeight: 700,
+              }}
+            >
+              ?
+            </kbd>
+          </button>
         </aside>
 
         {/* Mobile Drawer Overlay */}
@@ -387,43 +472,55 @@ const AppShellInner: React.FC = () => {
               right: 0,
               bottom: 0,
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              zIndex: 40,
+              zIndex: 90,
               backdropFilter: 'blur(4px)',
             }}
           >
             <div
               onClick={e => e.stopPropagation()}
               style={{
-                width: '260px',
+                width: 'min(280px, 85vw)',
                 height: '100%',
                 backgroundColor: 'var(--bg-surface)',
                 borderRight: '1px solid var(--border-strong)',
-                padding: '1.5rem 1rem',
+                padding: '1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) 1rem',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.5rem',
+                overflowY: 'auto',
+                boxShadow: '0 0 30px rgba(0, 0, 0, 0.8)',
               }}
             >
               {NAV_ITEMS.map(item => {
                 const Icon = item.icon;
+                const isPending = pendingPath === item.to;
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    onClick={closeSidebar}
-                    style={({ isActive }) => ({
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.75rem 1rem',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      fontSize: '0.95rem',
-                      fontWeight: 600,
-                      color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                      backgroundColor: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                      border: isActive ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
-                    })}
+                    onClick={() => {
+                      setPendingPath(item.to);
+                      closeSidebar();
+                    }}
+                    onMouseEnter={() => prefetchRoute(item.to)}
+                    onFocus={() => prefetchRoute(item.to)}
+                    style={({ isActive }) => {
+                      const active = isActive || isPending;
+                      return {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                        color: active ? '#ffffff' : 'var(--text-secondary)',
+                        backgroundColor: active ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                        border: active ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
+                        minHeight: '44px',
+                      };
+                    }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <Icon size={18} />
@@ -453,6 +550,7 @@ const AppShellInner: React.FC = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   textAlign: 'left',
+                  minHeight: '44px',
                 }}
                 aria-label="Open Feedback Modal"
               >
@@ -470,10 +568,15 @@ const AppShellInner: React.FC = () => {
             padding: '2rem 1.5rem',
             overflowY: 'auto',
             minHeight: 'calc(100vh - 65px)',
+            position: 'relative',
           }}
           className="app-main-content"
         >
-          <Outlet />
+          <PageTransition>
+            <RouteLoadingBoundary>
+              <Outlet />
+            </RouteLoadingBoundary>
+          </PageTransition>
         </main>
       </div>
 
@@ -486,35 +589,48 @@ const AppShellInner: React.FC = () => {
           right: 0,
           backgroundColor: 'var(--bg-surface)',
           borderTop: '1px solid var(--border-subtle)',
-          padding: '0.5rem 0.75rem',
+          padding: '0.4rem 0.25rem calc(0.4rem + env(safe-area-inset-bottom, 0px)) 0.25rem',
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
-          zIndex: 40,
+          zIndex: 80,
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
         }}
         className="mobile-bottom-nav"
         aria-label="Mobile Navigation"
       >
         {NAV_ITEMS.map(item => {
           const Icon = item.icon;
+          const isPending = pendingPath === item.to;
           return (
             <NavLink
               key={item.to}
               to={item.to}
-              style={({ isActive }) => ({
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '0.2rem',
-                textDecoration: 'none',
-                color: isActive ? '#38bdf8' : 'var(--text-secondary)',
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                padding: '0.35rem',
-              })}
+              onMouseEnter={() => prefetchRoute(item.to)}
+              onFocus={() => prefetchRoute(item.to)}
+              onClick={() => setPendingPath(item.to)}
+              style={({ isActive }) => {
+                const active = isActive || isPending;
+                return {
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.15rem',
+                  textDecoration: 'none',
+                  color: active ? '#38bdf8' : 'var(--text-secondary)',
+                  fontSize: '0.65rem',
+                  fontWeight: 600,
+                  padding: '0.3rem 0.35rem',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  flexShrink: 0,
+                };
+              }}
             >
-              <Icon size={20} />
-              <span>{item.label}</span>
+              <Icon size={18} />
+              <span style={{ letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{item.label}</span>
             </NavLink>
           );
         })}
@@ -522,6 +638,9 @@ const AppShellInner: React.FC = () => {
 
       {/* Global Unified Feedback Modal */}
       <FeedbackModal isOpen={isFeedbackOpen} onClose={closeFeedback} />
+
+      {/* Global Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
     </div>
   );
 };

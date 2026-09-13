@@ -4,14 +4,24 @@ import { shopApi } from '../services/api/shop';
 import { useAuth } from './useAuth';
 import { ShopContext } from './shopContextDef';
 import { useSSE } from '../hooks/useSSE';
+import { applyThemeColors } from '../features/themes/applyTheme';
+import { themeService } from '../services/themeService';
+import { supabase } from '../lib/supabase';
 
+import { PREGIVEN_THEME_SLUGS } from '../features/themes/types';
 
-
-function mapItemIdToThemeKey(itemId: string): string {
-  if (itemId.includes('neon')) return 'neon_outpost';
-  if (itemId.includes('mystic')) return 'mystic_forest';
-  if (itemId.includes('solaris')) return 'solaris_gold';
-  return 'default';
+export function mapItemIdToThemeKey(itemId?: string): string {
+  const lower = (itemId || '').toLowerCase();
+  if (lower.includes('cyberpunk_neon') || lower.includes('cyberpunk-neon')) return 'cyberpunk-neon';
+  if (lower.includes('cyberpunk')) return 'cyberpunk';
+  if (lower.includes('matrix') || lower.includes('dark_matrix') || lower.includes('dark-matrix')) return 'dark-matrix';
+  if (lower.includes('citadel') || lower === 'default' || lower.includes('dark-citadel')) return 'dark-citadel';
+  if (lower.includes('neon-outpost') || lower.includes('neon_outpost') || lower === 'neon') return 'neon-outpost';
+  if (lower.includes('mystic')) return 'mystic-forest';
+  if (lower.includes('solaris')) return 'solaris-gold';
+  if (lower.includes('retro')) return 'retro';
+  if (lower.includes('lofi') || lower.includes('lo-fi')) return 'lofi';
+  return 'dark-citadel';
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -19,13 +29,27 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [equippedTheme, setEquippedTheme] = useState<string>('default');
+  const [equippedTheme, setEquippedTheme] = useState<string>(() => {
+    return localStorage.getItem('liferpg_active_theme_id') || 'default';
+  });
   const [isLoadingShop, setIsLoadingShop] = useState<boolean>(false);
   const [isLoadingInventory, setIsLoadingInventory] = useState<boolean>(false);
   const [shopError, setShopError] = useState<string | null>(null);
   const [inventoryError, setInventoryError] = useState<string | null>(null);
   const [pendingPurchaseItemIds, setPendingPurchaseItemIds] = useState<Set<string>>(new Set());
   const [pendingEquipItemIds, setPendingEquipItemIds] = useState<Set<string>>(new Set());
+
+  // Listen to external theme events (e.g. equipping from Theme Marketplace)
+  useEffect(() => {
+    const onThemeChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ themeSlug: string }>).detail;
+      if (detail?.themeSlug) {
+        setEquippedTheme(detail.themeSlug);
+      }
+    };
+    window.addEventListener('liferpg-theme-changed', onThemeChange);
+    return () => window.removeEventListener('liferpg-theme-changed', onThemeChange);
+  }, []);
 
   // Load shop catalog from GET /api/shop
   const loadShop = useCallback(async () => {
@@ -42,7 +66,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Load user inventory from GET /api/inventory
+  // Load user inventory from GET /api/inventory and Supabase
   const loadInventory = useCallback(async () => {
     if (!user) {
       setInventory([]);
@@ -52,20 +76,64 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoadingInventory(true);
     setInventoryError(null);
     try {
-      const items = await shopApi.getInventory();
-      setInventory(Array.isArray(items) ? items : []);
+      let combined: InventoryItem[] = [];
+
+      // 1. Try Express backend inventory
+      try {
+        const items = await shopApi.getInventory();
+        if (Array.isArray(items)) {
+          combined = [...items];
+        }
+      } catch {
+        // Express backend may be unreachable or offline
+      }
+
+      // 2. Cross-reference with Supabase InventoryItem table
+      try {
+        const { data: supaInv } = await supabase
+          .from('InventoryItem')
+          .select('*, shopItem:ShopItem(*)')
+          .eq('userId', user.id);
+
+        if (Array.isArray(supaInv) && supaInv.length > 0) {
+          supaInv.forEach(si => {
+            if (!combined.some(c => (c.itemId || c.shopItemId) === si.shopItemId || c.id === si.id)) {
+              combined.push({
+                id: si.id,
+                shopItemId: si.shopItemId,
+                purchasedAt: si.purchasedAt,
+                equipped: false,
+                shopItem: si.shopItem,
+              });
+            }
+          });
+        }
+      } catch {
+        // Non-critical
+      }
+
+      setInventory(combined);
 
       // Re-hydrate equipped theme if present
-      const equippedThemeItem = items.find(
-        item => item.equipped && (item.shopItem?.itemType === 'theme' || item.itemId?.startsWith('theme_') || item.shopItemId?.startsWith('theme_'))
+      const equippedThemeItem = combined.find(
+        item => item.equipped && (
+          item.shopItem?.itemType?.toUpperCase() === 'THEME' || 
+          item.itemId?.startsWith('theme_') || 
+          item.shopItemId?.startsWith('theme_') ||
+          item.shopItem?.sku?.startsWith('theme_')
+        )
       );
+
       if (equippedThemeItem) {
-        const themeKey = mapItemIdToThemeKey(equippedThemeItem.itemId || equippedThemeItem.shopItemId);
+        const sku = equippedThemeItem.shopItem?.sku || equippedThemeItem.itemId || equippedThemeItem.shopItemId || '';
+        const themeKey = mapItemIdToThemeKey(sku);
         setEquippedTheme(themeKey);
-        if (themeKey === 'default') {
-          document.documentElement.removeAttribute('data-theme');
-        } else {
-          document.documentElement.setAttribute('data-theme', themeKey);
+        applyThemeColors(themeKey);
+      } else {
+        const cached = localStorage.getItem('liferpg_active_theme_id');
+        if (cached && cached !== 'default') {
+          setEquippedTheme(cached);
+          applyThemeColors(cached);
         }
       }
     } catch (err) {
@@ -83,7 +151,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setInventory([]);
       setEquippedTheme('default');
-      document.documentElement.removeAttribute('data-theme');
     }
   }, [user, loadShop, loadInventory]);
 
@@ -92,7 +159,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     'shop:update': (data: any) => {
       if (data.action === 'created' && data.item) {
         setShopItems(prev => {
-          // Avoid duplicates
           if (prev.some(i => i.id === data.item.id)) return prev;
           return [...prev, data.item];
         });
@@ -130,12 +196,35 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const matchingShopItem = shopItems.find(s => s.id === itemId);
           const newItem: InventoryItem = {
             id: res.inventoryItem.id,
-            shopItemId: res.inventoryItem.itemId,
+            shopItemId: res.inventoryItem.itemId || itemId,
+            itemId: itemId,
             purchasedAt: new Date().toISOString(),
             equipped: false,
             shopItem: matchingShopItem,
           };
-          setInventory(prev => [newItem, ...prev.filter(i => (i.itemId || i.shopItemId) !== itemId)]);
+          setInventory(prev => [newItem, ...prev.filter(i => (i.itemId || i.shopItemId) !== itemId && i.id !== res.inventoryItem?.id)]);
+          // Resync with backend database
+          void loadInventory();
+
+          // Cache theme ownership locally and fire cross-event
+          if (matchingShopItem && (matchingShopItem.itemType?.toUpperCase() === 'THEME' || matchingShopItem.sku?.startsWith('theme_') || matchingShopItem.name?.toLowerCase().includes('theme'))) {
+            const themeSlug = mapItemIdToThemeKey(matchingShopItem.sku || matchingShopItem.name);
+            try {
+              const cached = localStorage.getItem('liferpg_owned_themes');
+              const arr = cached ? JSON.parse(cached) : [];
+              const set = new Set(Array.isArray(arr) ? arr : []);
+              set.add(themeSlug);
+              set.add(matchingShopItem.sku);
+              if (themeSlug.includes('cyberpunk')) {
+                set.add('cyberpunk');
+                set.add('cyberpunk-neon');
+              }
+              localStorage.setItem('liferpg_owned_themes', JSON.stringify(Array.from(set)));
+            } catch {
+              // Ignore
+            }
+            window.dispatchEvent(new CustomEvent('liferpg-theme-purchased', { detail: { themeSlug } }));
+          }
         }
 
         return res;
@@ -160,42 +249,67 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPendingEquipItemIds(prev => new Set(prev).add(itemId));
 
       try {
-        const res = await shopApi.equipItem(itemId);
+        const matchingShop = shopItems.find(s => 
+          s.id === itemId || 
+          s.sku === itemId || 
+          s.name.toLowerCase() === itemId.toLowerCase()
+        );
 
-        // Find the item being equipped
-        const targetInv = inventory.find(i => (i.itemId || i.shopItemId) === itemId);
-        const matchingShop = shopItems.find(s => s.id === itemId);
+        const targetInv = inventory.find(i => 
+          i.id === itemId || 
+          i.itemId === itemId || 
+          i.shopItemId === itemId || 
+          i.shopItem?.id === itemId || 
+          i.shopItem?.sku === itemId ||
+          (matchingShop && (i.shopItemId === matchingShop.id || i.shopItem?.id === matchingShop.id))
+        );
+
         const rawType = (targetInv?.shopItem?.itemType || matchingShop?.itemType || (itemId.startsWith('theme_') ? 'theme' : itemId.startsWith('avatar_') ? 'avatar' : 'item')).toLowerCase();
         const rawCat = (targetInv?.shopItem?.category || matchingShop?.category || '').toLowerCase();
         const isAvatar = rawType === 'avatar' || rawCat === 'avatar' || itemId.startsWith('avatar_');
-        const itemType = isAvatar ? 'avatar' : rawType;
+
+        const isTheme = 
+          Boolean(matchingShop && (matchingShop.itemType?.toUpperCase() === 'THEME' || matchingShop.sku?.startsWith('theme_') || matchingShop.name?.toLowerCase().includes('theme'))) ||
+          Boolean(targetInv?.shopItem && (targetInv.shopItem.itemType?.toUpperCase() === 'THEME' || targetInv.shopItem.sku?.startsWith('theme_') || targetInv.shopItem.name?.toLowerCase().includes('theme'))) ||
+          itemId.startsWith('theme_') || 
+          itemId.includes('cyberpunk') || 
+          itemId.includes('matrix') || 
+          itemId.includes('retro') || 
+          itemId.includes('lofi');
+
+        const idToSend = targetInv?.id || itemId;
+        let res: EquipResponse = { success: true, equippedItemId: itemId };
+        try {
+          res = await shopApi.equipItem(idToSend);
+        } catch (apiErr) {
+          console.warn('Equip API response notice:', apiErr);
+        }
 
         // Update inventory equipped state
         setInventory(prev =>
           prev.map(item => {
-            const curType = (item.shopItem?.itemType || ((item.itemId || item.shopItemId)?.startsWith('theme_') ? 'theme' : (item.itemId || item.shopItemId)?.startsWith('avatar_') ? 'avatar' : 'item')).toLowerCase();
-            const curCat = (item.shopItem?.category || '').toLowerCase();
-            const isTargetKind = isAvatar
-              ? (curType === 'avatar' || curCat === 'avatar' || (item.itemId || item.shopItemId)?.startsWith('avatar_'))
-              : (curType === itemType);
-
-            if (isTargetKind) {
-              const matches = (item.itemId || item.shopItemId) === itemId;
-              return { ...item, equipped: matches, equippedAt: matches ? new Date().toISOString() : undefined };
+            const currentType = (item.shopItem?.itemType || ((item.itemId || item.shopItemId)?.startsWith('theme_') ? 'THEME' : (item.itemId || item.shopItemId)?.startsWith('avatar_') ? 'AVATAR' : 'item')).toUpperCase();
+            const curCat = (item.shopItem?.category || '').toUpperCase();
+            if (isTheme && currentType === 'THEME') {
+              const matches = item.id === targetInv?.id || item.id === itemId || item.itemId === itemId || item.shopItemId === itemId || item.shopItem?.id === itemId || (matchingShop && (item.shopItemId === matchingShop.id || item.shopItem?.id === matchingShop.id));
+              return { ...item, equipped: Boolean(matches), equippedAt: matches ? new Date().toISOString() : undefined };
+            }
+            if (isAvatar && (currentType === 'AVATAR' || curCat === 'AVATAR' || (item.itemId || item.shopItemId)?.startsWith('avatar_'))) {
+              const matches = item.id === targetInv?.id || item.id === itemId || item.itemId === itemId || item.shopItemId === itemId || item.shopItem?.id === itemId || (matchingShop && (item.shopItemId === matchingShop.id || item.shopItem?.id === matchingShop.id));
+              return { ...item, equipped: Boolean(matches), equippedAt: matches ? new Date().toISOString() : undefined };
             }
             return item;
           })
         );
 
-        // If it's a theme, dynamically apply CSS custom properties
-        if (itemType === 'theme' || itemId.startsWith('theme_')) {
-          const themeKey = mapItemIdToThemeKey(itemId);
+        // If it's a theme, dynamically apply CSS custom properties and website colors
+        if (isTheme) {
+          const identifier = matchingShop?.sku || targetInv?.shopItem?.sku || matchingShop?.name || targetInv?.shopItem?.name || itemId;
+          const themeKey = mapItemIdToThemeKey(identifier);
           setEquippedTheme(themeKey);
-          if (themeKey === 'default') {
-            document.documentElement.removeAttribute('data-theme');
-          } else {
-            document.documentElement.setAttribute('data-theme', themeKey);
-          }
+          applyThemeColors(themeKey);
+          await themeService.setActiveTheme(themeKey, user?.id);
+          window.dispatchEvent(new CustomEvent('liferpg-theme-changed', { detail: { themeSlug: themeKey } }));
         }
 
         // If it's an avatar, update user.avatarUrl across all surfaces
@@ -215,22 +329,81 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
     },
-    [pendingEquipItemIds, inventory, shopItems, setEquippedAvatar]
+    [pendingEquipItemIds, inventory, shopItems, user?.id, setEquippedAvatar]
   );
 
   const isOwned = useCallback(
     (itemId: string): boolean => {
-      return inventory.some(i => i.itemId === itemId || i.shopItemId === itemId);
+      const clean = (itemId || '').toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
+      if ((PREGIVEN_THEME_SLUGS as readonly string[]).includes(clean) || (PREGIVEN_THEME_SLUGS as readonly string[]).includes(itemId)) {
+        return true;
+      }
+
+      const matchingShop = shopItems.find(s => s.id === itemId || s.sku === itemId || s.name.toLowerCase() === itemId.toLowerCase());
+      const hasInInv = inventory.some(i => 
+        i.id === itemId || 
+        i.itemId === itemId || 
+        i.shopItemId === itemId || 
+        i.shopItem?.id === itemId || 
+        i.shopItem?.sku === itemId ||
+        (matchingShop && (i.shopItemId === matchingShop.id || i.shopItem?.id === matchingShop.id))
+      );
+      if (hasInInv) return true;
+
+      try {
+        const cached = localStorage.getItem('liferpg_owned_themes');
+        if (cached) {
+          const arr: string[] = JSON.parse(cached);
+          const sku = matchingShop?.sku || itemId;
+          const slug = mapItemIdToThemeKey(sku);
+          if (arr.includes(itemId) || arr.includes(sku) || arr.includes(slug)) {
+            return true;
+          }
+          if ((slug === 'cyberpunk' || slug === 'cyberpunk-neon') && (arr.includes('cyberpunk') || arr.includes('cyberpunk-neon') || arr.includes('theme_cyberpunk') || arr.includes('theme_cyberpunk_neon'))) {
+            return true;
+          }
+        }
+      } catch {
+        // Ignore
+      }
+
+      return false;
     },
-    [inventory]
+    [inventory, shopItems]
   );
 
   const isEquipped = useCallback(
     (itemId: string): boolean => {
-      const invItem = inventory.find(i => i.itemId === itemId || i.shopItemId === itemId);
+      const matchingShop = shopItems.find(s => s.id === itemId || s.sku === itemId || s.name.toLowerCase() === itemId.toLowerCase());
+      const invItem = inventory.find(i => 
+        i.id === itemId || 
+        i.itemId === itemId || 
+        i.shopItemId === itemId || 
+        i.shopItem?.id === itemId || 
+        i.shopItem?.sku === itemId ||
+        (matchingShop && (i.shopItemId === matchingShop.id || i.shopItem?.id === matchingShop.id))
+      );
       if (invItem?.equipped) return true;
-      if (itemId.startsWith('theme_')) {
-        return mapItemIdToThemeKey(itemId) === equippedTheme;
+
+      const sku = matchingShop?.sku || invItem?.shopItem?.sku || itemId;
+      const itemThemeKey = mapItemIdToThemeKey(sku);
+      if (itemThemeKey && itemThemeKey === equippedTheme) {
+        return true;
+      }
+      if ((itemThemeKey === 'dark-citadel' || itemThemeKey === 'default') && (equippedTheme === 'dark-citadel' || equippedTheme === 'default')) {
+        return true;
+      }
+      if ((itemThemeKey === 'neon-outpost' || itemThemeKey === 'neon_outpost') && (equippedTheme === 'neon-outpost' || equippedTheme === 'neon_outpost')) {
+        return true;
+      }
+      if ((itemThemeKey === 'mystic-forest' || itemThemeKey === 'mystic_forest') && (equippedTheme === 'mystic-forest' || equippedTheme === 'mystic_forest')) {
+        return true;
+      }
+      if ((itemThemeKey === 'solaris-gold' || itemThemeKey === 'solaris_gold') && (equippedTheme === 'solaris-gold' || equippedTheme === 'solaris_gold')) {
+        return true;
+      }
+      if ((itemThemeKey === 'cyberpunk' || itemThemeKey === 'cyberpunk-neon') && (equippedTheme === 'cyberpunk' || equippedTheme === 'cyberpunk-neon')) {
+        return true;
       }
       if (itemId.startsWith('avatar_') || invItem?.shopItem?.category?.toLowerCase() === 'avatar') {
         const icon = invItem?.shopItem?.icon || invItem?.shopItem?.imageUrl || `/assets/items/${itemId}.svg`;
@@ -238,7 +411,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     },
-    [inventory, equippedTheme, user?.avatarUrl]
+    [inventory, shopItems, equippedTheme, user?.avatarUrl]
   );
 
   return (

@@ -44,13 +44,16 @@ export async function getFeedback(req: Request, res: Response, next: NextFunctio
     const list = await feedbackService.listUserFeedback(req.user.id);
 
     res.status(200).json({
-      feedbacks: list.map((f) => ({
+      feedbacks: list.map((f: any) => ({
         id: f.id,
         userId: f.userId,
         type: f.type,
         message: f.message,
         status: f.status,
-        createdAt: f.createdAt.toISOString(),
+        adminReply: f.adminReply || null,
+        repliedAt: f.repliedAt ? (f.repliedAt instanceof Date ? f.repliedAt.toISOString() : f.repliedAt) : null,
+        createdAt: f.createdAt instanceof Date ? f.createdAt.toISOString() : f.createdAt,
+        updatedAt: f.updatedAt instanceof Date ? f.updatedAt.toISOString() : f.updatedAt,
       })),
     });
   } catch (err) {

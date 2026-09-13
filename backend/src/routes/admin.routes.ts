@@ -19,6 +19,8 @@ adminRouter.post('/surge/end', requireAdmin, adminController.endSurge);
 // 4. Feedback Desk
 adminRouter.get('/feedback', requireAdmin, adminController.getAllFeedback);
 adminRouter.patch('/feedback/:id', requireAdmin, adminController.replyFeedback);
+adminRouter.patch('/feedback/:id/reply', requireAdmin, adminController.replyFeedback);
+adminRouter.post('/feedback/:id/reply', requireAdmin, adminController.replyFeedback);
 adminRouter.delete('/feedback/:id', requireAdmin, adminController.deleteFeedback);
 
 // 5. Market Studio

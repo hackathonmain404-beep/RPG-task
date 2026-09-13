@@ -54,6 +54,7 @@ export interface AuthContextType {
   reconcilePurchase: (walletGold: number) => void;
   clearAttributeChangeNotice: () => void;
   setEquippedAvatar?: (avatarUrl: string | null) => void;
+  updateProfile?: (data: { displayName?: string; avatarUrl?: string | null }) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

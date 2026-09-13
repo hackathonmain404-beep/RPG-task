@@ -45,7 +45,13 @@ export async function equipItem(userId: string, inventoryItemId: string) {
     const result = await prisma.$transaction(async (tx) => {
       // 1. Verify ownership
       const inventoryItem = await tx.inventoryItem.findFirst({
-        where: { id: inventoryItemId, userId },
+        where: {
+          userId,
+          OR: [
+            { id: inventoryItemId },
+            { shopItemId: inventoryItemId },
+          ],
+        },
         include: { shopItem: true },
       });
 

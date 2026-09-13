@@ -11,6 +11,13 @@ export const syncSchema = z.object({
 
 export type SyncInput = z.infer<typeof syncSchema>;
 
+export const updateProfileSchema = z.object({
+  displayName: z.string().trim().min(2, 'Display name must be at least 2 characters').max(50, 'Display name too long').optional(),
+  avatarUrl: z.string().max(500000, 'Avatar image is too large').optional().nullable(),
+}).strict();
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
 // Keep legacy schemas for backwards compatibility / test route
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),

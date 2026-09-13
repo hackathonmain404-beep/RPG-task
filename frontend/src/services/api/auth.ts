@@ -33,4 +33,15 @@ export const authApi = {
       method: 'POST',
     });
   },
+
+  /**
+   * Updates user's displayName and/or avatarUrl in Prisma database.
+   * Dispatches PATCH /api/auth/profile
+   */
+  async updateProfile(data: { displayName?: string; avatarUrl?: string | null }): Promise<AuthMeResponse> {
+    return request<AuthMeResponse>('/auth/profile', {
+      method: 'PATCH',
+      data,
+    });
+  },
 };

@@ -1,15 +1,17 @@
 /**
  * Theme Service
  * 
- * Handles theme fetching, caching, ownership, purchasing, and equipping.
- * Coordinates with Supabase and shop API with robust offline / seed fallback.
+ * Authoritative coordinator for theme catalog, ownership, equipping, and persistence.
+ * Synchronizes with Supabase (Theme, UserTheme, ShopItem, InventoryItem), Express shop API,
+ * and localStorage for immediate, zero-flash UI updates.
  */
 import type { Theme } from '../features/themes/types';
-import { INITIAL_THEMES, DEFAULT_THEME } from '../features/themes/types';
+import { ALL_THEMES, DEFAULT_THEME, PREGIVEN_THEME_SLUGS } from '../features/themes/types';
 import { supabase } from '../lib/supabase';
 import { shopApi } from './api/shop';
 
 const EQUIPPED_THEME_KEY = 'liferpg_active_theme_id';
+const OWNED_THEMES_KEY = 'liferpg_owned_themes';
 
 class ThemeService {
   private memoryThemes: Theme[] | null = null;
@@ -23,81 +25,180 @@ class ThemeService {
     }
 
     try {
-      // 1. Try Supabase query
+      // Query Supabase Theme table
       const { data, error } = await supabase
-        .from('themes')
+        .from('Theme')
         .select('*')
-        .order('sort_order', { ascending: true });
+        .eq('active', true)
+        .order('price', { ascending: true });
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        const parsed: Theme[] = data.map(row => ({
-          id: row.slug || row.id,
-          slug: row.slug || row.id,
-          name: row.name,
-          description: row.description || '',
-          rarity: (row.rarity || 'common').toLowerCase() as any,
-          price: typeof row.price === 'number' ? row.price : 50,
-          colors: typeof row.colors === 'object' && row.colors !== null ? row.colors : DEFAULT_THEME.colors,
-          is_active: row.is_active ?? true,
-          is_featured: row.is_featured ?? false,
-          sort_order: row.sort_order ?? 0,
-        }));
+        // Merge with full catalog to ensure color fidelity and sort orders
+        const parsed: Theme[] = ALL_THEMES.map(initTheme => {
+          const dbMatch = data.find(row => 
+            row.key === initTheme.slug || 
+            row.key === initTheme.slug.replace(/-/g, '_') ||
+            row.id === initTheme.id
+          );
+
+          if (dbMatch) {
+            return {
+              ...initTheme,
+              id: dbMatch.id,
+              name: dbMatch.name || initTheme.name,
+              description: dbMatch.description || initTheme.description,
+              price: typeof dbMatch.price === 'number' ? dbMatch.price : initTheme.price,
+              colors: (typeof dbMatch.themeJson === 'object' && dbMatch.themeJson !== null)
+                ? (dbMatch.themeJson as any)
+                : initTheme.colors,
+            };
+          }
+          return initTheme;
+        });
+
         this.memoryThemes = parsed;
         return parsed;
       }
     } catch {
-      // Supabase query failed or table not found, fallback to initial seed catalog
+      // Fall through to ALL_THEMES
     }
 
-    // 2. Fallback to INITIAL_THEMES
-    this.memoryThemes = INITIAL_THEMES;
-    return INITIAL_THEMES;
+    this.memoryThemes = ALL_THEMES;
+    return ALL_THEMES;
   }
 
   /**
-   * Fetch IDs of themes owned by the given user.
+   * Fetch IDs of themes owned by the given user across all data layers:
+   * 1. Local storage cache (instant)
+   * 2. Supabase UserTheme table
+   * 3. Supabase InventoryItem table (with ShopItem)
+   * 4. Shop backend inventory API
    */
   async getOwnedThemeIds(userId: string): Promise<Set<string>> {
     const owned = new Set<string>();
 
-    if (!userId) return owned;
+    // Pre-given free starter themes are unlocked for all players by default
+    PREGIVEN_THEME_SLUGS.forEach(slug => owned.add(slug));
 
-    // 1. Check Supabase user_themes if available
+    // 0. Load cached owned themes from localStorage for instant display
     try {
-      const { data, error } = await supabase
-        .from('user_themes')
-        .select('theme_id')
-        .eq('user_id', userId);
-
-      if (!error && Array.isArray(data)) {
-        data.forEach(row => {
-          if (row.theme_id) owned.add(String(row.theme_id));
-        });
+      const cached = localStorage.getItem(OWNED_THEMES_KEY);
+      if (cached) {
+        const arr = JSON.parse(cached);
+        if (Array.isArray(arr)) {
+          arr.forEach(id => {
+            const str = String(id);
+            owned.add(str);
+            if (str === 'cyberpunk' || str === 'cyberpunk-neon' || str === 'theme_cyberpunk') {
+              owned.add('cyberpunk');
+              owned.add('cyberpunk-neon');
+            }
+          });
+        }
       }
     } catch {
-      // Table may not exist yet
+      // Ignore
     }
 
-    // 2. Cross-reference with standard store inventory
+    if (!userId) return owned;
+
+    // Helper to map item attributes to theme slugs
+    const registerThemeItem = (skuOrKey?: string, name?: string) => {
+      const lowerSku = (skuOrKey || '').toLowerCase();
+      const lowerName = (name || '').toLowerCase();
+
+      if (lowerSku.includes('cyberpunk') || lowerName.includes('cyberpunk')) {
+        owned.add('cyberpunk');
+        owned.add('cyberpunk-neon');
+      }
+      if (lowerSku.includes('matrix') || lowerName.includes('matrix') || lowerSku.includes('dark_matrix') || lowerSku.includes('dark-matrix')) {
+        owned.add('dark-matrix');
+      }
+      if (lowerSku.includes('citadel') || lowerName.includes('citadel') || lowerSku === 'default') {
+        owned.add('dark-citadel');
+        owned.add('default');
+      }
+      if (lowerSku.includes('neon-outpost') || lowerSku.includes('neon_outpost') || lowerName.includes('neon outpost')) {
+        owned.add('neon-outpost');
+        owned.add('neon_outpost');
+      }
+      if (lowerSku.includes('mystic') || lowerName.includes('mystic')) {
+        owned.add('mystic-forest');
+        owned.add('mystic_forest');
+      }
+      if (lowerSku.includes('solaris') || lowerName.includes('solaris')) {
+        owned.add('solaris-gold');
+        owned.add('solaris_gold');
+      }
+      if (lowerSku.includes('retro') || lowerName.includes('retro')) {
+        owned.add('retro');
+      }
+      if (lowerSku.includes('lofi') || lowerSku.includes('lo-fi') || lowerName.includes('lofi') || lowerName.includes('lo-fi')) {
+        owned.add('lofi');
+      }
+      if (lowerSku) {
+        owned.add(lowerSku);
+      }
+    };
+
+    // 1. Query Supabase UserTheme table
     try {
-      const inventory = await shopApi.getInventory();
-      if (Array.isArray(inventory)) {
-        inventory.forEach(item => {
-          const sku = item.shopItem?.sku || item.itemId || item.shopItemId || '';
-          if (sku.startsWith('theme_')) {
-            const cleanSlug = sku.replace('theme_', '').replace(/_/g, '-');
-            owned.add(cleanSlug);
-            // Also map standard names
-            if (cleanSlug === 'cyberpunk') owned.add('cyberpunk');
-            if (cleanSlug === 'cyberpunk-neon') owned.add('cyberpunk-neon');
-            if (cleanSlug === 'dark-matrix') owned.add('dark-matrix');
-            if (cleanSlug === 'retro') owned.add('retro');
-            if (cleanSlug === 'lofi') owned.add('lofi');
+      const { data: utData } = await supabase
+        .from('UserTheme')
+        .select('*, theme:Theme(*)')
+        .eq('userId', userId);
+
+      if (Array.isArray(utData)) {
+        utData.forEach(row => {
+          if (row.theme?.key) {
+            registerThemeItem(row.theme.key, row.theme.name);
+          }
+          if (row.themeId) {
+            owned.add(row.themeId);
           }
         });
       }
     } catch {
+      // Non-critical
+    }
+
+    // 2. Query Supabase InventoryItem table
+    try {
+      const { data: invData } = await supabase
+        .from('InventoryItem')
+        .select('*, shopItem:ShopItem(*)')
+        .eq('userId', userId);
+
+      if (Array.isArray(invData)) {
+        invData.forEach(row => {
+          registerThemeItem(row.shopItem?.sku, row.shopItem?.name);
+          if (row.shopItemId) owned.add(row.shopItemId);
+          if (row.id) owned.add(row.id);
+        });
+      }
+    } catch {
+      // Non-critical
+    }
+
+    // 3. Query Express backend inventory API
+    try {
+      const inventory = await shopApi.getInventory();
+      if (Array.isArray(inventory)) {
+        inventory.forEach(item => {
+          const sku = item.shopItem?.sku || item.itemId || item.shopItemId;
+          const name = item.shopItem?.name;
+          registerThemeItem(sku, name);
+        });
+      }
+    } catch {
       // Fallback
+    }
+
+    // Cache refreshed set to localStorage
+    try {
+      localStorage.setItem(OWNED_THEMES_KEY, JSON.stringify(Array.from(owned)));
+    } catch {
+      // Ignore
     }
 
     return owned;
@@ -109,48 +210,87 @@ class ThemeService {
   async getActiveThemeId(userId?: string): Promise<string> {
     // 1. Check local storage first for instant zero-flash application
     const cached = localStorage.getItem(EQUIPPED_THEME_KEY);
-    if (cached) return cached;
+    if (cached && cached !== 'default') return cached;
 
-    if (!userId) return DEFAULT_THEME.id;
+    if (!userId) return DEFAULT_THEME.slug;
 
-    // 2. Check Supabase profiles
+    // 2. Check Supabase UserTheme equippedAt
     try {
       const { data } = await supabase
-        .from('profiles')
-        .select('active_theme_id')
-        .eq('id', userId)
+        .from('UserTheme')
+        .select('*, theme:Theme(*)')
+        .eq('userId', userId)
+        .not('equippedAt', 'is', null)
+        .order('equippedAt', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
-      if (data?.active_theme_id) {
-        localStorage.setItem(EQUIPPED_THEME_KEY, data.active_theme_id);
-        return data.active_theme_id;
+      if (data?.theme?.key) {
+        const slug = data.theme.key;
+        localStorage.setItem(EQUIPPED_THEME_KEY, slug);
+        return slug;
       }
     } catch {
       // Ignore
     }
 
-    return DEFAULT_THEME.id;
+    return cached || DEFAULT_THEME.slug;
   }
 
   /**
-   * Persist active theme locally and in database.
+   * Persist active theme locally and in database across Supabase and backend.
    */
   async setActiveTheme(themeId: string, userId?: string): Promise<void> {
-    localStorage.setItem(EQUIPPED_THEME_KEY, themeId);
+    const slug = (themeId || '').toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
+    localStorage.setItem(EQUIPPED_THEME_KEY, slug);
 
     if (userId) {
       try {
-        await supabase
-          .from('profiles')
-          .update({ active_theme_id: themeId, updated_at: new Date().toISOString() })
-          .eq('id', userId);
-      } catch {
-        // Fallback silently if table not yet configured
+        // Find matching theme in Supabase Theme table
+        const { data: t } = await supabase
+          .from('Theme')
+          .select('id, key')
+          .or(`key.eq.${slug},key.eq.${slug.replace(/-/g, '_')},key.eq.cyberpunk`)
+          .maybeSingle();
+
+        if (t) {
+          // Clear previous equips for this user
+          await supabase
+            .from('UserTheme')
+            .update({ equippedAt: null })
+            .eq('userId', userId);
+
+          // Find existing UserTheme row
+          const { data: existingUt } = await supabase
+            .from('UserTheme')
+            .select('id')
+            .eq('userId', userId)
+            .eq('themeId', t.id)
+            .maybeSingle();
+
+          if (existingUt) {
+            await supabase
+              .from('UserTheme')
+              .update({ equippedAt: new Date().toISOString() })
+              .eq('id', existingUt.id);
+          } else {
+            await supabase
+              .from('UserTheme')
+              .insert({
+                id: 'ut_' + Math.random().toString(36).substring(2, 10),
+                userId,
+                themeId: t.id,
+                equippedAt: new Date().toISOString()
+              });
+          }
+        }
+      } catch (err) {
+        console.warn('Supabase UserTheme equip notice:', err);
       }
 
-      // Also notify existing shop equip endpoint if matching sku exists
+      // Also notify backend inventory equip endpoint if reachable
       try {
-        const sku = `theme_${themeId.replace(/-/g, '_')}`;
+        const sku = `theme_${slug.replace(/-/g, '_')}`;
         await shopApi.equipItem(sku).catch(() => {});
       } catch {
         // Ignore
@@ -159,7 +299,7 @@ class ThemeService {
   }
 
   /**
-   * Purchase a theme.
+   * Purchase a theme: executes transaction across Supabase and/or backend store.
    */
   async purchaseTheme(theme: Theme, currentGold: number, userId?: string): Promise<{ success: boolean; newGold?: number; error?: string }> {
     if (!userId) {
@@ -170,21 +310,89 @@ class ThemeService {
       return { success: false, error: 'Not enough Gold.' };
     }
 
-    // Try Supabase RPC first if configured
+    // 1. Direct Supabase purchase handling
     try {
-      const { data, error } = await supabase.rpc('purchase_theme', { p_theme_id: theme.id });
-      if (!error && data?.success) {
-        return { success: true, newGold: data.new_gold ?? (currentGold - theme.price) };
+      // Find theme in Supabase
+      const { data: dbTheme } = await supabase
+        .from('Theme')
+        .select('id')
+        .or(`key.eq.${theme.slug},key.eq.${theme.slug.replace(/-/g, '_')}`)
+        .maybeSingle();
+
+      if (dbTheme) {
+        // Check if already in UserTheme
+        const { data: existingUt } = await supabase
+          .from('UserTheme')
+          .select('id')
+          .eq('userId', userId)
+          .eq('themeId', dbTheme.id)
+          .maybeSingle();
+
+        if (!existingUt) {
+          // Insert UserTheme
+          await supabase.from('UserTheme').insert({
+            id: 'ut_' + Math.random().toString(36).substring(2, 10),
+            userId,
+            themeId: dbTheme.id,
+            equippedAt: null,
+          });
+
+          // Deduct gold on character if table exists
+          const newGold = Math.max(0, currentGold - theme.price);
+          try {
+            await supabase
+              .from('Character')
+              .update({ gold: newGold })
+              .eq('userId', userId);
+          } catch {
+            // Ignore
+          }
+
+          // Cache ownership locally
+          try {
+            const cached = localStorage.getItem(OWNED_THEMES_KEY);
+            const arr = cached ? JSON.parse(cached) : [];
+            const set = new Set(Array.isArray(arr) ? arr : []);
+            set.add(theme.slug);
+            set.add(theme.id);
+            if (theme.slug.includes('cyberpunk')) {
+              set.add('cyberpunk');
+              set.add('cyberpunk-neon');
+            }
+            localStorage.setItem(OWNED_THEMES_KEY, JSON.stringify(Array.from(set)));
+          } catch {
+            // Ignore
+          }
+
+          return { success: true, newGold };
+        }
       }
-    } catch {
-      // Fall through to store API
+    } catch (supaErr) {
+      console.warn('Direct Supabase purchase fallback to store API:', supaErr);
     }
 
-    // Purchase via existing shop backend
+    // 2. Store API purchase fallback
     try {
       const sku = `theme_${theme.slug.replace(/-/g, '_')}`;
       const res = await shopApi.purchaseItem(sku);
       const newGold = res.wallet?.gold ?? (currentGold - theme.price);
+
+      // Cache ownership locally
+      try {
+        const cached = localStorage.getItem(OWNED_THEMES_KEY);
+        const arr = cached ? JSON.parse(cached) : [];
+        const set = new Set(Array.isArray(arr) ? arr : []);
+        set.add(theme.slug);
+        set.add(theme.id);
+        if (theme.slug.includes('cyberpunk')) {
+          set.add('cyberpunk');
+          set.add('cyberpunk-neon');
+        }
+        localStorage.setItem(OWNED_THEMES_KEY, JSON.stringify(Array.from(set)));
+      } catch {
+        // Ignore
+      }
+
       return { success: true, newGold };
     } catch (err: any) {
       const msg = err?.message || 'Failed to purchase theme.';

@@ -14,6 +14,11 @@ export interface User {
   title?: string | null;
 }
 
+export interface UpdateProfileRequest {
+  displayName?: string;
+  avatarUrl?: string | null;
+}
+
 export interface Attribute {
   key: 'intellect' | 'strength' | 'wisdom' | 'charisma' | 'vitality' | string;
   displayName: string;

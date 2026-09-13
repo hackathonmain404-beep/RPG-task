@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { User, ArrowRight, ShieldCheck, Dumbbell, Brain, Heart, Sparkles, BookOpen } from 'lucide-react';
 import { useAuth } from '../../../context/useAuth';
 import type { Character, Attribute } from '../../../types/contract';
+import { useAuth } from '../../../context/useAuth';
 
 interface CharacterPreviewCardProps {
   character?: Character | null;
@@ -50,12 +51,7 @@ export const CharacterPreviewCard: React.FC<CharacterPreviewCardProps> = ({
               <img
                 src={user.avatarUrl}
                 alt={user.displayName || 'Avatar'}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '50%',
-                }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
               <User size={34} className="avatar-user-glyph" />

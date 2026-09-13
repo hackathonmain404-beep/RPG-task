@@ -119,7 +119,11 @@ export async function getAllFeedback(req: Request, res: Response, next: NextFunc
   try {
     const typeFilter = req.query.type as string | undefined;
     const feedbacks = await adminService.listAllFeedback(typeFilter);
-    res.status(200).json({ feedbacks, total: feedbacks.length });
+    res.status(200).json({
+      feedbacks,
+      feedback: feedbacks,
+      total: feedbacks.length,
+    });
   } catch (err) {
     next(err);
   }
@@ -128,13 +132,20 @@ export async function getAllFeedback(req: Request, res: Response, next: NextFunc
 export async function replyFeedback(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const feedbackId = req.params.id;
-    const { replyText, status } = req.body;
-    if (!replyText || !replyText.trim()) {
+    const rawReply = req.body.reply ?? req.body.replyText ?? req.body.message ?? '';
+    const replyText = typeof rawReply === 'string' ? rawReply.trim() : '';
+
+    if (!replyText) {
       throw new AppError(400, 'BAD_REQUEST', 'Reply text cannot be empty.');
     }
 
+    const status = req.body.status || 'REVIEWED';
     const updated = await adminService.replyFeedback(feedbackId, replyText, status);
-    res.status(200).json({ feedback: updated });
+
+    res.status(200).json({
+      success: true,
+      feedback: updated,
+    });
 
     // SSE: Push feedback reply to the specific user who submitted it
     if (updated.userId) {

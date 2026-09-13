@@ -16,6 +16,7 @@ import { CompletedCategoriesCard } from './components/CompletedCategoriesCard';
 import { VibeScoreCard } from './components/VibeScoreCard';
 import { ConsistencyHeatmapCard } from './components/ConsistencyHeatmapCard';
 import { AccountabilityMatrix } from './components/AccountabilityMatrix';
+import { DashboardSkeleton } from '../../components/skeletons/DashboardSkeleton';
 import { 
   Shield, 
   Flame, 
@@ -127,7 +128,7 @@ const InteractiveStatCard: React.FC<StatCardProps> = ({
 export const DashboardPage: React.FC = () => {
   useDocumentMetadata('Command Citadel | Achiever', { noindex: true });
 
-  const { character, xpProgress } = useAuth();
+  const { character, xpProgress, isLoading: authLoading } = useAuth();
   const { tasks, lastRewardNotice, clearRewardNotice, levelUpEvent, clearLevelUpEvent } = useQuests();
 
   const [charData, setCharData] = useState<CharacterResponse | null>(null);
@@ -156,6 +157,14 @@ export const DashboardPage: React.FC = () => {
       ? character.attributes
       : DEFAULT_ATTRIBUTES;
 
+  if (authLoading && !character) {
+    return (
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <DashboardSkeleton />
+      </div>
+    );
+  }
+
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Reward Toast */}
@@ -177,22 +186,22 @@ export const DashboardPage: React.FC = () => {
           background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%)',
           border: '1px solid rgba(56, 189, 248, 0.3)',
           borderRadius: '16px',
-          padding: '2rem',
+          padding: 'clamp(1.25rem, 3vw, 2rem)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '1.5rem',
+          gap: '1.25rem',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
         }}
       >
-        <div>
+        <div style={{ minWidth: 0, flex: 1 }}>
           <div className="session-badge-live">
             <Sparkles size={13} className="session-badge-live-icon" />
             <span>CITADEL ACTIVE SESSION</span>
           </div>
 
-          <h1 className="welcome-headline-animated" style={{ fontSize: '2.1rem', marginBottom: '0.5rem', fontWeight: 800 }}>
+          <h1 className="welcome-headline-animated" style={{ fontSize: 'clamp(1.4rem, 4vw, 2.1rem)', marginBottom: '0.5rem', fontWeight: 800 }}>
             Welcome back, Achiever!
           </h1>
 
@@ -201,11 +210,12 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <Link
             to="/app/character"
             className="btn-character-sheet"
             id="dashboard-character-sheet-btn"
+            style={{ minHeight: '42px' }}
           >
             <span>Character Sheet</span>
             <ArrowRight size={16} className="btn-cta-arrow" />
@@ -218,7 +228,7 @@ export const DashboardPage: React.FC = () => {
         className="anim-entrance-4"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
           gap: '1.25rem',
         }}
       >
@@ -330,7 +340,7 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '1rem' }}>
           {attributes.map(attr => {
             const attrKey = attr.key.toLowerCase();
             const config = ATTR_CONFIG[attrKey] || {

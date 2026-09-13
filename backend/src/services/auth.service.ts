@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
 import { getJwtSecret } from '../utils/jwt.js';
-import type { SyncInput, RegisterInput, LoginInput, GithubAuthInput } from '../schemas/auth.schema.js';
+import type { SyncInput, RegisterInput, LoginInput, GithubAuthInput, UpdateProfileInput } from '../schemas/auth.schema.js';
 
 import { getUserLatestTitle } from './admin.service.js';
 
@@ -14,6 +14,7 @@ export interface AuthSessionUser {
   id: string;
   email: string;
   displayName: string;
+  avatarUrl?: string | null;
   role?: string;
   title?: string | null;
   avatarUrl?: string | null;
@@ -113,13 +114,16 @@ export async function syncUser(
         });
       }
 
+      const title = await getUserLatestTitle(user.id);
+
       return {
         user: {
           id: user.id,
           email: user.email,
           displayName: user.displayName,
-          role: (user as any).role || 'USER',
           avatarUrl: user.avatarUrl || null,
+          role: (user as any).role || 'USER',
+          title,
         },
         character: {
           level: character.level,
@@ -127,6 +131,7 @@ export async function syncUser(
           gold: character.gold,
           streakCurrent: character.streakCurrent,
           streakBest: character.streakBest,
+          title,
         },
       };
     }
@@ -197,6 +202,7 @@ export async function syncUser(
         id: result.user.id,
         email: result.user.email,
         displayName: result.user.displayName,
+        avatarUrl: (result.user as any).avatarUrl || null,
         role: (result.user as any).role || 'USER',
         title,
         avatarUrl: result.user.avatarUrl || null,
@@ -530,6 +536,7 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
           id: user.id,
           email: user.email,
           displayName: user.displayName,
+          avatarUrl: (user as any).avatarUrl || null,
           role: (user as any).role || 'USER',
           title,
           avatarUrl: user.avatarUrl || null,
@@ -558,4 +565,63 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
   }
 
   throw new AppError(401, 'UNAUTHORIZED', 'Authentication session invalid or expired.');
+}
+
+/**
+ * Updates an authenticated user's profile identity (displayName, avatarUrl)
+ * directly in the Prisma PostgreSQL database and returns the synced result.
+ */
+export async function updateUserProfile(
+  userId: string,
+  input: UpdateProfileInput
+): Promise<SyncResult> {
+  const updateData: { displayName?: string; avatarUrl?: string | null } = {};
+
+  if (input.displayName !== undefined && input.displayName.trim().length > 0) {
+    updateData.displayName = input.displayName.trim();
+  }
+  if (input.avatarUrl !== undefined) {
+    updateData.avatarUrl = input.avatarUrl;
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+    include: { character: true },
+  });
+
+  let character = updatedUser.character;
+  if (!character) {
+    character = await prisma.character.create({
+      data: {
+        userId: updatedUser.id,
+        level: 1,
+        totalXp: 0,
+        gold: 50,
+        streakCurrent: 0,
+        streakBest: 0,
+      },
+    });
+  }
+
+  const title = await getUserLatestTitle(updatedUser.id);
+
+  return {
+    user: {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      displayName: updatedUser.displayName,
+      avatarUrl: (updatedUser as any).avatarUrl || null,
+      role: (updatedUser as any).role || 'USER',
+      title,
+    },
+    character: {
+      level: character.level,
+      totalXp: character.totalXp,
+      gold: character.gold,
+      streakCurrent: character.streakCurrent,
+      streakBest: character.streakBest,
+      title,
+    },
+  };
 }

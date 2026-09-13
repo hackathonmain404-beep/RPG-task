@@ -15,6 +15,7 @@ import {
   Check, 
   Crown
 } from 'lucide-react';
+import { WindowPopModal } from '../../components/common/WindowPopModal';
 
 export const FeedbackDeskTab: React.FC = () => {
   const [feedbackList, setFeedbackList] = useState<AdminFeedbackItem[]>([]);
@@ -25,16 +26,22 @@ export const FeedbackDeskTab: React.FC = () => {
   // Reply Modal State
   const [selectedFeedback, setSelectedFeedback] = useState<AdminFeedbackItem | null>(null);
   const [replyText, setReplyText] = useState<string>('');
-  const [newStatus, setNewStatus] = useState<string>('RESOLVED');
+  const [newStatus, setNewStatus] = useState<string>('REVIEWED');
   const [isSubmittingReply, setIsSubmittingReply] = useState<boolean>(false);
   const [replySuccessMsg, setReplySuccessMsg] = useState<string | null>(null);
+
+  // Pop Modal State (replaces native window.confirm & alert)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeletingFeedback, setIsDeletingFeedback] = useState<boolean>(false);
+  const [popAlert, setPopAlert] = useState<{ title: string; message: string; type?: 'danger' | 'warning' | 'info' | 'success' } | null>(null);
 
   const fetchFeedback = useCallback(async () => {
     setIsLoading(true);
     setErrorText(null);
     try {
       const res = await getAdminFeedback();
-      setFeedbackList(res.feedback);
+      const list = (res as any).feedbacks || res.feedback || [];
+      setFeedbackList(Array.isArray(list) ? list : []);
     } catch (err: any) {
       setErrorText(err?.message || 'Failed to fetch player feedback.');
     } finally {
@@ -54,7 +61,7 @@ export const FeedbackDeskTab: React.FC = () => {
   const handleOpenReplyModal = (item: AdminFeedbackItem) => {
     setSelectedFeedback(item);
     setReplyText(item.adminReply || '');
-    setNewStatus(item.status === 'PENDING' ? 'RESOLVED' : item.status);
+    setNewStatus(item.status === 'PENDING' ? 'REVIEWED' : item.status);
     setReplySuccessMsg(null);
   };
 
@@ -72,16 +79,24 @@ export const FeedbackDeskTab: React.FC = () => {
     setErrorText(null);
 
     try {
-      const res = await replyAdminFeedback(selectedFeedback.id, replyText.trim(), newStatus);
-      setReplySuccessMsg('Admin reply saved & status updated!');
+      const statusToSet = newStatus || 'REVIEWED';
+      const res = await replyAdminFeedback(selectedFeedback.id, replyText.trim(), statusToSet);
+      setReplySuccessMsg('Admin reply sent to user & status updated to Reviewed!');
 
       // Update in local state
+      const updated = res.feedback;
       setFeedbackList(prev =>
-        prev.map(f => (f.id === selectedFeedback.id ? { ...f, ...res.feedback } : f))
+        prev.map(f => (f.id === selectedFeedback.id ? { 
+          ...f, 
+          ...(updated || {}),
+          adminReply: replyText.trim(),
+          status: statusToSet,
+        } : f))
       );
 
       setTimeout(() => {
         handleCloseReplyModal();
+        void fetchFeedback();
       }, 1000);
     } catch (err: any) {
       setErrorText(err?.message || 'Failed to submit admin reply.');
@@ -90,16 +105,26 @@ export const FeedbackDeskTab: React.FC = () => {
     }
   };
 
-  const handleDeleteFeedback = async (id: string) => {
-    if (!window.confirm('Are you sure you want to permanently delete this feedback submission?')) {
-      return;
-    }
+  const handleDeleteFeedback = (id: string) => {
+    setDeleteTargetId(id);
+  };
 
+  const confirmDeleteFeedback = async () => {
+    if (!deleteTargetId) return;
+
+    setIsDeletingFeedback(true);
     try {
-      await deleteAdminFeedback(id);
-      setFeedbackList(prev => prev.filter(f => f.id !== id));
+      await deleteAdminFeedback(deleteTargetId);
+      setFeedbackList(prev => prev.filter(f => f.id !== deleteTargetId));
+      setDeleteTargetId(null);
     } catch (err: any) {
-      alert(`Error deleting feedback: ${err?.message || 'Unknown error'}`);
+      setPopAlert({
+        title: 'Delete Failed',
+        message: err?.message || 'Failed to delete feedback record.',
+        type: 'danger',
+      });
+    } finally {
+      setIsDeletingFeedback(false);
     }
   };
 
@@ -247,24 +272,32 @@ export const FeedbackDeskTab: React.FC = () => {
                       <span>{getTypeLabel(f.type)}</span>
                     </span>
 
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                        padding: '0.2rem 0.6rem',
-                        borderRadius: '9999px',
-                        backgroundColor: isResolved ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                        border: isResolved ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(245, 158, 11, 0.4)',
-                        color: isResolved ? '#10b981' : '#fbbf24',
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        letterSpacing: '0.04em',
-                      }}
-                    >
-                      {isResolved ? <CheckCircle2 size={12} /> : <Clock size={12} />}
-                      <span>{f.status}</span>
-                    </span>
+                    {(() => {
+                      const isRev = f.status === 'REVIEWED' || f.status === 'RESOLVED';
+                      const color = f.status === 'REVIEWED' ? '#38bdf8' : f.status === 'RESOLVED' ? '#10b981' : '#fbbf24';
+                      const bg = f.status === 'REVIEWED' ? 'rgba(56, 189, 248, 0.15)' : f.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+                      const border = f.status === 'REVIEWED' ? '1px solid rgba(56, 189, 248, 0.4)' : f.status === 'RESOLVED' ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(245, 158, 11, 0.4)';
+                      return (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            padding: '0.2rem 0.6rem',
+                            borderRadius: '9999px',
+                            backgroundColor: bg,
+                            border,
+                            color,
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.04em',
+                          }}
+                        >
+                          {isRev ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                          <span>{f.status === 'REVIEWED' ? 'REVIEWED BY ADMIN' : f.status}</span>
+                        </span>
+                      );
+                    })()}
                   </div>
 
                   <div style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
@@ -493,30 +526,31 @@ export const FeedbackDeskTab: React.FC = () => {
                     Ticket Status
                   </label>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {['RESOLVED', 'PENDING'].map(s => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setNewStatus(s)}
-                        style={{
-                          flex: 1,
-                          padding: '0.55rem',
-                          borderRadius: '6px',
-                          background: newStatus === s
-                            ? (s === 'RESOLVED' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)')
-                            : 'rgba(255, 255, 255, 0.04)',
-                          border: newStatus === s
-                            ? (s === 'RESOLVED' ? '1px solid #10b981' : '1px solid #fbbf24')
-                            : '1px solid rgba(255, 255, 255, 0.08)',
-                          color: newStatus === s ? (s === 'RESOLVED' ? '#10b981' : '#fbbf24') : '#94a3b8',
-                          fontSize: '0.8rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {s}
-                      </button>
-                    ))}
+                    {['REVIEWED', 'RESOLVED', 'PENDING'].map(s => {
+                      const isSelected = newStatus === s;
+                      const activeColor = s === 'REVIEWED' ? '#38bdf8' : s === 'RESOLVED' ? '#10b981' : '#fbbf24';
+                      const activeBg = s === 'REVIEWED' ? 'rgba(56, 189, 248, 0.2)' : s === 'RESOLVED' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)';
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setNewStatus(s)}
+                          style={{
+                            flex: 1,
+                            padding: '0.55rem',
+                            borderRadius: '6px',
+                            background: isSelected ? activeBg : 'rgba(255, 255, 255, 0.04)',
+                            border: isSelected ? `1px solid ${activeColor}` : '1px solid rgba(255, 255, 255, 0.08)',
+                            color: isSelected ? activeColor : '#94a3b8',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -576,6 +610,30 @@ export const FeedbackDeskTab: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Window Pop Modal for Deletion Confirmation */}
+      <WindowPopModal
+        isOpen={Boolean(deleteTargetId)}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={confirmDeleteFeedback}
+        isLoading={isDeletingFeedback}
+        title="Delete Feedback Record?"
+        message="Are you sure you want to permanently delete this feedback submission? This will purge the entry from the database."
+        type="danger"
+        confirmText="Permanently Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Window Pop Modal for Notifications/Errors */}
+      {popAlert && (
+        <WindowPopModal
+          isOpen={Boolean(popAlert)}
+          onClose={() => setPopAlert(null)}
+          title={popAlert.title}
+          message={popAlert.message}
+          type={popAlert.type || 'info'}
+        />
       )}
     </div>
   );

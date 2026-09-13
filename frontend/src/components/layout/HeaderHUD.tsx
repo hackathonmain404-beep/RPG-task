@@ -61,7 +61,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
       <div
         style={{
           width: '100%',
-          padding: '0.75rem 1.5rem',
+          padding: '0.75rem clamp(0.75rem, 2.5vw, 1.5rem)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -75,7 +75,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               type="button"
               onClick={onToggleSidebar}
               className="rpg-btn rpg-btn-secondary hud-hamburger-btn"
-              style={{ padding: '0.4rem', display: 'flex', border: 'none' }}
+              style={{ padding: '0.45rem', display: 'flex', border: 'none', minWidth: '40px', minHeight: '40px', alignItems: 'center', justifyContent: 'center' }}
               aria-label={isSidebarOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
               aria-expanded={isSidebarOpen}
             >
@@ -157,17 +157,12 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               aria-expanded={isMenuOpen}
               aria-label="User Profile Menu"
             >
-              <div className="hud-user-avatar">
+              <div className="hud-user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
                 {user?.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
-                    alt={user.displayName || 'Avatar'}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                    }}
+                    alt={user.displayName || 'Profile'}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                   />
                 ) : (
                   <User size={14} className="hud-user-icon" />
@@ -195,13 +190,37 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               {/* User Identity Header */}
               <div className="hud-dropdown-header" style={{ padding: '0.9rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
-                      Adventurer Profile
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      overflow: 'hidden',
+                      backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      {user?.avatarUrl ? (
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.displayName || 'Profile'}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <User size={18} color="#38bdf8" />
+                      )}
                     </div>
-                    {user?.email && (
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>
-                    )}
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
+                        Adventurer Profile
+                      </div>
+                      {user?.email && (
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>
+                      )}
+                    </div>
                   </div>
                   {isAdmin && (
                     <span style={{

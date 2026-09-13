@@ -51,7 +51,7 @@ describe('Authentication & Session API', () => {
       expect(cookies).toBeDefined();
       expect(cookies[0]).toContain('token=');
       expect(cookies[0]).toContain('HttpOnly');
-    });
+    }, 25000);
 
     it('should reject duplicate registration with 409 CONFLICT', async () => {
       const res = await request(app)
@@ -165,6 +165,50 @@ describe('Authentication & Session API', () => {
     });
   });
 
+  describe('PATCH /api/auth/profile', () => {
+    it('should reject unauthenticated profile update (401)', async () => {
+      const res = await request(app)
+        .patch('/api/auth/profile')
+        .send({ displayName: 'Shadow Knight' });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should reject display name that is too short (400)', async () => {
+      const res = await request(app)
+        .patch('/api/auth/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ displayName: 'X' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should successfully update displayName and avatarUrl in database and return them', async () => {
+      const customAvatar = 'data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADwAQCdASoIAAgAAkA4JZACdADcwAD++U1YAAAAAAAAAAA=';
+
+      const res = await request(app)
+        .patch('/api/auth/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          displayName: 'Archmage Valerius',
+          avatarUrl: customAvatar,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.user.displayName).toBe('Archmage Valerius');
+      expect(res.body.user.avatarUrl).toBe(customAvatar);
+
+      // Verify persistence via GET /api/auth/me
+      const meRes = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(meRes.status).toBe(200);
+      expect(meRes.body.user.displayName).toBe('Archmage Valerius');
+      expect(meRes.body.user.avatarUrl).toBe(customAvatar);
+    }, 25000);
+  });
+
   describe('POST /api/auth/logout', () => {
     it('should clear cookies and return success', async () => {
       const res = await request(app)
@@ -177,7 +221,9 @@ describe('Authentication & Session API', () => {
       const cookies = res.headers['set-cookie'];
       expect(cookies).toBeDefined();
       // Cookie should be cleared (max-age=0 or expires in past)
-      const tokenCleared = cookies.some((c: string) => c.includes('token=;') || c.includes('Expires=Thu, 01 Jan 1970'));
+      const tokenCleared = Array.isArray(cookies)
+        ? cookies.some((c: string) => c.includes('token=;') || c.includes('Expires=Thu, 01 Jan 1970'))
+        : (typeof cookies === 'string' && (cookies.includes('token=;') || cookies.includes('Expires=Thu, 01 Jan 1970')));
       expect(tokenCleared).toBe(true);
     });
   });

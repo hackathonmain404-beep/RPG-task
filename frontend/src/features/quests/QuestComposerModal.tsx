@@ -131,7 +131,7 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
           overflowY: 'auto',
           border: '1px solid var(--border-strong)',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
-          padding: '2rem',
+          padding: 'clamp(1.15rem, 3.5vw, 2rem)',
           position: 'relative',
         }}
         onClick={e => e.stopPropagation()}
@@ -277,7 +277,7 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 80px), 1fr))',
                 gap: '0.5rem',
                 marginTop: '0.35rem',
               }}
@@ -343,12 +343,13 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
           </div>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
               className="rpg-btn rpg-btn-secondary"
+              style={{ minHeight: '42px', padding: '0.65rem 1.25rem' }}
             >
               Cancel
             </button>
@@ -356,6 +357,7 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
               type="submit"
               disabled={isSubmitting}
               className="rpg-btn rpg-btn-primary"
+              style={{ minHeight: '42px', padding: '0.65rem 1.25rem' }}
             >
               {isSubmitting
                 ? 'Recording...'
