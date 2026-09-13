@@ -200,7 +200,7 @@ export interface GenerateAvatarRequest {
 
 export interface GenerateAvatarResponse {
   success: boolean;
-  avatar: ShopItem;
+  avatar?: ShopItem;
   avatarUrl?: string;
   inventoryItem?: {
     id: string;
@@ -410,5 +410,35 @@ export interface UpdateMarketItemRequest {
   active?: boolean;
   displayOrder?: number;
 }
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  role: 'USER' | 'ADMIN' | string;
+  githubUsername: string | null;
+  level: number;
+  totalXp: number;
+  gold: number;
+  streakCurrent: number;
+  progressPercent: number;
+}
+
+export interface CurrentUserRank {
+  rank: number;
+  level: number;
+  totalXp: number;
+  gold: number;
+}
+
+export interface LeaderboardResponse {
+  sortBy: 'level' | 'xp' | 'coins';
+  totalAdventurers: number;
+  currentUserRank: CurrentUserRank | null;
+  leaderboard: LeaderboardEntry[];
+  updatedAt: string;
+}
+
 
 
