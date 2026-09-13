@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, ArrowLeft, Lock, FileText, Eye, CheckCircle2, Swords, Gift } from 'lucide-react';
+import { Shield, ArrowLeft, Lock, FileText, Eye, CheckCircle2, Swords, Gift, Users, Mail, Building2 } from 'lucide-react';
 
 interface LegalLayoutProps {
   title: string;
@@ -27,11 +27,14 @@ export const LegalLayout: React.FC<LegalLayoutProps> = ({
   }, [location.pathname]);
 
   const tabs = [
+    { name: 'Community', path: '/community', icon: Users },
+    { name: 'Contact', path: '/contact', icon: Mail },
+    { name: 'Citadel HQ', path: '/citadel-hq', icon: Building2 },
+    { name: 'Quest System', path: '/quests', icon: Swords },
+    { name: 'Reward Types', path: '/rewards', icon: Gift },
     { name: 'Privacy Policy', path: '/privacy', icon: Lock },
     { name: 'Terms of Service', path: '/terms', icon: FileText },
     { name: 'Accessibility', path: '/accessibility', icon: Eye },
-    { name: 'Quest System', path: '/quests', icon: Swords },
-    { name: 'Reward Types', path: '/rewards', icon: Gift },
   ];
 
   return (
