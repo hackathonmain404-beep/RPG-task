@@ -805,13 +805,13 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                               borderRadius: '6px',
                               fontSize: '0.68rem',
                               fontWeight: 700,
-                              color: item.status === 'RESOLVED' ? '#34d399' : '#f59e0b',
-                              backgroundColor: item.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.12)',
+                              color: (item.status === 'REVIEWED' || item.status === 'RESOLVED') ? '#34d399' : '#f59e0b',
+                              backgroundColor: (item.status === 'REVIEWED' || item.status === 'RESOLVED') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.12)',
                               textTransform: 'uppercase',
                               letterSpacing: '0.04em',
                             }}
                           >
-                            {item.status}
+                            {item.status === 'REVIEWED' ? 'REVIEWED BY ADMIN' : item.status}
                           </span>
                         </div>
 

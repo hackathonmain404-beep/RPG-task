@@ -63,18 +63,20 @@ export async function endSurgeEvent(): Promise<{ success: boolean }> {
   });
 }
 
-export async function getAdminFeedback(): Promise<{ feedback: AdminFeedbackItem[] }> {
-  return request<{ feedback: AdminFeedbackItem[] }>('/admin/feedback');
+export async function getAdminFeedback(): Promise<{ feedback: AdminFeedbackItem[]; feedbacks: AdminFeedbackItem[] }> {
+  const res = await request<{ feedback?: AdminFeedbackItem[]; feedbacks?: AdminFeedbackItem[] }>('/admin/feedback');
+  const items = res.feedbacks || res.feedback || [];
+  return { feedback: items, feedbacks: items };
 }
 
 export async function replyAdminFeedback(
   id: string,
   reply: string,
-  status?: string
+  status: string = 'REVIEWED'
 ): Promise<{ success: boolean; feedback: AdminFeedbackItem }> {
   return request<{ success: boolean; feedback: AdminFeedbackItem }>(`/admin/feedback/${id}/reply`, {
     method: 'PATCH',
-    data: { reply, status },
+    data: { reply, replyText: reply, status: status || 'REVIEWED' },
   });
 }
 

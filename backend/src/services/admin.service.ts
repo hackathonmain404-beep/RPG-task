@@ -458,13 +458,15 @@ export async function listAllFeedback(typeFilter?: string) {
   return feedbacks.map((f: any) => ({
     id: f.id,
     userId: f.userId,
+    userEmail: f.user?.email || '',
+    userName: f.user?.displayName || 'Adventurer',
     type: f.type,
     message: f.message,
     status: f.status,
     adminReply: f.adminReply || null,
-    repliedAt: f.repliedAt || null,
-    createdAt: f.createdAt,
-    updatedAt: f.updatedAt,
+    repliedAt: f.repliedAt ? (f.repliedAt instanceof Date ? f.repliedAt.toISOString() : f.repliedAt) : null,
+    createdAt: f.createdAt instanceof Date ? f.createdAt.toISOString() : f.createdAt,
+    updatedAt: f.updatedAt instanceof Date ? f.updatedAt.toISOString() : f.updatedAt,
     user: {
       id: f.user?.id || f.userId,
       displayName: f.user?.displayName || 'Adventurer',
@@ -487,11 +489,13 @@ export async function replyFeedback(
     throw new AppError(404, 'NOT_FOUND', 'Feedback submission not found.');
   }
 
+  const statusToSet = newStatus || 'REVIEWED';
+
   const updated = await (prisma as any).feedback.update({
     where: { id: feedbackId },
     data: {
       adminReply: replyText.trim(),
-      status: newStatus || 'RESOLVED',
+      status: statusToSet,
       repliedAt: new Date(),
     },
     include: {
@@ -506,7 +510,25 @@ export async function replyFeedback(
     },
   });
 
-  return updated;
+  return {
+    id: updated.id,
+    userId: updated.userId,
+    userEmail: updated.user?.email || '',
+    userName: updated.user?.displayName || 'Adventurer',
+    type: updated.type,
+    message: updated.message,
+    status: updated.status,
+    adminReply: updated.adminReply,
+    repliedAt: updated.repliedAt ? (updated.repliedAt instanceof Date ? updated.repliedAt.toISOString() : updated.repliedAt) : null,
+    createdAt: updated.createdAt instanceof Date ? updated.createdAt.toISOString() : updated.createdAt,
+    updatedAt: updated.updatedAt instanceof Date ? updated.updatedAt.toISOString() : updated.updatedAt,
+    user: {
+      id: updated.user?.id || updated.userId,
+      displayName: updated.user?.displayName || 'Adventurer',
+      email: updated.user?.email || '',
+      avatarUrl: updated.user?.avatarUrl || null,
+    },
+  };
 }
 
 export async function deleteFeedback(feedbackId: string) {
