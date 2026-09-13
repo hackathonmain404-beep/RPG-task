@@ -20,6 +20,7 @@ export interface SendMagicLinkResult {
     id: string;
     email: string;
     displayName: string;
+    avatarUrl?: string | null;
     role: string;
   };
   redirectTo?: string;
@@ -34,6 +35,7 @@ export interface VerifyMagicLinkResult {
     id: string;
     email: string;
     displayName: string;
+    avatarUrl?: string | null;
     role: string;
   };
   character: {
