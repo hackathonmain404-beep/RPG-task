@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useFeedback } from '../../context/FeedbackContext';
-import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins } from 'lucide-react';
+import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, MoreVertical, Settings } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -157,29 +157,37 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               aria-expanded={isMenuOpen}
               aria-label="User Profile Menu"
             >
-              <div className="hud-user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
-                {user?.avatarUrl ? (
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.displayName || 'Profile'}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                  />
-                ) : (
-                  <User size={14} className="hud-user-icon" />
-                )}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
-                <span className="hud-user-name">
-                  {user?.displayName || 'Adventurer'}
-                </span>
-                {(user?.title || character?.title) && (
-                  <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                    <Award size={10} color="#fbbf24" />
-                    {user?.title || character?.title}
+              {/* Desktop view: full avatar, name, title badge, and chevron */}
+              <div className="hud-profile-desktop-content">
+                <div className="hud-user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
+                  {user?.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.displayName || 'Profile'}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                    />
+                  ) : (
+                    <User size={14} className="hud-user-icon" />
+                  )}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
+                  <span className="hud-user-name">
+                    {user?.displayName || 'Adventurer'}
                   </span>
-                )}
+                  {(user?.title || character?.title) && (
+                    <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                      <Award size={10} color="#fbbf24" />
+                      {user?.title || character?.title}
+                    </span>
+                  )}
+                </div>
+                <ChevronDown size={14} className={`hud-profile-chevron ${isMenuOpen ? 'is-open' : ''}`} />
               </div>
-              <ChevronDown size={14} className={`hud-profile-chevron ${isMenuOpen ? 'is-open' : ''}`} />
+
+              {/* Mobile view: three dots icon */}
+              <div className="hud-profile-mobile-content" aria-hidden="true" title="Account & Options">
+                <MoreVertical size={20} className="hud-more-icon" />
+              </div>
             </button>
 
             {/* Glassmorphic Profile Dropdown Menu */}
@@ -215,7 +223,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                     </div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
-                        Adventurer Profile
+                        {user?.displayName || 'Adventurer Profile'}
                       </div>
                       {user?.email && (
                         <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>
@@ -302,6 +310,26 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               </div>
 
               <div className="hud-dropdown-divider" />
+
+              {/* Account Settings */}
+              <Link
+                to="/app/settings"
+                onClick={() => setIsMenuOpen(false)}
+                className="hud-dropdown-item"
+              >
+                <Settings size={16} className="hud-item-icon" />
+                <span>Account Settings</span>
+              </Link>
+
+              {/* Character Sheet */}
+              <Link
+                to="/app/character"
+                onClick={() => setIsMenuOpen(false)}
+                className="hud-dropdown-item"
+              >
+                <User size={16} className="hud-item-icon" />
+                <span>Character Sheet</span>
+              </Link>
 
               {/* Feedback Item */}
               <button
