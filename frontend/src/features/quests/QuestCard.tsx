@@ -88,7 +88,7 @@ export const QuestCard: React.FC<QuestCardProps> = ({
 
   return (
     <div
-      className={`rpg-card quest-item-card ${task.completed ? 'quest-item-completed' : ''}`}
+      className={`rpg-card quest-item-card quest-cat-${catKey} quest-diff-${diffKey} ${task.completed ? 'quest-item-completed' : ''}`}
       style={{
         position: 'relative',
       }}
@@ -146,6 +146,7 @@ export const QuestCard: React.FC<QuestCardProps> = ({
           {/* Title & Description */}
           <div style={{ flex: 1 }}>
             <h3
+              className="quest-item-title"
               style={{
                 fontSize: '1.05rem',
                 fontWeight: 600,
