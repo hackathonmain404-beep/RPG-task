@@ -7,7 +7,17 @@ import type { Theme } from './types';
 import { ThemeCard } from './components/ThemeCard';
 import { ThemesSkeleton } from '../../components/skeletons/ThemesSkeleton';
 import { ErrorState } from '../../components/common/ErrorState';
+import { CustomSelect, type SelectOption } from '../../components/common/CustomSelect';
 import './theme-marketplace.css';
+
+const RARITY_OPTIONS: SelectOption<string>[] = [
+  { value: 'all', label: 'All Rarities', color: '#94a3b8' },
+  { value: 'common', label: 'Common', color: '#94a3b8', badge: 'COMMON' },
+  { value: 'uncommon', label: 'Uncommon', color: '#10b981', badge: 'UNCOMMON' },
+  { value: 'rare', label: 'Rare', color: '#38bdf8', badge: 'RARE' },
+  { value: 'epic', label: 'Epic', color: '#a855f7', badge: 'EPIC' },
+  { value: 'legendary', label: 'Legendary', color: '#f59e0b', badge: 'LEGENDARY' },
+];
 
 export const ThemeMarketplacePage: React.FC = () => {
   const navigate = useNavigate();
@@ -169,19 +179,14 @@ export const ThemeMarketplacePage: React.FC = () => {
 
         {/* Rarity Filter */}
         <div className="theme-market-filters">
-          <select
-            className="theme-filter-select"
+          <CustomSelect<string>
             value={selectedRarity}
-            onChange={e => setSelectedRarity(e.target.value)}
-            aria-label="Filter by rarity"
-          >
-            <option value="all">All Rarities</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="epic">Epic</option>
-            <option value="legendary">Legendary</option>
-          </select>
+            onChange={setSelectedRarity}
+            options={RARITY_OPTIONS}
+            ariaLabel="Filter by rarity"
+            variant="purple"
+            style={{ minWidth: '160px' }}
+          />
         </div>
       </div>
 

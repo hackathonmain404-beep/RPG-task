@@ -1,7 +1,16 @@
 import React from 'react';
 import { Search, X, ArrowDownUp } from 'lucide-react';
+import { CustomSelect, type SelectOption } from '../../../components/common/CustomSelect';
 
 export type SortOption = 'default' | 'price-asc' | 'price-desc' | 'rarity' | 'name';
+
+const SORT_OPTIONS: SelectOption<SortOption>[] = [
+  { value: 'default', label: 'Requisition Order' },
+  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'rarity', label: 'Rarity Tier' },
+  { value: 'name', label: 'Alphabetical' },
+];
 
 interface ShopToolbarProps {
   searchQuery: string;
@@ -54,18 +63,14 @@ export const ShopToolbar: React.FC<ShopToolbarProps> = ({
       {/* Sort Selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
         <ArrowDownUp size={14} color="var(--text-tertiary, #64748b)" aria-hidden="true" />
-        <select
+        <CustomSelect<SortOption>
           value={sortBy}
-          onChange={e => onSortChange(e.target.value as SortOption)}
-          className="armory-sort-select"
-          aria-label="Sort catalog items"
-        >
-          <option value="default">Requisition Order</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="rarity">Rarity Tier</option>
-          <option value="name">Alphabetical</option>
-        </select>
+          onChange={onSortChange}
+          options={SORT_OPTIONS}
+          ariaLabel="Sort catalog items"
+          variant="gold"
+          style={{ minWidth: '175px' }}
+        />
       </div>
     </div>
   );

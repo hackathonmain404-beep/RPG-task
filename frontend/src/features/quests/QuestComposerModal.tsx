@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { Task, CreateTaskRequest, DisciplineKey, DifficultyLevel } from '../../types/contract';
+import { CustomSelect } from '../../components/common/CustomSelect';
 import { 
   X, 
   Brain, 
@@ -103,17 +105,16 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
     <div
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 100,
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.82)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 99999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1rem',
+        padding: '1.25rem',
+        overflowY: 'auto',
       }}
       onClick={e => {
         if (e.target === e.currentTarget && !isSubmitting) onClose();
@@ -126,13 +127,16 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
         className="rpg-card"
         style={{
           width: '100%',
-          maxWidth: '560px',
-          maxHeight: '90vh',
+          maxWidth: '580px',
+          maxHeight: 'min(90vh, 720px)',
           overflowY: 'auto',
-          border: '1px solid var(--border-strong)',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
-          padding: 'clamp(1.15rem, 3.5vw, 2rem)',
+          border: '1px solid rgba(56, 189, 248, 0.35)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.15)',
+          padding: 'clamp(1.25rem, 3.5vw, 2rem)',
           position: 'relative',
+          borderRadius: '16px',
+          backgroundColor: '#0c1017',
+          margin: 'auto',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -248,21 +252,23 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
             <label htmlFor="quest-category" className="rpg-label">
               Trained Discipline (Category) *
             </label>
-            <div style={{ position: 'relative' }}>
-              <select
+            <div>
+              <CustomSelect<DisciplineKey>
                 id="quest-category"
+                ariaLabel="Trained Discipline (Category)"
                 value={categoryKey}
-                onChange={e => setCategoryKey(e.target.value as DisciplineKey)}
-                className="rpg-input"
+                onChange={val => setCategoryKey(val)}
+                options={DISCIPLINES.map(d => {
+                  const IconComp = d.icon;
+                  return {
+                    value: d.key,
+                    label: d.label,
+                    icon: <IconComp size={16} color={d.color} />,
+                    color: d.color,
+                  };
+                })}
                 disabled={isSubmitting}
-                style={{ cursor: 'pointer' }}
-              >
-                {DISCIPLINES.map(d => (
-                  <option key={d.key} value={d.key} style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>
-                    {d.label}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.35rem' }}>
               Category determines which character attribute gains progression upon completion.
@@ -321,9 +327,17 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
 
           {/* Due Date */}
           <div style={{ marginBottom: '1.75rem' }}>
-            <label htmlFor="quest-duedate" className="rpg-label">
-              Due Date (Optional)
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <label htmlFor="quest-duedate" className="rpg-label" style={{ margin: 0 }}>
+                Due Date (Optional)
+              </label>
+              {dueDate && (
+                <span style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 600 }}>
+                  📅 {new Date(dueDate + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                </span>
+              )}
+            </div>
+
             <div style={{ position: 'relative' }}>
               <input
                 id="quest-duedate"
@@ -332,13 +346,73 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
                 onChange={e => setDueDate(e.target.value)}
                 className="rpg-input"
                 disabled={isSubmitting}
-                style={{ colorScheme: 'dark' }}
+                style={{
+                  colorScheme: 'dark',
+                  backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '10px',
+                  paddingRight: '2.5rem',
+                  fontSize: '0.9rem',
+                }}
               />
               <Calendar
                 size={18}
-                color="var(--text-tertiary)"
+                color="#38bdf8"
                 style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
               />
+            </div>
+
+            {/* Quick Presets */}
+            <div style={{ display: 'flex', gap: '0.45rem', marginTop: '0.55rem', flexWrap: 'wrap' }}>
+              {[
+                { label: 'Today', days: 0 },
+                { label: 'Tomorrow', days: 1 },
+                { label: '+3 Days', days: 3 },
+                { label: '+1 Week', days: 7 },
+              ].map(preset => {
+                const d = new Date();
+                d.setDate(d.getDate() + preset.days);
+                const dateStr = d.toISOString().slice(0, 10);
+                const isCurrent = dueDate === dateStr;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setDueDate(dateStr)}
+                    className="rpg-btn"
+                    style={{
+                      padding: '0.25rem 0.65rem',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: isCurrent ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.12)',
+                      background: isCurrent ? 'rgba(56, 189, 248, 0.18)' : 'rgba(255, 255, 255, 0.04)',
+                      color: isCurrent ? '#38bdf8' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+              {dueDate && (
+                <button
+                  type="button"
+                  onClick={() => setDueDate('')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-tertiary)',
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                    padding: '0.25rem 0.5rem',
+                    marginLeft: 'auto',
+                  }}
+                >
+                  Clear Date
+                </button>
+              )}
             </div>
           </div>
 
@@ -380,7 +454,7 @@ export const QuestComposerModal: React.FC<QuestComposerModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  return (
+  const content = (
     <QuestComposerDialog
       key={editingTask ? editingTask.id : 'create'}
       onClose={onClose}
@@ -388,4 +462,10 @@ export const QuestComposerModal: React.FC<QuestComposerModalProps> = ({
       editingTask={editingTask}
     />
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(content, document.body);
+  }
+  return content;
 };
+
