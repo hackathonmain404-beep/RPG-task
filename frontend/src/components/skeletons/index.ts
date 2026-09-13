@@ -1,0 +1,10 @@
+export { Skeleton } from './Skeleton';
+export { DashboardSkeleton } from './DashboardSkeleton';
+export { QuestsSkeleton } from './QuestsSkeleton';
+export { CharacterSkeleton } from './CharacterSkeleton';
+export { ShopSkeleton } from './ShopSkeleton';
+export { ThemesSkeleton } from './ThemesSkeleton';
+export { InventorySkeleton } from './InventorySkeleton';
+export { SettingsSkeleton } from './SettingsSkeleton';
+export { FeedbackSkeleton } from './FeedbackSkeleton';
+export { PageSkeleton } from './PageSkeleton';

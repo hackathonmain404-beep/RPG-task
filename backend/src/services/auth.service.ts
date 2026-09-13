@@ -43,6 +43,7 @@ export const TEST_USER = {
   id: 'test-user-id',
   email: 'hero@citadel.realm',
   displayName: 'Grand Champion',
+  avatarUrl: null as string | null,
   character: {
     level: 3,
     totalXp: 450,
@@ -365,6 +366,7 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
           id: user.id,
           email: user.email,
           displayName: user.displayName,
+          avatarUrl: user.avatarUrl || null,
         },
         character: {
           level: character.level,
@@ -467,6 +469,7 @@ export async function loginOrRegisterWithGithub(profile: GithubAuthInput): Promi
         id: targetUser.id,
         email: targetUser.email,
         displayName: targetUser.displayName,
+        avatarUrl: targetUser.avatarUrl || null,
       },
       character: {
         level: targetCharacter?.level ?? 1,

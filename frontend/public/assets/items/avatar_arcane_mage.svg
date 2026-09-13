@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="am-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#05081a"/>
+      <stop offset="50%" stop-color="#0c1133"/>
+      <stop offset="100%" stop-color="#02040d"/>
+    </linearGradient>
+    <linearGradient id="am-indigo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+    <radialGradient id="am-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="am-blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#am-bg)" rx="10"/>
+  <circle cx="160" cy="90" r="75" fill="url(#am-glow)"/>
+
+  <!-- Celestial Arcane Archmage -->
+  <g filter="url(#am-blur)">
+    <!-- Cowl Mantle -->
+    <path d="M95 165 C120 135 140 125 160 125 C180 125 200 135 225 165 L215 178 L105 178 Z" fill="#1e1b4b" stroke="#818cf8" stroke-width="1.5"/>
+
+    <!-- Pointed Arcane Hood -->
+    <path d="M160 15 C130 35 110 75 115 115 C125 135 140 145 160 148 C180 145 195 135 205 115 C210 75 190 35 160 15 Z" fill="#0f172a" stroke="#4f46e5" stroke-width="2"/>
+    <path d="M160 22 C135 42 120 75 125 105 C130 125 145 135 160 138 C175 135 190 125 195 105 C200 75 185 42 160 22 Z" fill="#030712"/>
+
+    <!-- Shadowed Face with Starlight Runes -->
+    <circle cx="160" cy="55" r="3.5" fill="#a5b4fc"/>
+    <circle cx="160" cy="55" r="1.5" fill="#ffffff"/>
+
+    <!-- Dual Astral Eyes -->
+    <ellipse cx="146" cy="82" rx="5" ry="2.5" fill="#c7d2fe"/>
+    <circle cx="146" cy="82" r="1.5" fill="#ffffff"/>
+    <ellipse cx="174" cy="82" rx="5" ry="2.5" fill="#c7d2fe"/>
+    <circle cx="174" cy="82" r="1.5" fill="#ffffff"/>
+
+    <!-- Floating Arcane Runes -->
+    <polygon points="160,35 164,43 160,50 156,43" fill="#818cf8"/>
+    <path d="M135 100 Q145 105 160 105 Q175 105 185 100" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+  </g>
+
+  <!-- Celestial Constellation Dust -->
+  <g fill="#a5b4fc" opacity="0.8">
+    <circle cx="100" cy="50" r="1.4"/>
+    <circle cx="220" cy="50" r="1.4"/>
+    <circle cx="85" cy="100" r="1.2"/>
+    <circle cx="235" cy="100" r="1.2"/>
+    <circle cx="145" cy="20" r="1.5"/>
+    <circle cx="175" cy="20" r="1.5"/>
+  </g>
+</svg>

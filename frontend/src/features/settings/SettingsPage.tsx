@@ -362,65 +362,102 @@ export const SettingsPage: React.FC = () => {
                 )}
               </div>
 
-              <div
+              {/* Quick camera trigger icon badge */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isSaving || isCompressing}
                 style={{
                   position: 'absolute',
-                  bottom: '-6px',
-                  right: '-6px',
-                  backgroundColor: '#0f172a',
-                  border: '1px solid #38bdf8',
-                  borderRadius: '9999px',
-                  padding: '0.15rem 0.4rem',
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  color: '#38bdf8',
-                  letterSpacing: '0.03em',
+                  bottom: '-4px',
+                  right: '-4px',
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--color-primary, #38bdf8)',
+                  border: '2px solid var(--bg-surface)',
+                  color: '#030712',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
                 }}
+                title="Change picture"
               >
-                128×128
-              </div>
+                <Camera size={14} />
+              </button>
             </div>
 
-            {/* Avatar Action Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, minWidth: '220px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png, image/jpeg, image/webp, image/gif"
-                  onChange={handleFileChange}
-                  style={{ display: 'none' }}
-                  id="pfp-file-input"
-                />
+            {/* Hidden File Input for Image Upload */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+              aria-label="Upload profile picture"
+            />
 
+            {/* Avatar Actions & Guidance */}
+            <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isCompressing || isSaving}
-                  className="rpg-btn rpg-btn-primary"
+                  disabled={isSaving || isCompressing}
+                  className="rpg-btn"
                   style={{
-                    padding: '0.55rem 1rem',
-                    fontSize: '0.85rem',
+                    padding: '0.45rem 0.85rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    border: '1px solid rgba(56, 189, 248, 0.4)',
+                    color: '#38bdf8',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.45rem',
+                    gap: '0.4rem',
                   }}
                   id="upload-pfp-btn"
                 >
-                  <Camera size={16} />
-                  <span>Upload Custom Photo</span>
+                  <Camera size={15} />
+                  <span>Upload Picture</span>
                 </button>
+
+                <Link
+                  to="/app/shop"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                    border: '1px solid rgba(168, 85, 247, 0.4)',
+                    color: '#c084fc',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <Sparkles size={14} />
+                  <span>Forge AI Avatar</span>
+                </Link>
 
                 {avatarPreview && (
                   <button
                     type="button"
                     onClick={handleRemoveAvatar}
-                    disabled={isCompressing || isSaving}
+                    disabled={isSaving || isCompressing}
                     className="rpg-btn"
                     style={{
-                      padding: '0.55rem 0.85rem',
-                      fontSize: '0.85rem',
-                      backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                      padding: '0.45rem 0.85rem',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(239, 68, 68, 0.15)',
                       border: '1px solid rgba(239, 68, 68, 0.3)',
                       color: '#fca5a5',
                       display: 'flex',

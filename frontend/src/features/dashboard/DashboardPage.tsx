@@ -16,6 +16,7 @@ import { CompletedCategoriesCard } from './components/CompletedCategoriesCard';
 import { VibeScoreCard } from './components/VibeScoreCard';
 import { ConsistencyHeatmapCard } from './components/ConsistencyHeatmapCard';
 import { AccountabilityMatrix } from './components/AccountabilityMatrix';
+import { DashboardSkeleton } from '../../components/skeletons/DashboardSkeleton';
 import { 
   Shield, 
   Flame, 
@@ -127,7 +128,7 @@ const InteractiveStatCard: React.FC<StatCardProps> = ({
 export const DashboardPage: React.FC = () => {
   useDocumentMetadata('Command Citadel | Achiever', { noindex: true });
 
-  const { character, xpProgress } = useAuth();
+  const { character, xpProgress, isLoading: authLoading } = useAuth();
   const { tasks, lastRewardNotice, clearRewardNotice, levelUpEvent, clearLevelUpEvent } = useQuests();
 
   const [charData, setCharData] = useState<CharacterResponse | null>(null);
@@ -155,6 +156,14 @@ export const DashboardPage: React.FC = () => {
     : (character?.attributes && character.attributes.length > 0)
       ? character.attributes
       : DEFAULT_ATTRIBUTES;
+
+  if (authLoading && !character) {
+    return (
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <DashboardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>

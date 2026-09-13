@@ -5,11 +5,13 @@ import { useTheme } from '../../context/useTheme';
 import { useAuth } from '../../context/useAuth';
 import type { Theme } from './types';
 import { ThemeCard } from './components/ThemeCard';
+import { ThemesSkeleton } from '../../components/skeletons/ThemesSkeleton';
+import { ErrorState } from '../../components/common/ErrorState';
 import './theme-marketplace.css';
 
 export const ThemeMarketplacePage: React.FC = () => {
   const navigate = useNavigate();
-  const { themes, isOwned, isEquipped, purchaseTheme, equipTheme } = useTheme();
+  const { themes, isOwned, isEquipped, purchaseTheme, equipTheme, isLoading, error, refreshThemes } = useTheme();
   const { user, character } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'marketplace' | 'collection'>('marketplace');
@@ -70,6 +72,26 @@ export const ThemeMarketplacePage: React.FC = () => {
   const ownedCount = useMemo(() => {
     return themes.filter(t => isOwned(t.slug) || isOwned(t.id)).length;
   }, [themes, isOwned]);
+
+  if (isLoading && themes.length === 0) {
+    return (
+      <div className="theme-marketplace-root">
+        <ThemesSkeleton />
+      </div>
+    );
+  }
+
+  if (error && themes.length === 0) {
+    return (
+      <div className="theme-marketplace-root" style={{ padding: '2rem 1rem' }}>
+        <ErrorState
+          title="Citadel Theme Registry Unavailable"
+          message={error}
+          onRetry={refreshThemes}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="theme-marketplace-root">

@@ -43,7 +43,7 @@ describe('HeaderHUD', () => {
     );
 
     expect(screen.getByText('Achiever')).toBeInTheDocument();
-    expect(screen.getAllByText('ValiantCoder').length).toBeGreaterThan(0); // Display name
+    expect(screen.getAllByText('ValiantCoder')[0]).toBeInTheDocument(); // Display name
     expect(screen.getByRole('button', { name: /Sign out of Achiever/i })).toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { HeaderHUD } from './HeaderHUD';
 import { 
   LayoutDashboard, 
@@ -11,7 +11,6 @@ import {
   Palette,
   Sparkles,
   MessageSquarePlus,
-  Sliders,
   X,
   ExternalLink,
   AlertTriangle,
@@ -24,6 +23,8 @@ import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal.tsx';
 import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { PageTransition } from '../common/PageTransition';
+import { RouteLoadingBoundary } from '../common/RouteLoadingBoundary';
 import { getActivePlatformBroadcast, getPlatformSurgeStatus } from '../../services/api/platform';
 import { useSSE } from '../../hooks/useSSE';
 import type { Broadcast } from '../../types/contract';
@@ -47,11 +48,39 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/app/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
 ];
 
+const routePreloaders: Record<string, () => Promise<unknown>> = {
+  '/app/dashboard': () => import('../../features/dashboard/DashboardPage'),
+  '/app/quests': () => import('../../features/quests/QuestsPage'),
+  '/app/character': () => import('../../features/character/CharacterPage'),
+  '/app/shop': () => import('../../features/shop/ShopPage'),
+  '/app/themes': () => import('../../features/themes/ThemeMarketplacePage'),
+  '/app/inventory': () => import('../../features/inventory/InventoryPage'),
+  '/app/settings': () => import('../../features/settings/SettingsPage'),
+  '/app/feedback': () => import('../../features/feedback/FeedbackPage'),
+};
+const prefetchedRoutes = new Set<string>();
+
+const prefetchRoute = (path: string) => {
+  if (prefetchedRoutes.has(path)) return;
+  const preloader = routePreloaders[path];
+  if (preloader) {
+    prefetchedRoutes.add(path);
+    preloader().catch(() => {
+      prefetchedRoutes.delete(path);
+    });
+  }
+};
+
 const AppShellInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
-  const navigate = useNavigate();
+  const location = useLocation();
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingPath(null);
+  }, [location.pathname]);
 
   // Global Keyboard Shortcuts (1-7, N, F, B, ?, Esc)
   useKeyboardShortcuts({
@@ -251,17 +280,6 @@ const AppShellInner: React.FC = () => {
       {/* Top HUD Bar */}
       <HeaderHUD onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
 
-      {/* Floating System / Accessibility Control on Right Edge */}
-      <button
-        type="button"
-        className="floating-system-control"
-        aria-label="System & Accessibility Controls"
-        title="Citadel System & Accessibility"
-        onClick={() => navigate('/app/settings')}
-      >
-        <Sliders size={16} />
-      </button>
-
       {/* Main Content Area with Sidebar */}
       <div
         style={{
@@ -301,11 +319,15 @@ const AppShellInner: React.FC = () => {
 
           {NAV_ITEMS.map(item => {
             const Icon = item.icon;
+            const isPending = pendingPath === item.to;
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+                onMouseEnter={() => prefetchRoute(item.to)}
+                onFocus={() => prefetchRoute(item.to)}
+                onClick={() => setPendingPath(item.to)}
+                className={({ isActive }) => `sidebar-nav-item ${(isActive || isPending) ? 'active' : ''}`}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                   <Icon size={18} className={`nav-icon ${item.iconClass}`} />
@@ -333,6 +355,7 @@ const AppShellInner: React.FC = () => {
           <button
             type="button"
             onClick={openFeedback}
+            onFocus={() => prefetchRoute('/app/feedback')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -340,9 +363,9 @@ const AppShellInner: React.FC = () => {
               width: '100%',
               padding: '0.7rem 0.85rem',
               borderRadius: '8px',
-              backgroundColor: 'transparent',
-              border: '1px solid transparent',
-              color: 'var(--text-secondary)',
+              backgroundColor: isFeedbackOpen || location.pathname === '/app/feedback' ? 'rgba(139, 92, 246, 0.18)' : 'transparent',
+              border: isFeedbackOpen || location.pathname === '/app/feedback' ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid transparent',
+              color: isFeedbackOpen || location.pathname === '/app/feedback' ? '#c084fc' : 'var(--text-secondary)',
               fontSize: '0.9rem',
               fontWeight: 600,
               fontFamily: 'var(--font-display)',
@@ -351,14 +374,19 @@ const AppShellInner: React.FC = () => {
               transition: 'all var(--duration-fast) ease',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.12)';
-              e.currentTarget.style.color = '#c084fc';
-              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+              prefetchRoute('/app/feedback');
+              if (!isFeedbackOpen && location.pathname !== '/app/feedback') {
+                e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.12)';
+                e.currentTarget.style.color = '#c084fc';
+                e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+              }
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-              e.currentTarget.style.borderColor = 'transparent';
+              if (!isFeedbackOpen && location.pathname !== '/app/feedback') {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+                e.currentTarget.style.borderColor = 'transparent';
+              }
             }}
             aria-label="Open Feedback Modal"
           >
@@ -452,25 +480,34 @@ const AppShellInner: React.FC = () => {
             >
               {NAV_ITEMS.map(item => {
                 const Icon = item.icon;
+                const isPending = pendingPath === item.to;
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    onClick={closeSidebar}
-                    style={({ isActive }) => ({
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '0.75rem 1rem',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      fontSize: '0.95rem',
-                      fontWeight: 600,
-                      color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                      backgroundColor: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                      border: isActive ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
-                      minHeight: '44px',
-                    })}
+                    onClick={() => {
+                      setPendingPath(item.to);
+                      closeSidebar();
+                    }}
+                    onMouseEnter={() => prefetchRoute(item.to)}
+                    onFocus={() => prefetchRoute(item.to)}
+                    style={({ isActive }) => {
+                      const active = isActive || isPending;
+                      return {
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                        color: active ? '#ffffff' : 'var(--text-secondary)',
+                        backgroundColor: active ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                        border: active ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
+                        minHeight: '44px',
+                      };
+                    }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <Icon size={18} />
@@ -518,10 +555,15 @@ const AppShellInner: React.FC = () => {
             padding: '2rem 1.5rem',
             overflowY: 'auto',
             minHeight: 'calc(100vh - 65px)',
+            position: 'relative',
           }}
           className="app-main-content"
         >
-          <Outlet />
+          <PageTransition>
+            <RouteLoadingBoundary>
+              <Outlet />
+            </RouteLoadingBoundary>
+          </PageTransition>
         </main>
       </div>
 
@@ -547,25 +589,32 @@ const AppShellInner: React.FC = () => {
       >
         {NAV_ITEMS.map(item => {
           const Icon = item.icon;
+          const isPending = pendingPath === item.to;
           return (
             <NavLink
               key={item.to}
               to={item.to}
-              style={({ isActive }) => ({
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.15rem',
-                textDecoration: 'none',
-                color: isActive ? '#38bdf8' : 'var(--text-secondary)',
-                fontSize: '0.65rem',
-                fontWeight: 600,
-                padding: '0.3rem 0.35rem',
-                minWidth: '44px',
-                minHeight: '44px',
-                flexShrink: 0,
-              })}
+              onMouseEnter={() => prefetchRoute(item.to)}
+              onFocus={() => prefetchRoute(item.to)}
+              onClick={() => setPendingPath(item.to)}
+              style={({ isActive }) => {
+                const active = isActive || isPending;
+                return {
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.15rem',
+                  textDecoration: 'none',
+                  color: active ? '#38bdf8' : 'var(--text-secondary)',
+                  fontSize: '0.65rem',
+                  fontWeight: 600,
+                  padding: '0.3rem 0.35rem',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  flexShrink: 0,
+                };
+              }}
             >
               <Icon size={18} />
               <span style={{ letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{item.label}</span>

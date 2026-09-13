@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useShop } from '../../context/useShop';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { InventoryItemCard } from './InventoryItemCard';
+import { InventorySkeleton } from '../../components/skeletons/InventorySkeleton';
+import { ErrorState } from '../../components/common/ErrorState';
 import { 
   Package, 
   Palette, 
@@ -79,6 +81,26 @@ export const InventoryPage: React.FC = () => {
       default: return 'Dark Citadel (Obsidian Bastion)';
     }
   };
+
+  if (isLoadingInventory && inventory.length === 0) {
+    return (
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <InventorySkeleton />
+      </div>
+    );
+  }
+
+  if (inventoryError && inventory.length === 0) {
+    return (
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 1rem' }}>
+        <ErrorState
+          title="Vault Synchronization Failed"
+          message={inventoryError}
+          onRetry={() => void loadInventory()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>

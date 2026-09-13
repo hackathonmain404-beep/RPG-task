@@ -182,6 +182,31 @@ export interface EquipResponse {
   success: boolean;
   equippedItemId: string;
   itemType?: string;
+  avatarUrl?: string | null;
+  equipped?: {
+    id: string;
+    itemId: string;
+    name: string;
+    type: string;
+    avatarUrl?: string | null;
+  };
+}
+
+export interface GenerateAvatarRequest {
+  prompt?: string;
+  archetype?: string;
+  styleCategory?: string;
+}
+
+export interface GenerateAvatarResponse {
+  success: boolean;
+  avatar: ShopItem;
+  avatarUrl?: string;
+  inventoryItem?: {
+    id: string;
+    itemId: string;
+  };
+  message?: string;
 }
 
 /* ==========================================================================

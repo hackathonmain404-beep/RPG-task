@@ -15,6 +15,7 @@ import { adminRouter } from './routes/admin.routes.js';
 import { magicLinkRouter } from './routes/magicLink.routes.js';
 import { platformRouter } from './routes/platform.routes.js';
 import { sseRouter } from './routes/sse.routes.js';
+import { avatarRouter } from './routes/avatar.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 export const app = express();
@@ -68,6 +69,7 @@ apiRouter.use('/platform', platformRouter);
 apiRouter.use('/broadcast', platformRouter);
 apiRouter.use('/surge', platformRouter);
 apiRouter.use('/sse', sseRouter);
+apiRouter.use('/avatars', avatarRouter);
 
 // Mount router under both prefixes
 app.use('/api', apiRouter);

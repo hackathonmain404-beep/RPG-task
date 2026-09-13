@@ -25,7 +25,7 @@ export function mapItemIdToThemeKey(itemId?: string): string {
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, reconcilePurchase } = useAuth();
+  const { user, reconcilePurchase, setEquippedAvatar } = useAuth();
 
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -264,6 +264,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           (matchingShop && (i.shopItemId === matchingShop.id || i.shopItem?.id === matchingShop.id))
         );
 
+        const rawType = (targetInv?.shopItem?.itemType || matchingShop?.itemType || (itemId.startsWith('theme_') ? 'theme' : itemId.startsWith('avatar_') ? 'avatar' : 'item')).toLowerCase();
+        const rawCat = (targetInv?.shopItem?.category || matchingShop?.category || '').toLowerCase();
+        const isAvatar = rawType === 'avatar' || rawCat === 'avatar' || itemId.startsWith('avatar_');
+
         const isTheme = 
           Boolean(matchingShop && (matchingShop.itemType?.toUpperCase() === 'THEME' || matchingShop.sku?.startsWith('theme_') || matchingShop.name?.toLowerCase().includes('theme'))) ||
           Boolean(targetInv?.shopItem && (targetInv.shopItem.itemType?.toUpperCase() === 'THEME' || targetInv.shopItem.sku?.startsWith('theme_') || targetInv.shopItem.name?.toLowerCase().includes('theme'))) ||
@@ -284,8 +288,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Update inventory equipped state
         setInventory(prev =>
           prev.map(item => {
-            const currentType = (item.shopItem?.itemType || ((item.itemId || item.shopItemId)?.startsWith('theme_') ? 'THEME' : 'item')).toUpperCase();
+            const currentType = (item.shopItem?.itemType || ((item.itemId || item.shopItemId)?.startsWith('theme_') ? 'THEME' : (item.itemId || item.shopItemId)?.startsWith('avatar_') ? 'AVATAR' : 'item')).toUpperCase();
+            const curCat = (item.shopItem?.category || '').toUpperCase();
             if (isTheme && currentType === 'THEME') {
+              const matches = item.id === targetInv?.id || item.id === itemId || item.itemId === itemId || item.shopItemId === itemId || item.shopItem?.id === itemId || (matchingShop && (item.shopItemId === matchingShop.id || item.shopItem?.id === matchingShop.id));
+              return { ...item, equipped: Boolean(matches), equippedAt: matches ? new Date().toISOString() : undefined };
+            }
+            if (isAvatar && (currentType === 'AVATAR' || curCat === 'AVATAR' || (item.itemId || item.shopItemId)?.startsWith('avatar_'))) {
               const matches = item.id === targetInv?.id || item.id === itemId || item.itemId === itemId || item.shopItemId === itemId || item.shopItem?.id === itemId || (matchingShop && (item.shopItemId === matchingShop.id || item.shopItem?.id === matchingShop.id));
               return { ...item, equipped: Boolean(matches), equippedAt: matches ? new Date().toISOString() : undefined };
             }
@@ -303,6 +312,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           window.dispatchEvent(new CustomEvent('liferpg-theme-changed', { detail: { themeSlug: themeKey } }));
         }
 
+        // If it's an avatar, update user.avatarUrl across all surfaces
+        if (isAvatar) {
+          const avatarUrl = res.equipped?.avatarUrl || targetInv?.shopItem?.icon || matchingShop?.icon || targetInv?.shopItem?.imageUrl || matchingShop?.imageUrl || `/assets/items/${itemId}.svg`;
+          if (setEquippedAvatar) {
+            setEquippedAvatar(avatarUrl);
+          }
+        }
+
         return res;
       } finally {
         setPendingEquipItemIds(prev => {
@@ -312,7 +329,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
     },
-    [pendingEquipItemIds, inventory, shopItems, user?.id]
+    [pendingEquipItemIds, inventory, shopItems, user?.id, setEquippedAvatar]
   );
 
   const isOwned = useCallback(
@@ -388,9 +405,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if ((itemThemeKey === 'cyberpunk' || itemThemeKey === 'cyberpunk-neon') && (equippedTheme === 'cyberpunk' || equippedTheme === 'cyberpunk-neon')) {
         return true;
       }
+      if (itemId.startsWith('avatar_') || invItem?.shopItem?.category?.toLowerCase() === 'avatar') {
+        const icon = invItem?.shopItem?.icon || invItem?.shopItem?.imageUrl || `/assets/items/${itemId}.svg`;
+        return Boolean(user?.avatarUrl && (user.avatarUrl === icon || user.avatarUrl.includes(itemId)));
+      }
       return false;
     },
-    [inventory, shopItems, equippedTheme]
+    [inventory, shopItems, equippedTheme, user?.avatarUrl]
   );
 
   return (

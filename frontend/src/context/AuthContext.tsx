@@ -486,6 +486,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLastAttributeChange(null);
   }, [isGuest]);
 
+  const setEquippedAvatar = useCallback((avatarUrl: string | null) => {
+    setUser(prev => prev ? { ...prev, avatarUrl } : prev);
+  }, []);
+
   // Update profile identity (displayName, avatarUrl)
   const updateProfile = useCallback(async (data: { displayName?: string; avatarUrl?: string | null }) => {
     if (isGuest) {
@@ -539,6 +543,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reconcileCompletion,
         reconcilePurchase,
         clearAttributeChangeNotice,
+        setEquippedAvatar,
         updateProfile,
       }}
     >
