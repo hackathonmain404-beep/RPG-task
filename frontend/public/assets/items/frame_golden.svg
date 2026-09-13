@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gf-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b0e14"/>
+      <stop offset="100%" stop-color="#141a24"/>
+    </linearGradient>
+    <linearGradient id="gf-gold-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="25%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="75%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <radialGradient id="gf-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="gf-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#f59e0b" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Background -->
+  <rect width="320" height="180" fill="url(#gf-bg)" rx="10"/>
+
+  <!-- Radial Golden Aura -->
+  <circle cx="160" cy="90" r="75" fill="url(#gf-glow)"/>
+
+  <!-- Outer Ornate Frame Geometry -->
+  <g filter="url(#gf-shadow)">
+    <!-- Outer Octagonal Ring -->
+    <polygon points="120,25 200,25 245,70 245,110 200,155 120,155 75,110 75,70" fill="none" stroke="url(#gf-gold-rim)" stroke-width="4"/>
+    <!-- Inner Concentric Ring -->
+    <polygon points="124,33 196,33 237,74 237,106 196,147 124,147 83,106 83,74" fill="none" stroke="#fef08a" stroke-width="1.5" opacity="0.8"/>
+    <!-- Center Avatar Portal -->
+    <circle cx="160" cy="90" r="44" fill="#080c14" stroke="url(#gf-gold-rim)" stroke-width="3"/>
+  </g>
+
+  <!-- Corner Filigree Flourishes & Jewels -->
+  <!-- Top Left -->
+  <path d="M120 25 Q115 15 105 20 Q110 30 120 25" fill="#fbbf24"/>
+  <circle cx="120" cy="25" r="3.5" fill="#fef08a"/>
+  <!-- Top Right -->
+  <path d="M200 25 Q205 15 215 20 Q210 30 200 25" fill="#fbbf24"/>
+  <circle cx="200" cy="25" r="3.5" fill="#fef08a"/>
+  <!-- Bottom Left -->
+  <path d="M120 155 Q115 165 105 160 Q110 150 120 155" fill="#fbbf24"/>
+  <circle cx="120" cy="155" r="3.5" fill="#fef08a"/>
+  <!-- Bottom Right -->
+  <path d="M200 155 Q205 165 215 160 Q210 150 200 155" fill="#fbbf24"/>
+  <circle cx="200" cy="155" r="3.5" fill="#fef08a"/>
+
+  <!-- Cardinal Gem Accents -->
+  <!-- Top Gem -->
+  <polygon points="160,18 165,24 160,30 155,24" fill="#38bdf8"/>
+  <circle cx="160" cy="24" r="1.5" fill="#ffffff"/>
+  <!-- Bottom Gem -->
+  <polygon points="160,150 165,156 160,162 155,156" fill="#38bdf8"/>
+  <!-- Left Gem -->
+  <polygon points="68,90 74,85 80,90 74,95" fill="#38bdf8"/>
+  <!-- Right Gem -->
+  <polygon points="252,90 246,85 240,90 246,95" fill="#38bdf8"/>
+
+  <!-- Subtle Adventurer Silhouette inside Frame -->
+  <path d="M160 70 C154 70 150 74 150 80 C150 86 154 90 160 90 C166 90 170 86 170 80 C170 74 166 70 160 70 Z M144 112 C144 100 151 96 160 96 C169 96 176 100 176 112 Z" fill="#fbbf24" opacity="0.25"/>
+</svg>

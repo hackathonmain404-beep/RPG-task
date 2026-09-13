@@ -1,0 +1,1207 @@
+/* ==========================================================================
+   THE CITADEL ARMORY — STYLING & MOTION SYSTEM
+   Futuristic digital marketplace, 3D card tilt, dynamic rarity lighting,
+   smooth treasury transitions, and restrained RPG reward feedback.
+   ========================================================================== */
+
+/* 1. Armory Layout & Ambient Atmosphere */
+.armory-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  position: relative;
+  padding-bottom: 3rem;
+}
+
+/* Atmospheric Armory Backing Glow */
+.armory-ambient-backdrop {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1100px;
+  height: 380px;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(56, 189, 248, 0.07) 0%,
+    rgba(168, 85, 247, 0.04) 40%,
+    transparent 75%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Subtle Cyber Data Grid Accent */
+.armory-grid-texture {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(circle at 50% 20%, black, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 2. Armory Hero Section */
+.armory-hero-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1.75rem 2rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15, 20, 28, 0.95) 0%, rgba(22, 29, 40, 0.85) 100%);
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.14));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  z-index: 1;
+  overflow: hidden;
+}
+
+.armory-hero-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.6) 50%, transparent 100%);
+}
+
+.armory-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.armory-hero-icon-box {
+  width: 62px;
+  height: 62px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.08) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.25), inset 0 0 12px rgba(245, 158, 11, 0.15);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.armory-hero-icon-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 18px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  animation: heroIconPulse 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes heroIconPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.armory-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  margin-bottom: 0.25rem;
+}
+
+.armory-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: statusBlink 2s infinite ease-in-out;
+}
+
+@keyframes statusBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.armory-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary, #f8fafc);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.armory-subtitle {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.88rem;
+  margin: 0.3rem 0 0;
+  max-width: 540px;
+  line-height: 1.45;
+}
+
+/* 3. Treasury Panel & Sync Control */
+.armory-treasury-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.armory-treasury-pod {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(15, 20, 28, 0.9) 0%, rgba(20, 16, 10, 0.7) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), 0 0 16px rgba(245, 158, 11, 0.12);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.armory-treasury-pod:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5), 0 0 24px rgba(245, 158, 11, 0.2);
+}
+
+.armory-treasury-coin-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.05) 70%);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+.armory-treasury-label {
+  font-size: 0.68rem;
+  color: var(--text-tertiary, #64748b);
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.armory-treasury-value {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--color-gold, #f59e0b);
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.armory-treasury-currency {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fde68a;
+  letter-spacing: 0.02em;
+}
+
+.armory-sync-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem;
+  border-radius: 12px;
+  background-color: var(--bg-surface-elevated, #161d28);
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.15));
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.armory-sync-button:hover:not(:disabled) {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.45);
+  background-color: rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+  transform: translateY(-1px);
+}
+
+.armory-sync-button:hover:not(:disabled) .sync-icon-rotate {
+  transform: rotate(45deg);
+}
+
+.sync-icon-rotate {
+  transition: transform 0.3s ease;
+}
+
+.sync-icon-spinning {
+  animation: spinOnce 0.85s linear infinite;
+}
+
+@keyframes spinOnce {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 4. Controls Bar: Segmented Categories & Toolbar */
+.armory-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  z-index: 1;
+}
+
+.armory-categories-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background-color: rgba(15, 20, 28, 0.7);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.armory-cat-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-family: var(--font-display, sans-serif);
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: 
+    color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.armory-cat-tab:hover {
+  color: var(--text-primary, #f8fafc);
+  background-color: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.armory-cat-tab:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.armory-cat-tab.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(2, 132, 199, 0.1) 100%);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+  font-weight: 700;
+  transform: translateY(0);
+}
+
+.armory-cat-count {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-tertiary, #64748b);
+  font-weight: 700;
+  transition: all 0.22s ease;
+}
+
+.armory-cat-tab.active .armory-cat-count {
+  background-color: rgba(56, 189, 248, 0.25);
+  color: #7dd3fc;
+}
+
+/* Toolbar: Search & Sort */
+.armory-toolbar-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.armory-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.armory-search-input {
+  background-color: rgba(15, 20, 28, 0.7);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem 0.5rem 2.2rem;
+  font-size: 0.82rem;
+  color: var(--text-primary, #f8fafc);
+  outline: none;
+  width: 170px;
+  transition: 
+    width 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background-color 0.22s ease;
+}
+
+.armory-search-input:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(20, 26, 38, 0.8);
+}
+
+.armory-search-input:focus {
+  width: 220px;
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+  background-color: rgba(20, 26, 38, 0.95);
+}
+
+.armory-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  pointer-events: none;
+  color: var(--text-tertiary, #64748b);
+  transition: color 0.22s ease;
+}
+
+.armory-search-input:focus + .armory-search-icon,
+.armory-search-wrap:focus-within .armory-search-icon {
+  color: #38bdf8;
+}
+
+.armory-sort-select {
+  background-color: rgba(15, 20, 28, 0.7);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+  outline: none;
+  cursor: pointer;
+  transition: 
+    border-color 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease,
+    background-color 0.22s ease;
+}
+
+.armory-sort-select:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--text-primary, #f8fafc);
+  background-color: rgba(20, 26, 38, 0.8);
+}
+
+.armory-sort-select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+  color: var(--text-primary, #f8fafc);
+}
+
+/* 5. Item Cards Grid */
+@keyframes armoryGridFadeIn {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.armory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1.35rem;
+  z-index: 1;
+  perspective: 1200px;
+  animation: armoryGridFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Smooth Fade + Slide-Up Entrance Animation */
+@keyframes armoryCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.armory-card-anim {
+  animation: armoryCardEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 6. Item Card 3D Perspective & Depth */
+.armory-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.15rem;
+  border-radius: 14px;
+  background-color: var(--bg-surface, #0f1622);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.09));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow, border-color;
+  transition: 
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+/* Interactive Cursor-following Radial Light */
+.armory-card-spotlight {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.06),
+    transparent 45%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.armory-card:hover .armory-card-spotlight {
+  opacity: 1;
+}
+
+/* Card Hover Elevation */
+.armory-card:hover {
+  transform: translateY(-4px) scale(1.012);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.58);
+}
+
+/* 7. Rarity System Glows & Borders */
+.armory-card.rarity-common {
+  border-color: rgba(148, 163, 184, 0.25);
+}
+.armory-card.rarity-common:hover {
+  border-color: rgba(148, 163, 184, 0.55);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.58), 0 0 20px rgba(148, 163, 184, 0.12);
+}
+
+.armory-card.rarity-uncommon {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.armory-card.rarity-uncommon:hover {
+  border-color: rgba(16, 185, 129, 0.65);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.58), 0 0 24px rgba(16, 185, 129, 0.2);
+}
+
+.armory-card.rarity-rare {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.armory-card.rarity-rare:hover {
+  border-color: rgba(56, 189, 248, 0.75);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.58), 0 0 26px rgba(56, 189, 248, 0.24);
+}
+
+.armory-card.rarity-epic {
+  border-color: rgba(168, 85, 247, 0.4);
+}
+.armory-card.rarity-epic:hover {
+  border-color: rgba(168, 85, 247, 0.8);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.62), 0 0 30px rgba(168, 85, 247, 0.28);
+}
+
+.armory-card.rarity-legendary {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.armory-card.rarity-legendary:hover {
+  border-color: rgba(245, 158, 11, 0.85);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.62), 0 0 34px rgba(245, 158, 11, 0.35);
+}
+
+/* 8. Item Visual Region */
+.armory-visual-container {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 10px;
+  background-color: #080c14;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.95rem;
+  transform: translateZ(10px);
+  transition: 
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.armory-card:hover .armory-visual-container {
+  transform: translateZ(16px);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.armory-card.rarity-uncommon:hover .armory-visual-container {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: inset 0 0 14px rgba(16, 185, 129, 0.08);
+}
+
+.armory-card.rarity-rare:hover .armory-visual-container {
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: inset 0 0 16px rgba(56, 189, 248, 0.1);
+}
+
+.armory-card.rarity-epic:hover .armory-visual-container {
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.14);
+}
+
+.armory-card.rarity-legendary:hover .armory-visual-container {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: inset 0 0 22px rgba(245, 158, 11, 0.18);
+}
+
+/* Tags on Item Visual */
+.armory-card-tags-overlay {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  right: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.armory-tag-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  color: var(--text-secondary, #94a3b8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.22s ease;
+}
+
+.armory-tag-rarity {
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  backdrop-filter: blur(6px);
+  transition: all 0.22s ease;
+}
+
+.armory-tag-rarity.common {
+  background-color: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+.armory-tag-rarity.uncommon {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+.armory-tag-rarity.rare {
+  background-color: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+.armory-tag-rarity.epic {
+  background-color: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+.armory-tag-rarity.legendary {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #fde047;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+/* 9. Real Item Image Presentation */
+.armory-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  padding: 0.35rem;
+  transition: 
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, filter;
+}
+
+.armory-card:hover .armory-item-image {
+  transform: scale(1.035);
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.25));
+}
+
+.armory-card.rarity-uncommon:hover .armory-item-image {
+  filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.3));
+}
+
+.armory-card.rarity-rare:hover .armory-item-image {
+  filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.35));
+}
+
+.armory-card.rarity-epic:hover .armory-item-image {
+  filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.42));
+}
+
+.armory-card.rarity-legendary:hover .armory-item-image {
+  filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.48));
+}
+
+.armory-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #080c14;
+  transition: all 0.22s ease;
+}
+
+/* Legacy / Procedural Previews */
+.preview-theme-terminal {
+  width: 82%;
+  height: 75%;
+  border-radius: 8px;
+  background: #0d131f;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.armory-card:hover .preview-theme-terminal {
+  transform: scale(1.04);
+  border-color: var(--theme-accent, #38bdf8);
+  box-shadow: 0 0 20px var(--theme-glow, rgba(56, 189, 248, 0.35));
+}
+
+.preview-theme-header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.preview-terminal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.preview-theme-swatches {
+  display: flex;
+  gap: 0.35rem;
+  flex: 1;
+  align-items: center;
+}
+
+.preview-theme-chip {
+  flex: 1;
+  height: 100%;
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+/* Avatar Frame Preview: Shield Hex */
+.preview-frame-shield {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.armory-card:hover .preview-frame-shield {
+  transform: scale(1.08);
+  border-color: #f59e0b;
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.45);
+}
+
+.preview-frame-inner-ring {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+}
+
+/* Badge Preview: Insignia */
+.preview-badge-insignia {
+  width: 76px;
+  height: 76px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+}
+
+.armory-card:hover .preview-badge-insignia {
+  transform: rotate(45deg) scale(1.08);
+  border-color: #38bdf8;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.4);
+}
+
+.preview-badge-content {
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Title Preview: Cyber Banner */
+.preview-title-banner {
+  width: 85%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.04) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.armory-card:hover .preview-title-banner {
+  transform: scale(1.05);
+  border-color: #c084fc;
+  box-shadow: 0 0 20px rgba(192, 132, 252, 0.35);
+}
+
+.preview-title-text {
+  font-family: var(--font-display, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+/* 10. Card Body: Typography & Price */
+.armory-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.95rem;
+  transform: translateZ(8px);
+}
+
+.armory-item-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary, #f8fafc);
+  margin: 0;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+}
+
+.armory-card:hover .armory-item-title {
+  color: #ffffff;
+}
+
+.armory-item-desc {
+  font-size: 0.84rem;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+  line-height: 1.45;
+  min-height: 2.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 11. Card Footer: Price & Action */
+.armory-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 0.75rem;
+  transform: translateZ(10px);
+}
+
+.armory-price-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-gold, #f59e0b);
+  transition: all 0.22s ease;
+}
+
+.armory-card:hover .armory-price-box {
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+}
+
+.armory-price-num {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.28rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.armory-price-unit {
+  font-size: 0.76rem;
+  color: var(--text-tertiary, #64748b);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Inspect Icon Action Button */
+.armory-btn-inspect-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary, #64748b);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 
+    color 0.2s ease,
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease;
+}
+
+.armory-btn-inspect-icon:hover {
+  color: #38bdf8;
+  transform: scale(1.15);
+  background-color: rgba(56, 189, 248, 0.1);
+}
+
+.armory-btn-inspect-icon:active {
+  transform: scale(0.95);
+}
+
+/* Action Buttons */
+.armory-btn-acquire {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.52rem 1.15rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #ffffff;
+  font-family: var(--font-display, sans-serif);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  transition: 
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.armory-btn-acquire:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.55), 0 0 16px rgba(56, 189, 248, 0.35);
+  transform: translateY(-1px);
+}
+
+.armory-btn-acquire:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.armory-btn-acquire.insufficient-funds {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-tertiary, #64748b);
+  box-shadow: none;
+  transition: all 0.22s ease;
+}
+
+.armory-badge-owned {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-tertiary, #64748b);
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  transition: all 0.22s ease;
+}
+
+.armory-badge-equipped {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #34d399;
+  background-color: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+  transition: all 0.22s ease;
+}
+
+.armory-btn-equip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 8px;
+  background-color: var(--bg-surface-elevated, #161d28);
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.18));
+  color: var(--text-primary, #f8fafc);
+  cursor: pointer;
+  transition: 
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.22s ease,
+    color 0.22s ease,
+    background-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.armory-btn-equip:hover:not(:disabled) {
+  border-color: #38bdf8;
+  color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  transform: translateY(-1px);
+}
+
+.armory-btn-equip:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+/* 12. Rewarding Purchase Pulse Effect (500-900ms energy ripple on card) */
+@keyframes purchaseSuccessPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7), 0 0 0 0 rgba(56, 189, 248, 0.5);
+    border-color: #f59e0b;
+  }
+  50% {
+    box-shadow: 0 0 35px 8px rgba(245, 158, 11, 0.4), 0 0 50px 12px rgba(56, 189, 248, 0.3);
+    border-color: #38bdf8;
+  }
+  100% {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+    border-color: rgba(255, 255, 255, 0.09);
+  }
+}
+
+.armory-card.purchase-success-active {
+  animation: purchaseSuccessPulse 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 13. Details Inspection Modal */
+.armory-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: modalBackdropFadeIn 0.2s ease-out;
+}
+
+@keyframes modalBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.armory-modal-dialog {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(135deg, #101622 0%, #151d2b 100%);
+  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.18));
+  border-radius: 18px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.1);
+  position: relative;
+  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* 14. Responsive Layout Breakpoints */
+@media (max-width: 900px) {
+  .armory-hero-banner {
+    padding: 1.35rem 1.5rem;
+  }
+  .armory-title {
+    font-size: 1.55rem;
+  }
+  .armory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .armory-hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+  }
+  .armory-treasury-cluster {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .armory-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .armory-categories-nav {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 0.35rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .armory-categories-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .armory-toolbar-cluster {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .armory-search-input {
+    width: 100%;
+  }
+  .armory-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .armory-hero-banner {
+    padding: 1rem 0.85rem;
+  }
+  .armory-title {
+    font-size: 1.35rem;
+  }
+  .armory-subtitle {
+    font-size: 0.82rem;
+  }
+  .armory-toolbar-cluster {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .armory-sort-select {
+    width: 100%;
+  }
+  .armory-card {
+    padding: 0.85rem;
+  }
+  .armory-modal-dialog {
+    width: min(94vw, 540px) !important;
+    max-width: min(94vw, 540px) !important;
+    padding: 1.25rem 1rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .armory-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .armory-card-actions {
+    width: 100%;
+  }
+  .armory-card-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 15. Accessibility & Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .armory-card,
+  .armory-hero-icon-pulse,
+  .armory-status-dot,
+  .sync-icon-spinning,
+  .armory-card-anim,
+  .armory-modal-dialog,
+  .armory-modal-backdrop,
+  .armory-card.purchase-success-active {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .armory-card:hover {
+    transform: none !important;
+  }
+  .armory-card-spotlight {
+    display: none !important;
+  }
+}

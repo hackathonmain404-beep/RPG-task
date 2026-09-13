@@ -1,0 +1,474 @@
+/**
+ * Theme Marketplace & Collection Styles
+ * 
+ * Dark gaming aesthetic, rounded cards, subtle glowing borders,
+ * responsive 3/2/1 grid, and smooth interactive transitions.
+ */
+
+.theme-marketplace-root {
+  min-height: 100%;
+  padding: 1.5rem 1.75rem 3rem 1.75rem;
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+/* 1. Header & Treasury HUD */
+.theme-market-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.theme-market-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.theme-market-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--theme-primary, #00FF9C);
+  text-transform: uppercase;
+}
+
+.theme-market-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.theme-market-subtitle {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.theme-market-hud {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-hud-gold-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.15);
+}
+
+.theme-hud-gold-icon {
+  color: #fbbf24;
+}
+
+.theme-hud-gold-amount {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fef08a;
+  letter-spacing: 0.02em;
+}
+
+.theme-hud-gold-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #d97706;
+  letter-spacing: 0.06em;
+}
+
+/* 2. Navigation Tabs (Marketplace / Collection) */
+.theme-market-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.theme-market-tabs {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.theme-market-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-market-tab:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.theme-market-tab.active {
+  background: var(--theme-primary, #00FF9C);
+  color: #070B12;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(0, 255, 156, 0.3);
+}
+
+/* Filter Controls */
+.theme-market-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.theme-filter-select {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-filter-select:focus {
+  outline: none;
+  border-color: var(--theme-primary, #00FF9C);
+  box-shadow: 0 0 0 2px rgba(0, 255, 156, 0.2);
+}
+
+/* 3. Responsive Grid (Desktop: 3 cols, Tablet: 2 cols, Mobile: 1 col) */
+.theme-market-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .theme-market-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .theme-marketplace-root {
+    padding: 1.25rem 1.25rem 3rem 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .theme-market-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .theme-marketplace-root {
+    padding: 1rem 1rem 3rem 1rem;
+  }
+  .theme-market-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .theme-market-hud {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .theme-market-tabs-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .theme-market-tabs {
+    display: flex;
+    width: 100%;
+  }
+  .theme-market-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+  }
+  .theme-market-filters {
+    width: 100%;
+  }
+  .theme-filter-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .theme-marketplace-root {
+    padding: 0.75rem 0.75rem 3.5rem 0.75rem;
+  }
+  .theme-market-title {
+    font-size: 1.45rem;
+  }
+  .theme-market-subtitle {
+    font-size: 0.82rem;
+  }
+  .theme-card {
+    padding: 0.85rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .theme-marketplace-root {
+    padding: 0.5rem 0.5rem 3.5rem 0.5rem;
+  }
+  .theme-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .theme-card-price-group {
+    justify-content: space-between;
+  }
+  .theme-card-action {
+    width: 100%;
+  }
+  .theme-card-action .theme-btn {
+    width: 100%;
+  }
+}
+
+/* 4. Theme Card */
+.theme-card {
+  background: #0f1722;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.theme-card.theme-card-active {
+  border-color: var(--theme-primary, #00FF9C);
+  box-shadow: 0 0 20px rgba(0, 255, 156, 0.2);
+}
+
+/* Rarity-specific card edge glows on hover */
+.theme-card.rarity-uncommon:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 18px rgba(16, 185, 129, 0.18);
+}
+
+.theme-card.rarity-rare:hover {
+  border-color: rgba(0, 191, 255, 0.5);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 191, 255, 0.2);
+}
+
+.theme-card.rarity-epic:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 22px rgba(168, 85, 247, 0.22);
+}
+
+.theme-card.rarity-legendary:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(245, 158, 11, 0.25);
+}
+
+/* Card Visual Wrapper */
+.theme-card-visual-wrapper {
+  margin-bottom: 0.9rem;
+}
+
+/* Card Body */
+.theme-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.theme-card-badges-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.theme-badge-category {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.theme-card-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 0.35rem 0;
+}
+
+.theme-card-description {
+  font-size: 0.83rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin: 0 0 1.1rem 0;
+  flex: 1;
+}
+
+/* Card Footer */
+.theme-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 0.75rem;
+}
+
+.theme-card-price-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.theme-gold-icon {
+  color: #f59e0b;
+}
+
+.theme-gold-val {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fef08a;
+  letter-spacing: 0.02em;
+}
+
+.theme-gold-lbl {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #d97706;
+  letter-spacing: 0.04em;
+}
+
+/* Theme Action Buttons */
+.theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.02em;
+}
+
+.theme-btn-acquire {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.theme-btn-acquire:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.45);
+}
+
+.theme-btn-acquire.insufficient-gold {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.theme-btn-equip {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.theme-btn-equip:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.theme-btn-equipped {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  cursor: default;
+}
+
+.theme-btn:disabled {
+  opacity: 0.7;
+}
+
+/* Spin animation for loading icons */
+.spin-icon {
+  animation: themeSpin 0.9s linear infinite;
+}
+
+@keyframes themeSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Empty Collection Notice */
+.theme-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-empty-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.theme-empty-text {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  max-width: 420px;
+  margin: 0;
+}

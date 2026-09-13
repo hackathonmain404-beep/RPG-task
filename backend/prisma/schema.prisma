@@ -1,0 +1,282 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String     @id
+  email          String     @unique
+  passwordHash   String?
+  githubId       String?    @unique
+  githubUsername String?    @unique
+  avatarUrl      String?
+  displayName    String
+  role           String     @default("USER") // USER, ADMIN
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  lastActiveAt   DateTime?
+
+  character        Character?
+  tasks            Task[]
+  completionEvents CompletionEvent[]
+  attributeEvents  AttributeEvent[]
+  inventoryItems   InventoryItem[]
+  userBadges       UserBadge[]
+  userThemes       UserTheme[]
+  activityLogs     ActivityLog[]
+  feedbacks        Feedback[]
+
+  @@index([email])
+  @@index([githubUsername])
+  @@index([role])
+}
+
+model Character {
+  id               String      @id @default(cuid())
+  userId           String      @unique
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  level            Int         @default(1)
+  totalXp          Int         @default(0)
+  gold             Int         @default(50)
+  streakCurrent    Int         @default(0)
+  streakBest       Int         @default(0)
+  lastActivityDate DateTime?
+
+  attributes       Attribute[]
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model Attribute {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  key         String    // intellect, strength, wisdom, charisma, vitality
+  displayName String    // Intellect, Strength, Wisdom, Charisma, Vitality
+  value       Int       @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([characterId, key])
+  @@index([characterId])
+}
+
+model Task {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title            String
+  description      String?
+  categoryKey      String            @default("intellect")
+  difficulty       String            @default("medium") // easy, medium, hard
+  xpReward         Int?
+  goldReward       Int?
+  completed        Boolean           @default(false)
+  completedAt      DateTime?
+  dueDate          String?
+
+  completionEvents CompletionEvent[]
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([userId, completed])
+}
+
+model CompletionEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  completedAt DateTime @default(now())
+  xpAwarded   Int
+  goldAwarded Int
+  streakAfter Int
+  levelBefore Int
+  levelAfter  Int
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId, completedAt])
+}
+
+model AttributeEvent {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  attributeKey String
+  amount       Int
+  sourceType   String   // task_completion, milestone, item
+  sourceId     String?
+
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model ShopItem {
+  id             String          @id @default(cuid())
+  sku            String          @unique
+  name           String
+  description    String
+  itemType       String          // THEME, BADGE, COSMETIC
+  price          Int
+  rarity         String          @default("common")
+  category       String?         @default("Cosmetic")
+  imageUrl       String?
+  displayOrder   Int             @default(0)
+  metadataJson   Json?
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now()) @updatedAt
+
+  inventoryItems InventoryItem[]
+
+  @@index([itemType, active])
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopItemId  String
+  shopItem    ShopItem @relation(fields: [shopItemId], references: [id], onDelete: Restrict)
+  purchasedAt DateTime @default(now())
+
+  @@unique([userId, shopItemId])
+  @@index([userId])
+}
+
+model Badge {
+  id             String      @id @default(cuid())
+  key            String      @unique
+  name           String
+  description    String
+  icon           String
+  unlockRuleJson Json?
+
+  userBadges     UserBadge[]
+}
+
+model UserBadge {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId    String
+  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model Theme {
+  id          String      @id @default(cuid())
+  key         String      @unique
+  name        String
+  description String
+  themeJson   Json?
+  price       Int         @default(100)
+  active      Boolean     @default(true)
+
+  userThemes  UserTheme[]
+}
+
+model UserTheme {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  themeId     String
+  theme       Theme     @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  purchasedAt DateTime  @default(now())
+  equippedAt  DateTime?
+
+  @@unique([userId, themeId])
+  @@index([userId])
+}
+
+model ActivityLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType    String
+  metadataJson Json?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   // BUG_REPORT, FEATURE_REQUEST, GENERAL
+  message   String
+  status    String   @default("PENDING") // PENDING, REVIEWED, RESOLVED
+  adminReply String?
+  repliedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+}
+
+model MagicLinkToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([tokenHash])
+}
+
+model Broadcast {
+  id          String   @id @default(cuid())
+  type        String   @default("info") // event, info, alert, party
+  message     String
+  actionLabel String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active])
+}
+
+model SurgeEvent {
+  id            String   @id @default(cuid())
+  multiplier    Float    @default(2.0)
+  durationHours Int      @default(2)
+  active        Boolean  @default(true)
+  startedAt     DateTime @default(now())
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([active, expiresAt])
+}
+
+

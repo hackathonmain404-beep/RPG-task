@@ -1,0 +1,29 @@
+{
+  "name": "life-rpg-workspace",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm --prefix backend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "build:vercel": "npm --prefix backend run prisma:generate && npm --prefix backend run build && npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
+    "typecheck": "npm --prefix backend run typecheck",
+    "seed": "npm --prefix backend run seed",
+    "db:start": "node backend/scripts/db.mjs",
+    "db:push": "npm --prefix backend run prisma:push",
+    "setup": "npm --prefix backend run prisma:generate && npm --prefix backend run prisma:push && npm --prefix backend run seed"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.1.15",
+    "typescript": "^7.0.2"
+  }
+}

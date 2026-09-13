@@ -1,0 +1,2004 @@
+/* ==========================================================================
+   LIFE RPG DESIGN SYSTEM TOKENS & BASE STYLES
+   ========================================================================== */
+
+:root {
+  /* Canvas & Surface Colors */
+  --bg-canvas: #090c10;
+  --bg-surface: #0f141c;
+  --bg-surface-elevated: #161d28;
+  --bg-surface-sunken: #06080b;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-focus: #38bdf8;
+
+  /* Typography Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-inverted: #020617;
+
+  /* Progression Colors */
+  --color-xp: #a855f7;
+  --color-xp-bg: rgba(168, 85, 247, 0.15);
+  --color-gold: #f59e0b;
+  --color-gold-bg: rgba(245, 158, 11, 0.15);
+  --color-streak: #ef4444;
+  --color-streak-glow: rgba(239, 68, 68, 0.35);
+
+  /* Disciplines & Attributes */
+  --attr-intellect: #3b82f6;
+  --attr-intellect-bg: rgba(59, 130, 246, 0.15);
+  --attr-strength: #ef4444;
+  --attr-strength-bg: rgba(239, 68, 68, 0.15);
+  --attr-wisdom: #14b8a6;
+  --attr-wisdom-bg: rgba(20, 184, 166, 0.15);
+  --attr-charisma: #8b5cf6;
+  --attr-charisma-bg: rgba(139, 92, 246, 0.15);
+  --attr-vitality: #10b981;
+  --attr-vitality-bg: rgba(16, 185, 129, 0.15);
+
+  /* Status Colors */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+  --status-info: #0284c7;
+
+  /* Typography Families */
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Elevations & Glows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.7);
+  --glow-xp: 0 0 15px rgba(168, 85, 247, 0.35);
+  --glow-gold: 0 0 15px rgba(245, 158, 11, 0.35);
+  --glow-streak: 0 0 16px rgba(239, 68, 68, 0.4);
+
+  /* Motion */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+}
+
+/* Theme Presets */
+[data-theme="dark-citadel"], [data-theme="default"] {
+  --bg-canvas: #090C10;
+  --bg-surface: #0F141C;
+  --bg-surface-elevated: #161D28;
+  --bg-surface-sunken: #06080B;
+  --border-subtle: #232E3E;
+  --border-strong: rgba(56, 189, 248, 0.35);
+  --border-focus: #38BDF8;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --color-xp: #38BDF8;
+  --color-xp-bg: rgba(56, 189, 248, 0.15);
+  --glow-xp: 0 0 16px rgba(56, 189, 248, 0.45);
+  --color-gold: #818CF8;
+}
+
+[data-theme="neon-outpost"], [data-theme="neon_outpost"] {
+  --bg-canvas: #07070F;
+  --bg-surface: #120F24;
+  --bg-surface-elevated: #1A1636;
+  --bg-surface-sunken: #040409;
+  --border-subtle: #312752;
+  --border-strong: rgba(6, 182, 212, 0.35);
+  --border-focus: #06B6D4;
+  --text-primary: #F8FAFC;
+  --text-secondary: #9D98BA;
+  --color-xp: #06B6D4;
+  --color-xp-bg: rgba(6, 182, 212, 0.15);
+  --glow-xp: 0 0 16px rgba(6, 182, 212, 0.45);
+  --color-gold: #D946EF;
+}
+
+[data-theme="mystic-forest"], [data-theme="mystic_forest"] {
+  --bg-canvas: #07100B;
+  --bg-surface: #0E1D15;
+  --bg-surface-elevated: #152C20;
+  --bg-surface-sunken: #030805;
+  --border-subtle: #204230;
+  --border-strong: rgba(16, 185, 129, 0.35);
+  --border-focus: #10B981;
+  --text-primary: #ECFDF5;
+  --text-secondary: #86A395;
+  --color-xp: #10B981;
+  --color-xp-bg: rgba(16, 185, 129, 0.15);
+  --glow-xp: 0 0 16px rgba(16, 185, 129, 0.45);
+  --color-gold: #34D399;
+}
+
+[data-theme="solaris-gold"], [data-theme="solaris_gold"] {
+  --bg-canvas: #100D0A;
+  --bg-surface: #1B1611;
+  --bg-surface-elevated: #292119;
+  --bg-surface-sunken: #090705;
+  --border-subtle: #483928;
+  --border-strong: rgba(245, 158, 11, 0.35);
+  --border-focus: #F59E0B;
+  --text-primary: #FFFBEB;
+  --text-secondary: #A89886;
+  --color-xp: #F59E0B;
+  --color-xp-bg: rgba(245, 158, 11, 0.15);
+  --glow-xp: 0 0 16px rgba(245, 158, 11, 0.45);
+  --color-gold: #FB923C;
+}
+
+[data-theme="cyberpunk"], [data-theme="theme_cyberpunk"] {
+  --bg-canvas: #090516;
+  --bg-surface: #11101F;
+  --bg-surface-elevated: #1B1630;
+  --bg-surface-sunken: #05020c;
+  --border-subtle: #3B315C;
+  --border-strong: rgba(255, 43, 214, 0.35);
+  --border-focus: #FF2BD6;
+  --text-primary: #F5F3FF;
+  --text-secondary: #9D94B5;
+  --color-xp: #FF2BD6;
+  --color-xp-bg: rgba(255, 43, 214, 0.15);
+  --glow-xp: 0 0 16px rgba(255, 43, 214, 0.45);
+  --color-gold: #8B5CF6;
+}
+
+[data-theme="dark-matrix"], [data-theme="dark_matrix"], [data-theme="theme_dark_matrix"] {
+  --bg-canvas: #070B12;
+  --bg-surface: #0F1722;
+  --bg-surface-elevated: #151F2E;
+  --bg-surface-sunken: #04070c;
+  --border-subtle: #263244;
+  --border-strong: rgba(0, 255, 156, 0.35);
+  --border-focus: #00FF9C;
+  --text-primary: #E5E7EB;
+  --text-secondary: #8994A5;
+  --color-xp: #00FF9C;
+  --color-xp-bg: rgba(0, 255, 156, 0.15);
+  --glow-xp: 0 0 16px rgba(0, 255, 156, 0.45);
+  --color-gold: #00C77A;
+}
+
+[data-theme="retro"], [data-theme="theme_retro"] {
+  --bg-canvas: #171322;
+  --bg-surface: #211B32;
+  --bg-surface-elevated: #2C2342;
+  --bg-surface-sunken: #0e0b16;
+  --border-subtle: #514466;
+  --border-strong: rgba(255, 210, 31, 0.35);
+  --border-focus: #FFD21F;
+  --text-primary: #FFF7D6;
+  --text-secondary: #A99DB8;
+  --color-xp: #FFD21F;
+  --color-xp-bg: rgba(255, 210, 31, 0.15);
+  --glow-xp: 0 0 16px rgba(255, 210, 31, 0.45);
+  --color-gold: #FF8A00;
+}
+
+[data-theme="lofi"], [data-theme="theme_lofi"] {
+  --bg-canvas: #17131F;
+  --bg-surface: #242033;
+  --bg-surface-elevated: #302940;
+  --bg-surface-sunken: #0f0b15;
+  --border-subtle: #594C68;
+  --border-strong: rgba(215, 139, 203, 0.35);
+  --border-focus: #D78BCB;
+  --text-primary: #F2EAF4;
+  --text-secondary: #A99CAF;
+  --color-xp: #D78BCB;
+  --color-xp-bg: rgba(215, 139, 203, 0.15);
+  --glow-xp: 0 0 16px rgba(215, 139, 203, 0.45);
+  --color-gold: #9F7AEA;
+}
+
+[data-theme="cyberpunk-neon"], [data-theme="cyberpunk_neon"], [data-theme="theme_cyberpunk_neon"] {
+  --bg-canvas: #080312;
+  --bg-surface: #130A24;
+  --bg-surface-elevated: #201039;
+  --bg-surface-sunken: #04010a;
+  --border-subtle: #245A78;
+  --border-strong: rgba(0, 217, 255, 0.35);
+  --border-focus: #00D9FF;
+  --text-primary: #F5F3FF;
+  --text-secondary: #A49BB8;
+  --color-xp: #00D9FF;
+  --color-xp-bg: rgba(0, 217, 255, 0.15);
+  --glow-xp: 0 0 16px rgba(0, 217, 255, 0.45);
+  --color-gold: #FF2BD6;
+}
+
+/* Rarity Tiers (Armory & Vault) */
+.rarity-common {
+  border-color: rgba(148, 163, 184, 0.35) !important;
+  color: #94a3b8;
+}
+.rarity-rare {
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  color: #38bdf8;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+}
+.rarity-epic {
+  border-color: rgba(168, 85, 247, 0.5) !important;
+  color: #c084fc;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+}
+.rarity-legendary {
+  border-color: rgba(245, 158, 11, 0.55) !important;
+  color: #fde047;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.25);
+}
+
+/* Base CSS Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-body);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Accessible Focus Indicator */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
+}
+
+/* Typography Helpers */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.mono-numbers {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Universal Button Styles */
+.rpg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-decoration: none;
+  user-select: none;
+}
+
+.rpg-btn:active {
+  transform: scale(0.98);
+}
+
+.rpg-btn-primary {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.rpg-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5);
+  transform: translateY(-1px);
+}
+
+.rpg-btn-gold {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #090c10;
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  font-weight: 700;
+}
+
+.rpg-btn-gold:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.5);
+  transform: translateY(-1px);
+}
+
+.rpg-btn-secondary {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.rpg-btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-secondary);
+  transform: translateY(-1px);
+}
+
+.rpg-btn-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.rpg-btn-danger:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.rpg-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Universal Card / Panel Styles */
+.rpg-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.rpg-card-hover {
+  cursor: pointer;
+}
+
+.rpg-card-hover:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 255, 255, 0.05);
+  transform: translateY(-5px) translateZ(0);
+}
+
+/* ==========================================================================
+   GAMEPLAY & DISCIPLINE CARDS — ULTRA-SMOOTH SPRING HOVER PHYSICS
+   ========================================================================== */
+
+.gameplay-card {
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.gameplay-card:hover {
+  border-color: var(--card-accent-border, rgba(56, 189, 248, 0.45));
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.72),
+              0 0 30px var(--card-accent-glow, rgba(56, 189, 248, 0.2)),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(-7px) translateZ(0);
+  background-color: #111722 !important;
+}
+
+.gameplay-card-step {
+  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: color, transform;
+}
+
+.gameplay-card:hover .gameplay-card-step {
+  color: var(--card-accent-num, rgba(56, 189, 248, 0.28)) !important;
+  text-shadow: 0 0 16px var(--card-accent-glow, rgba(56, 189, 248, 0.2));
+  transform: translateY(-1px);
+}
+
+.gameplay-card-icon {
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease;
+  will-change: transform;
+}
+
+.gameplay-card:hover .gameplay-card-icon {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 0 24px var(--card-accent-glow, rgba(56, 189, 248, 0.4)) !important;
+  border-color: var(--card-accent, #38bdf8) !important;
+}
+
+/* Discipline Cards */
+.discipline-card {
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.discipline-card:hover {
+  border-color: var(--card-accent-border, rgba(56, 189, 248, 0.45));
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.7),
+              0 0 26px var(--card-accent-glow, rgba(56, 189, 248, 0.2)),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(-7px) translateZ(0);
+  background-color: #111722 !important;
+}
+
+.discipline-card-icon {
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease;
+  will-change: transform;
+}
+
+.discipline-card:hover .discipline-card-icon {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 0 22px var(--card-accent-glow, rgba(56, 189, 248, 0.4)) !important;
+  border-color: var(--card-accent, #38bdf8) !important;
+}
+
+.discipline-card-badge {
+  transition: box-shadow 0.35s ease,
+              border-color 0.35s ease,
+              background-color 0.35s ease;
+}
+
+.discipline-card:hover .discipline-card-badge {
+  box-shadow: 0 0 14px var(--card-accent-glow, rgba(56, 189, 248, 0.3));
+  border-color: var(--card-accent, #38bdf8) !important;
+}
+
+.discipline-progress-bar {
+  transition: box-shadow 0.35s ease;
+}
+
+.discipline-card:hover .discipline-progress-bar {
+  box-shadow: 0 0 16px var(--card-accent, #38bdf8) !important;
+}
+
+/* Form Controls */
+.rpg-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rpg-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.rpg-input:hover {
+  border-color: var(--border-strong);
+}
+
+.rpg-input:focus {
+  border-color: var(--border-focus);
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12), 0 0 16px rgba(56, 189, 248, 0.08);
+}
+
+.rpg-input-error {
+  border-color: var(--status-danger) !important;
+}
+
+.rpg-error-text {
+  color: #f87171;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ==========================================================================
+   PREMIUM SELECT / DROPDOWN STYLING
+   ========================================================================== */
+select.rpg-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  transition: border-color 0.25s var(--ease-spring),
+              box-shadow 0.25s var(--ease-spring),
+              background-color 0.25s var(--ease-spring),
+              transform 0.2s var(--ease-spring);
+}
+
+select.rpg-input:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.08),
+              0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+select.rpg-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15),
+              0 0 20px rgba(56, 189, 248, 0.1),
+              0 8px 24px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+  background-color: var(--bg-surface-elevated);
+}
+
+select.rpg-input option {
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+select.rpg-input option:hover,
+select.rpg-input option:focus,
+select.rpg-input option:checked {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.08));
+  color: #38bdf8;
+}
+
+/* ==========================================================================
+   INTERACTIVE TEXT HOVER POP ANIMATIONS
+   ========================================================================== */
+
+/* Sidebar Navigation Items — Smooth pop on hover */
+.desktop-sidebar a {
+  position: relative;
+  transition: all 0.32s var(--ease-spring) !important;
+}
+
+.desktop-sidebar a:not(.active):hover {
+  transform: translateX(4px) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #e2e8f0 !important;
+}
+
+.desktop-sidebar a:not(.active):hover span {
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+/* Stat Card Labels — Subtle scale pop on hover */
+.rpg-card .rpg-label {
+  transition: color 0.25s var(--ease-spring),
+              letter-spacing 0.35s var(--ease-spring),
+              text-shadow 0.3s var(--ease-spring);
+  cursor: default;
+}
+
+.rpg-card:hover .rpg-label {
+  color: var(--text-primary);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+}
+
+/* Stat Card Numbers — Pop glow on hover */
+.rpg-card .mono-numbers {
+  transition: transform 0.35s var(--ease-spring),
+              text-shadow 0.35s var(--ease-spring),
+              filter 0.35s var(--ease-spring);
+}
+
+.rpg-card:hover .mono-numbers {
+  transform: scale(1.03) translateY(-1px);
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+  filter: brightness(1.1);
+}
+
+/* Stat Card Description Text — Fade in brighter on hover */
+.rpg-card:hover > p {
+  color: var(--text-secondary) !important;
+  transition: color 0.3s var(--ease-spring);
+}
+
+/* Matrix Task Title — Hover underline reveal */
+.matrix-task-title {
+  transition: color 0.2s var(--ease-spring),
+              text-shadow 0.3s var(--ease-spring);
+  position: relative;
+  cursor: default;
+}
+
+.matrix-task-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #38bdf8, transparent);
+  transition: width 0.35s var(--ease-spring);
+}
+
+.matrix-row:hover .matrix-task-title {
+  color: #e2e8f0;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.12);
+}
+
+.matrix-row:hover .matrix-task-title::after {
+  width: 80%;
+}
+
+/* Matrix Category — Hover color pop */
+.matrix-category-cell {
+  transition: transform 0.25s var(--ease-spring);
+}
+
+.matrix-row:hover .matrix-category-cell {
+  transform: translateX(2px);
+}
+
+.matrix-row:hover .matrix-category-dot {
+  box-shadow: 0 0 8px currentColor;
+  transition: box-shadow 0.3s var(--ease-spring);
+}
+
+/* Matrix Status Pills — Hover micro-glow */
+.matrix-status-pill {
+  transition: transform 0.2s var(--ease-spring),
+              box-shadow 0.25s var(--ease-spring),
+              filter 0.25s var(--ease-spring);
+}
+
+.matrix-status-pill:hover {
+  transform: scale(1.05);
+  filter: brightness(1.15);
+}
+
+.matrix-status-pill.overdue:hover {
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.35);
+}
+
+.matrix-status-pill.done:hover {
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
+
+/* Matrix Filter Buttons — Hover pop */
+.matrix-filter-btn {
+  transition: all 0.25s var(--ease-spring) !important;
+}
+
+.matrix-filter-btn:not(.active):hover {
+  color: #e2e8f0 !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  transform: translateY(-1px);
+}
+
+/* Analytics Card Title — Hover shimmer */
+.analytics-card-title {
+  transition: text-shadow 0.3s var(--ease-spring),
+              letter-spacing 0.35s var(--ease-spring);
+}
+
+.analytics-card:hover .analytics-card-title {
+  text-shadow: 0 0 12px rgba(248, 250, 252, 0.1);
+  letter-spacing: 0.01em;
+}
+
+/* Discipline Attribute Cards (Dashboard) — Hover with accent glow */
+.rpg-card:hover > div > span[style*="fontWeight: 700"] {
+  filter: brightness(1.2);
+  transition: filter 0.3s var(--ease-spring);
+}
+
+/* Welcome Banner — Hover subtle lift */
+.rpg-card:hover > div > h1,
+div[style*="linear-gradient(135deg"]:hover h1 {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.06);
+  transition: text-shadow 0.4s var(--ease-spring);
+}
+
+/* Status Tabs (Quest Page) — Hover pop */
+div[role="tablist"] button {
+  transition: all 0.25s var(--ease-spring) !important;
+}
+
+div[role="tablist"] button:hover {
+  transform: translateY(-1px);
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Discipline Filter Pills — Hover scale */
+div[aria-label="Filter quests by discipline"] button {
+  transition: all 0.25s var(--ease-spring) !important;
+}
+
+div[aria-label="Filter quests by discipline"] button:hover {
+  transform: scale(1.04) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Difficulty Tier Buttons (Quest Composer) — Hover glow */
+div[role="radiogroup"] button {
+  transition: all 0.28s var(--ease-spring) !important;
+}
+
+div[role="radiogroup"] button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background-color: var(--bg-surface-elevated) !important;
+}
+
+/* CTA Buttons — Enhanced hover pop */
+.rpg-btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.3),
+              0 0 32px rgba(56, 189, 248, 0.1);
+}
+
+.rpg-btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
+   WINDOW-FRAME NOTIFICATION / REWARD TOAST
+   ========================================================================== */
+.reward-toast-container > div[role="status"] {
+  /* Window frame border */
+  border: 1px solid rgba(168, 85, 247, 0.5) !important;
+  border-top: none !important;
+  border-radius: 0 0 10px 10px !important;
+  overflow: hidden;
+  position: relative;
+}
+
+.reward-toast-container > div[role="status"]::before {
+  /* Window Title Bar */
+  content: '⚔ CITADEL SYSTEM LOG';
+  display: block;
+  width: calc(100% + 2.5rem);
+  margin: -1rem -1.25rem 0.75rem;
+  padding: 0.45rem 0.85rem;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.25), rgba(56, 189, 248, 0.12));
+  border-bottom: 1px solid rgba(168, 85, 247, 0.35);
+  border-top: 1px solid rgba(168, 85, 247, 0.5);
+  border-radius: 10px 10px 0 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(168, 85, 247, 0.8);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.reward-toast-container > div[role="status"]::after {
+  /* Window control dots */
+  content: '● ● ●';
+  position: absolute;
+  top: 0.42rem;
+  right: 0.85rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.35em;
+  color: rgba(168, 85, 247, 0.4);
+  pointer-events: none;
+}
+
+
+/* Badges & Pills */
+.rpg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Progress Bars */
+.rpg-progress-track {
+  width: 100%;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.rpg-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s var(--ease-spring);
+}
+
+/* ==========================================================================
+   MASTER RESPONSIVE BREAKPOINT SYSTEM
+   1440px+ | 1200px | 1024px | 768px | 640px | 480px | 360px
+   ========================================================================== */
+
+/* 1. Large Desktop & Ultra-Wide (>=1440px) */
+@media (min-width: 1440px) {
+  .app-main-content {
+    max-width: 1560px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* 2. Standard Desktop & Laptop (>=1024px) */
+@media (min-width: 1024px) {
+  .hud-hamburger-btn {
+    display: flex !important;
+  }
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+  .desktop-sidebar {
+    display: flex !important;
+  }
+  .desktop-sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border-right: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+  }
+}
+
+/* 3. Tablet Landscape & Small Laptop (<=1023px) */
+@media (max-width: 1023px) {
+  .desktop-sidebar {
+    display: none !important;
+  }
+  .hud-hamburger-btn {
+    display: flex !important;
+  }
+  .app-main-content {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+/* 4. Tablet Portrait & Mobile (<768px) */
+@media (max-width: 767px) {
+  .desktop-sidebar {
+    display: none !important;
+  }
+  .mobile-bottom-nav {
+    display: flex !important;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .app-main-content {
+    padding: 1.25rem 1rem calc(4.75rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
+  }
+  .floating-system-control {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    right: 1rem !important;
+  }
+}
+
+/* 5. Phablets & Large Mobile (<=640px) */
+@media (max-width: 640px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .hud-metrics-container {
+    gap: 0.5rem !important;
+  }
+  .rpg-card {
+    padding: 1.15rem 1rem;
+  }
+}
+
+/* 6. Standard Mobile (<=480px) */
+@media (max-width: 480px) {
+  .hud-xp-wrapper {
+    display: none !important;
+  }
+  .hud-user-name {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hud-profile-dropdown {
+    right: 0 !important;
+    left: auto !important;
+    width: min(300px, calc(100vw - 1rem)) !important;
+    max-width: min(300px, calc(100vw - 1rem)) !important;
+  }
+  .citadel-console-card {
+    padding: 1.5rem 1.15rem !important;
+    width: min(94vw, 420px) !important;
+  }
+}
+
+/* 7. Small Mobile (<=360px) */
+@media (max-width: 360px) {
+  .hud-brand-name {
+    display: none !important;
+  }
+  .hud-user-name {
+    max-width: 65px;
+  }
+  .citadel-console-card {
+    padding: 1.25rem 0.85rem !important;
+  }
+}
+
+/* ==========================================================================
+   PHASE 3 — RPG PROGRESSION ANIMATIONS
+   ========================================================================== */
+
+/* Reward numbers floating upward after quest completion */
+@keyframes rewardFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.85);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+  25% {
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+/* Level-up celebration glow pulse */
+@keyframes levelUpPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(168, 85, 247, 0.7), 0 0 60px rgba(168, 85, 247, 0.35), 0 0 80px rgba(245, 158, 11, 0.2);
+  }
+}
+
+/* XP bar shimmer after gaining XP */
+@keyframes xpBarShimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Toast slide in from bottom-right */
+@keyframes toastSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(40px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Toast slide out */
+@keyframes toastSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(40px) scale(0.9);
+  }
+}
+
+/* Fade in upward entrance */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Fade in generic */
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Spin for loading */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Count-up number scale pop */
+@keyframes numberPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Level-up shield entrance */
+@keyframes shieldEntrance {
+  0% {
+    transform: scale(0) rotate(-30deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Utility animation classes */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-reward-float {
+  animation: rewardFloat 3.5s var(--ease-spring) forwards;
+}
+
+.animate-toast-in {
+  animation: toastSlideIn 0.35s var(--ease-spring) forwards;
+}
+
+.animate-toast-out {
+  animation: toastSlideOut 0.25s var(--ease-out) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s var(--ease-spring) forwards;
+}
+
+.animate-number-pop {
+  animation: numberPop 0.5s var(--ease-spring) forwards;
+}
+
+.animate-level-up-pulse {
+  animation: levelUpPulse 2s ease-in-out infinite;
+}
+
+.animate-shield-entrance {
+  animation: shieldEntrance 0.6s var(--ease-spring) forwards;
+}
+
+/* XP bar shimmer effect after gaining XP */
+.xp-bar-shimmer {
+  background-size: 200% 100%;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  animation: xpBarShimmer 1.5s ease-in-out;
+}
+
+/* Reward toast container fixed positioning */
+.reward-toast-container {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.reward-toast-container > * {
+  pointer-events: auto;
+}
+
+/* Level-up overlay backdrop */
+.level-up-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Newly updated attribute card highlight */
+@keyframes attributeGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(56, 189, 248, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.45);
+    transform: scale(1.01);
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+    transform: scale(1);
+  }
+}
+
+.attribute-card-updated {
+  animation: attributeGlow 1.5s ease-in-out;
+}
+
+/* ==========================================================================
+   THEME-BASED SCROLL UP & SCROLL DOWN ANIMATIONS
+   ========================================================================== */
+@keyframes mouseScroll {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes cyberScrollBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+@keyframes hudGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    opacity: 0.9;
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.85);
+    opacity: 1;
+  }
+}
+
+@keyframes hudRingRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.scroll-indicator-wheel {
+  animation: mouseScroll 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.scroll-indicator-bounce {
+  animation: cyberScrollBounce 2s ease-in-out infinite;
+}
+
+.scroll-hud-dot-active {
+  animation: hudGlowPulse 2.5s infinite ease-in-out;
+}
+
+.scroll-reveal-item {
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   CINEMATIC SCROLL MOTION SYSTEM UTILITIES
+   ========================================================================== */
+.cinematic-depth-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.cinematic-layer {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Persistence Section Cinematic Line & Node Animations */
+@keyframes beamScan {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.persistence-glow-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+  animation: beamScan 3s infinite linear;
+}
+
+/* Smooth Accordion Content Animation */
+.faq-content-enter {
+  animation: faqOpen 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes faqOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* Accessible High-Contrast Focus Ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--border-focus, #38bdf8) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* Reduced Motion Override (WCAG 2.1 AA) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .xp-bar-shimmer,
+  .animate-spin,
+  .animate-reward-float,
+  .animate-level-up-pulse,
+  .animate-shield-entrance,
+  .animate-number-pop,
+  .animate-toast-in,
+  .animate-toast-out,
+  .animate-fade-in-up,
+  .attribute-card-updated {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Small Viewport Responsive Tweaks (320px - 480px) */
+@media (max-width: 480px) {
+  .hud-xp-wrapper {
+    display: none !important;
+  }
+  .hud-metrics-container {
+    gap: 0.4rem !important;
+  }
+  .app-main-content {
+    padding: 1rem 0.75rem calc(4.75rem + env(safe-area-inset-bottom, 0px)) 0.75rem !important;
+  }
+}
+
+/* Full-Screen Hero on Laptops, Desktops, and Mobile Devices */
+.hero-fullscreen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   CITADEL AUTHENTICATION TERMINAL STYLES (Enter the Citadel)
+   ========================================================================== */
+
+.citadel-auth-canvas {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+  background-color: #090c10;
+  background-image: 
+    radial-gradient(ellipse at 50% 25%, rgba(56, 189, 248, 0.07) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(129, 140, 248, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 20% 70%, rgba(168, 85, 247, 0.04) 0%, transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* Atmospheric Citadel Gate Geometric Portal */
+.citadel-portal-container {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 680px;
+  height: 680px;
+  max-width: 95vw;
+  max-height: 95vw;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.citadel-portal-ring-outer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px dashed rgba(56, 189, 248, 0.12);
+  animation: citadelPortalSpin 60s linear infinite;
+}
+
+.citadel-portal-ring-mid {
+  position: absolute;
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  border: 1px solid rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 50px rgba(56, 189, 248, 0.04), inset 0 0 40px rgba(56, 189, 248, 0.04);
+  animation: citadelPortalSpinRev 45s linear infinite;
+}
+
+.citadel-portal-glow {
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.06) 0%, rgba(129, 140, 248, 0.03) 45%, transparent 70%);
+  filter: blur(40px);
+}
+
+@keyframes citadelPortalSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes citadelPortalSpinRev {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+/* Citadel Terminal Console Card */
+.citadel-console-card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 450px;
+  background: rgba(13, 19, 30, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: 14px;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.85),
+    0 0 35px rgba(56, 189, 248, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 2.25rem 2rem;
+  box-sizing: border-box;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* Technical HUD Corner Accents */
+.citadel-corner-bracket {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+.citadel-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #38bdf8;
+  border-left: 2px solid #38bdf8;
+  border-top-left-radius: 4px;
+}
+.citadel-corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid #38bdf8;
+  border-right: 2px solid #38bdf8;
+  border-top-right-radius: 4px;
+}
+.citadel-corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid #38bdf8;
+  border-left: 2px solid #38bdf8;
+  border-bottom-left-radius: 4px;
+}
+.citadel-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #38bdf8;
+  border-right: 2px solid #38bdf8;
+  border-bottom-right-radius: 4px;
+}
+
+/* Auth Buttons Common */
+.citadel-auth-btn {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.citadel-auth-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Google Button */
+.citadel-btn-google {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.citadel-btn-google:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(56, 189, 248, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
+}
+
+.citadel-btn-google:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* GitHub Button */
+.citadel-btn-github {
+  background: #121822;
+  border: 1px solid #283244;
+  color: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.citadel-btn-github:hover:not(:disabled) {
+  background: #182230;
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.citadel-btn-github:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Guest Mode Button */
+.citadel-btn-guest {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #e9d5ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.citadel-btn-guest:hover:not(:disabled) {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: rgba(192, 132, 252, 0.65);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 25px rgba(168, 85, 247, 0.3);
+}
+
+.citadel-btn-guest:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Access Granted State Animation */
+.citadel-access-granted {
+  border-color: #10b981 !important;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.85),
+    0 0 45px rgba(16, 185, 129, 0.3),
+    inset 0 0 20px rgba(16, 185, 129, 0.12) !important;
+}
+
+/* Pulsing LED status indicators */
+.citadel-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.citadel-led-online {
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: citadelLedPulse 2s infinite ease-in-out;
+}
+
+.citadel-led-amber {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+@keyframes citadelLedPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+/* Reduced Motion Override for Citadel Terminal */
+@media (prefers-reduced-motion: reduce) {
+  .citadel-portal-ring-outer,
+  .citadel-portal-ring-mid,
+  .citadel-led-online {
+    animation: none !important;
+  }
+  .citadel-console-card {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   HERO LIVE PROGRESSION HUD & CINEMATIC SPEC STYLES
+   ========================================================================== */
+
+.hero-hud-energy-connector {
+  width: 1px;
+  height: 14px;
+  background: linear-gradient(to bottom, rgba(56, 189, 248, 0.5), rgba(56, 189, 248, 0.15));
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-hud-energy-connector::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: hudGlowPulse 2.5s infinite ease-in-out;
+}
+
+/* Outer transform container for GSAP ScrollTrigger */
+.hero-progression-hud-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+/* Intermediate container for isolated Desktop Mouse Parallax */
+.hero-hud-parallax-inner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Card container for Hover Lift & Tilt */
+.hero-progression-hud-card {
+  width: 100%;
+  max-width: 720px;
+  background: rgba(8, 14, 28, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 12px;
+  padding: 0.85rem 1.35rem 0.75rem;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(56, 189, 248, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
+  user-select: none;
+}
+
+.hero-progression-hud-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 
+    0 22px 48px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(56, 189, 248, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Cyber Corner Brackets */
+.hud-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: rgba(56, 189, 248, 0.75);
+  pointer-events: none;
+}
+
+.hud-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+  border-top-left-radius: 12px;
+}
+
+.hud-corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+  border-top-right-radius: 12px;
+}
+
+.hud-corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+  border-bottom-left-radius: 12px;
+}
+
+.hud-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+  border-bottom-right-radius: 12px;
+}
+
+/* Cyber Hexagonal Nodes */
+.hud-hex-node {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+}
+
+.hud-hex-node:hover {
+  transform: scale(1.08);
+}
+
+/* Vector Arrows & Connectors */
+.hud-arrow-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(56, 189, 248, 0.6);
+  font-size: 0.9rem;
+  padding: 0 0.15rem;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Signature XP Text Light Sweep */
+@keyframes xpLightSweep {
+  0% {
+    background-position: -150% 0;
+  }
+  100% {
+    background-position: 250% 0;
+  }
+}
+
+.xp-sweep-active {
+  background-size: 200% auto;
+  animation: xpLightSweep 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+/* Energy pulse on XP */
+@keyframes xpPulseBurst {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.8));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.3));
+  }
+}
+
+.xp-pulse-burst {
+  animation: xpPulseBurst 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.8s forwards;
+}
+
+/* Floating spark particles */
+@keyframes sparkFade {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translateY(-6px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-14px);
+  }
+}
+
+.xp-spark {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+  pointer-events: none;
+  animation: sparkFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.9s forwards;
+}
+
+/* Bottom Progression Track */
+.hud-pipeline-track {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.65rem;
+  margin-top: 0.65rem;
+  border-top: 1px solid rgba(56, 189, 248, 0.12);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  position: relative;
+}
+
+.hud-pipeline-step {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: color 0.2s ease;
+}
+
+/* Reduced Motion Override (WCAG 2.1 AA) */
+@media (prefers-reduced-motion: reduce) {
+  .hero-progression-hud-card,
+  .hero-hud-parallax-inner,
+  .hud-hex-node {
+    transition: none !important;
+    transform: none !important;
+  }
+  .xp-sweep-active,
+  .xp-pulse-burst,
+  .xp-spark {
+    animation: none !important;
+  }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .hero-progression-hud-card {
+    max-width: 95%;
+    padding: 0.75rem 1rem;
+  }
+  .hud-main-grid {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  .hud-pipeline-track {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+}
+
+/* Modal Window Pop Animations */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ==========================================================================
+   PAGE TRANSITION & SKELETON LOADING SYSTEM
+   Smooth, gaming-aesthetic page transitions & theme-aware skeletons
+   ========================================================================== */
+
+/* 1. Master Page Transition Container */
+.page-transition-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.page-transition-container {
+  width: 100%;
+  animation: pageTransitionIn 220ms cubic-bezier(0, 0, 0.2, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes pageTransitionIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Top Progress Line Indicator */
+.page-loading-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-xp, var(--theme-primary, #38bdf8)) 45%,
+    var(--color-gold, var(--theme-secondary, #f59e0b)) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px var(--color-xp, #38bdf8);
+  z-index: 50;
+  animation: loadingProgressSweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes loadingProgressSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* 3. Theme-Aware Shimmer Skeleton */
+.rpg-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-elevated, var(--theme-surface-hover, #161d28)) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    var(--bg-surface-elevated, var(--theme-surface-hover, #161d28)) 100%
+  );
+  background-size: 200% 100%;
+  animation: rpgSkeletonShimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+@keyframes rpgSkeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 4. Accessibility & Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-container {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .page-loading-progress-bar {
+    animation: none !important;
+    opacity: 0.6;
+  }
+  .rpg-skeleton {
+    animation: none !important;
+    background: var(--bg-surface-elevated, var(--theme-surface-hover, #161d28)) !important;
+  }
+}
+

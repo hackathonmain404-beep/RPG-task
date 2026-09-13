@@ -1,0 +1,12 @@
+.pgdata/
+backend/.pgdata/
+*.log
+.env
+.env.local
+.git/
+powershell.cmd
+MD files/
+MD files by me/
+LifeRPG_hackathon_spec_pack_v2/
+TZPSv2.pdf
+PDF_EXPLANATION.txt
