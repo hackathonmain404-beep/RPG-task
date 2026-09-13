@@ -200,7 +200,7 @@ export interface GenerateAvatarRequest {
 
 export interface GenerateAvatarResponse {
   success: boolean;
-  avatar: ShopItem;
+  avatar?: ShopItem;
   avatarUrl?: string;
   inventoryItem?: {
     id: string;

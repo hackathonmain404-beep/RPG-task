@@ -13,7 +13,7 @@ describe('LandingPage (Public Marketing & Quest Simulator)', () => {
     );
 
     expect(
-      screen.getByRole('heading', { level: 1, name: /Your Life is the Game/i })
+      screen.getByRole('heading', { level: 1, name: /Your Goals\. Your Progress\./i })
     ).toBeInTheDocument();
 
     expect(screen.getByText(/The Adventurer's Productivity Operating System/i)).toBeInTheDocument();

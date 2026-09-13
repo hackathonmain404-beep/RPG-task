@@ -787,7 +787,7 @@ export const LandingPage: React.FC = () => {
                     marginBottom: '0.1em',
                   }}
                 >
-                  Your Life is the Game.
+                  Your Goals. Your Progress.
                 </span>
                 <span
                   className="headline-row-2 xp-sweep-active"
@@ -800,7 +800,7 @@ export const LandingPage: React.FC = () => {
                     filter: 'drop-shadow(0 0 25px rgba(56, 189, 248, 0.3))',
                   }}
                 >
-                  Start Gaining XP.
+                  Start Achieving More.
                   <span className="xp-spark" style={{ top: '-4px', right: '-8px' }} />
                   <span className="xp-spark" style={{ bottom: '2px', right: '-12px', animationDelay: '2.05s' }} />
                 </span>
