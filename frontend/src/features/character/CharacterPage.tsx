@@ -148,18 +148,12 @@ export const CharacterPage: React.FC = () => {
         <button
           onClick={handleManualRefresh}
           disabled={isRefreshing}
-          className="rpg-button secondary"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.55rem 1rem',
-            fontSize: '0.85rem',
-            minHeight: '42px',
-          }}
+          className="btn-sync-sheet"
+          id="character-sync-sheet-btn"
           aria-label="Synchronize character data with server"
+          title="Synchronize character data with server"
         >
-          <RotateCw size={15} className={isRefreshing ? 'animate-spin' : ''} />
+          <RotateCw size={18} strokeWidth={2.4} className={`sync-sheet-icon ${isRefreshing ? 'animate-spin' : ''}`} />
           <span>{isRefreshing ? 'Syncing...' : 'Sync Sheet'}</span>
         </button>
       </header>
@@ -193,7 +187,7 @@ export const CharacterPage: React.FC = () => {
           </div>
           <button
             onClick={handleManualRefresh}
-            className="rpg-button secondary"
+            className="rpg-btn rpg-btn-secondary"
             style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', minHeight: '38px' }}
           >
             Retry
