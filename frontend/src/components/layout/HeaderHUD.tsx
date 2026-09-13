@@ -115,31 +115,6 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
 
         {/* Right: Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
         <div className="hud-right-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Leaderboard Trigger */}
-          <button
-            type="button"
-            onClick={openLeaderboard}
-            className="rpg-btn hud-leaderboard-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.4rem 0.75rem',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              borderRadius: '8px',
-              backgroundColor: 'rgba(245, 158, 11, 0.12)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
-              color: '#fbbf24',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            aria-label="View Global Leaderboard"
-            title="Global Rankings Leaderboard"
-          >
-            <Trophy size={16} color="#fbbf24" />
-            <span className="desktop-only">Leaderboard</span>
-          </button>
           {/* Feedback Trigger — immediately to the left of player profile */}
           <button
             type="button"
