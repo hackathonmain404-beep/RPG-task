@@ -453,10 +453,33 @@
   position: relative;
 }
 
-/* Shift account profile out of mobile header bar (<=767px) into mobile drawer */
+/* Mobile Header Layout (<=767px): Shift hamburger icon to extreme right, brand on left */
 @media (max-width: 767px) {
-  .hud-profile-container.desktop-only-profile {
+  .hud-profile-container.desktop-only-profile,
+  .hud-feedback-btn.desktop-only-action,
+  .hud-admin-quick-btn.desktop-only-action,
+  .hud-right-group {
     display: none !important;
+  }
+
+  .hud-header-inner {
+    justify-content: space-between !important;
+  }
+
+  .hud-left-group {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .hud-brand-link {
+    order: 1 !important;
+  }
+
+  .hud-hamburger-btn {
+    order: 2 !important;
+    margin-left: auto !important;
   }
 }
 
@@ -1167,19 +1190,29 @@ a.hud-dropdown-character:visited {
 }
 
 /* 9. COMPLETED CATEGORIES DONUT ANIMATION */
-@keyframes donutStrokeDraw {
-  0% { stroke-dashoffset: 350; }
-  100% { stroke-dashoffset: var(--target-offset, 0); }
+@keyframes donutChartEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) rotate(-12deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
 }
 
-.donut-segment-animated {
-  animation: donutStrokeDraw 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 450ms;
+.donut-chart-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: donutChartEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: center center;
 }
 
 .donut-center-fade {
   animation: welcomeDescReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 600ms;
+  animation-delay: 500ms;
 }
 
 /* 10. VIBE SCORE CIRCLE ANIMATION */
