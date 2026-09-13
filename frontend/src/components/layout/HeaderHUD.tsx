@@ -400,10 +400,10 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                   setIsMenuOpen(false);
                   openLeaderboard();
                 }}
-                className="hud-dropdown-item"
+                className="hud-dropdown-item hud-dropdown-leaderboard"
                 aria-label="Global Leaderboard"
               >
-                <Trophy size={16} color="#fbbf24" className="hud-item-icon" />
+                <Trophy size={16} className="hud-item-icon hud-leaderboard-trophy" />
                 <span>Leaderboard</span>
               </button>
 

@@ -866,6 +866,38 @@ a.hud-dropdown-character:visited {
   transform: translateX(2px) scale(0.98);
 }
 
+/* Leaderboard Item */
+.hud-dropdown-leaderboard {
+  color: #c084fc;
+}
+
+.hud-dropdown-leaderboard .hud-item-icon,
+.hud-dropdown-leaderboard .hud-leaderboard-trophy {
+  color: #fbbf24;
+}
+
+.hud-dropdown-leaderboard:hover,
+.hud-dropdown-leaderboard:focus-visible {
+  background-color: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #ffffff;
+  transform: translateX(4px);
+  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.22);
+}
+
+.hud-dropdown-leaderboard:hover .hud-item-icon,
+.hud-dropdown-leaderboard:hover .hud-leaderboard-trophy,
+.hud-dropdown-leaderboard:focus-visible .hud-item-icon,
+.hud-dropdown-leaderboard:focus-visible .hud-leaderboard-trophy {
+  filter: drop-shadow(0 0 8px #fbbf24);
+  transform: scale(1.18) rotate(-8deg);
+  color: #fef08a;
+}
+
+.hud-dropdown-leaderboard:active {
+  transform: translateX(2px) scale(0.98);
+}
+
 /* Feedback Item */
 .hud-dropdown-feedback {
   color: #c084fc;
