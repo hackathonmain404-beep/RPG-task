@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal.tsx';
+import { LeaderboardProvider, useLeaderboard } from '../../context/LeaderboardContext';
+import { LeaderboardModal } from '../common/LeaderboardModal';
 import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useAuth } from '../../context/useAuth';
@@ -83,6 +85,7 @@ const AppShellInner: React.FC = () => {
   });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
+  const { isLeaderboardOpen, closeLeaderboard } = useLeaderboard();
   const { user, refreshCharacter } = useAuth();
   const shopContext = React.useContext(ShopContext);
   const questsContext = React.useContext(QuestsContext);
@@ -673,6 +676,9 @@ const AppShellInner: React.FC = () => {
       {/* Global Unified Feedback Modal */}
       <FeedbackModal isOpen={isFeedbackOpen} onClose={closeFeedback} />
 
+      {/* Global Leaderboard Modal */}
+      <LeaderboardModal isOpen={isLeaderboardOpen} onClose={closeLeaderboard} />
+
       {/* Global Keyboard Shortcuts Help Modal */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
     </div>
@@ -682,7 +688,9 @@ const AppShellInner: React.FC = () => {
 export const AppShell: React.FC = () => {
   return (
     <FeedbackProvider>
-      <AppShellInner />
+      <LeaderboardProvider>
+        <AppShellInner />
+      </LeaderboardProvider>
     </FeedbackProvider>
   );
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useQuests } from '../../context/useQuests';
+import { useLeaderboard } from '../../context/LeaderboardContext';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { RewardToast } from '../../components/common/RewardToast';
 import { LevelUpOverlay } from '../../components/common/LevelUpOverlay';
@@ -27,7 +28,8 @@ import {
   BookOpen, 
   Heart,
   ChevronDown,
-  Database
+  Database,
+  Trophy
 } from 'lucide-react';
 
 // Attribute icon/color map
@@ -129,6 +131,7 @@ export const DashboardPage: React.FC = () => {
 
   const { character, xpProgress, isLoading: authLoading, refreshCharacter } = useAuth();
   const { tasks, lastRewardNotice, clearRewardNotice, levelUpEvent, clearLevelUpEvent } = useQuests();
+  const { openLeaderboard } = useLeaderboard();
 
   const [isMatrixOpen, setIsMatrixOpen] = useState(false);
 
@@ -203,6 +206,33 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={openLeaderboard}
+            className="rpg-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.55rem 1.15rem',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              borderRadius: '10px',
+              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              border: '1px solid rgba(245, 158, 11, 0.45)',
+              color: '#fbbf24',
+              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.2)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              minHeight: '42px',
+            }}
+            id="dashboard-leaderboard-btn"
+            title="Open Global Leaderboard"
+          >
+            <Trophy size={16} color="#fbbf24" />
+            <span>Leaderboard</span>
+          </button>
+
           <Link
             to="/app/character"
             className="btn-character-sheet"

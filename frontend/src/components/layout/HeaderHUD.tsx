@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useFeedback } from '../../context/FeedbackContext';
-import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, MoreVertical, Settings } from 'lucide-react';
+import { useLeaderboard } from '../../context/LeaderboardContext';
+import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, MoreVertical, Settings, Trophy } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -12,6 +13,7 @@ interface HeaderHUDProps {
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   const { user, character, logout, isAdmin } = useAuth();
   const { openFeedback } = useFeedback();
+  const { openLeaderboard } = useLeaderboard();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -110,6 +112,32 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
 
         {/* Right: Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Leaderboard Trigger */}
+          <button
+            type="button"
+            onClick={openLeaderboard}
+            className="rpg-btn hud-leaderboard-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.4rem 0.75rem',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              borderRadius: '8px',
+              backgroundColor: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              color: '#fbbf24',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            aria-label="View Global Leaderboard"
+            title="Global Rankings Leaderboard"
+          >
+            <Trophy size={16} color="#fbbf24" />
+            <span className="desktop-only">Leaderboard</span>
+          </button>
+
           {/* Feedback Trigger — immediately to the left of player profile */}
           <button
             type="button"
@@ -331,6 +359,20 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                 <User size={16} className="hud-item-icon" />
                 <span>Character Sheet</span>
               </Link>
+
+              {/* Leaderboard Item */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  openLeaderboard();
+                }}
+                className="hud-dropdown-item"
+                aria-label="Global Leaderboard"
+              >
+                <Trophy size={16} color="#fbbf24" className="hud-item-icon" />
+                <span>Leaderboard</span>
+              </button>
 
               {/* Feedback Item */}
               <button
