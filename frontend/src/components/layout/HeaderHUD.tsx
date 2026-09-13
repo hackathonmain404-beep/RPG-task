@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { useShop } from '../../context/useShop';
 import { useFeedback } from '../../context/FeedbackContext';
 import { useLeaderboard } from '../../context/LeaderboardContext';
 import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, Settings, Trophy } from 'lucide-react';
@@ -12,12 +13,30 @@ interface HeaderHUDProps {
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   const { user, character, logout, isAdmin } = useAuth();
+  const { inventory } = useShop();
   const { openFeedback } = useFeedback();
   const { openLeaderboard } = useLeaderboard();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Active badge: user.badge from backend or any owned badge from shop inventory
+  const ownedBadgeItem = inventory?.find(
+    (i) =>
+      i.shopItem?.itemType === 'BADGE' ||
+      (i.itemId || i.shopItemId)?.startsWith('badge_')
+  );
+  const activeBadge =
+    user?.badge ||
+    (ownedBadgeItem
+      ? {
+          id: ownedBadgeItem.id,
+          name: ownedBadgeItem.shopItem?.name || 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: ownedBadgeItem.shopItem?.sku || 'badge_shadow',
+        }
+      : null);
 
   // Close dropdown on click outside or Escape key
   useEffect(() => {
@@ -198,8 +217,23 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
-                <span className="hud-user-name">
-                  {user?.displayName || 'Adventurer'}
+                <span className="hud-user-name" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>{user?.displayName || 'Adventurer'}</span>
+                  {activeBadge && (
+                    <img
+                      src={activeBadge.icon || '/assets/items/badge_shadow.svg'}
+                      alt={activeBadge.name}
+                      title={`${activeBadge.name} (Badge)`}
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        objectFit: 'contain',
+                        filter: 'drop-shadow(0 0 4px rgba(168, 85, 247, 0.7))',
+                        verticalAlign: 'middle',
+                      }}
+                      onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                    />
+                  )}
                 </span>
                 {(user?.title || character?.title) && (
                   <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
@@ -251,19 +285,49 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                       )}
                     </div>
                   </div>
-                  {isAdmin && (
-                    <span style={{
-                      fontSize: '0.65rem',
-                      fontWeight: 700,
-                      color: '#c084fc',
-                      backgroundColor: 'rgba(168, 85, 247, 0.2)',
-                      border: '1px solid rgba(168, 85, 247, 0.4)',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: '9999px',
-                    }}>
-                      ADMIN
-                    </span>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    {activeBadge && (
+                      <div
+                        className="hud-profile-badge-emblem"
+                        title={`${activeBadge.name} — Dedication Badge`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          padding: '3px 8px',
+                          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(88, 28, 135, 0.45))',
+                          border: '1px solid rgba(168, 85, 247, 0.5)',
+                          borderRadius: '12px',
+                          boxShadow: '0 0 10px rgba(168, 85, 247, 0.3)',
+                        }}
+                      >
+                        <img
+                          src={activeBadge.icon || '/assets/items/badge_shadow.svg'}
+                          alt={activeBadge.name}
+                          style={{ width: '15px', height: '15px', objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                        />
+                        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#e9d5ff', letterSpacing: '0.02em' }}>
+                          {activeBadge.name}
+                        </span>
+                      </div>
+                    )}
+                    {isAdmin && (
+                      <span style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        color: '#c084fc',
+                        backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                        border: '1px solid rgba(168, 85, 247, 0.4)',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                      }}>
+                        Admin
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Bestowed Hero Title */}

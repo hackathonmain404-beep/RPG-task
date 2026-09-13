@@ -171,3 +171,44 @@ export async function updateProfile(req: Request, res: Response, next: NextFunct
     next(err);
   }
 }
+
+/**
+ * DELETE /api/auth/account
+ * Permanently deletes the authenticated user's account and all cascading data.
+ */
+export async function deleteAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (!req.user || !req.user.id) {
+      throw new AppError(401, 'UNAUTHORIZED', 'Authentication required.');
+    }
+
+    // Revoke token if present
+    let token: string | undefined;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+    if (!token && req.cookies) {
+      token = req.cookies.token || req.cookies.session;
+    }
+    if (token) {
+      tokenBlocklist.revoke(token);
+    }
+
+    // Clear cookies
+    const CLEAR_COOKIE_OPTIONS = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+    };
+    res.clearCookie('token', CLEAR_COOKIE_OPTIONS);
+    res.clearCookie('session', CLEAR_COOKIE_OPTIONS);
+
+    await authService.deleteUserAccount(req.user.id);
+
+    res.status(200).json({ success: true, message: 'Account permanently deleted.' });
+  } catch (err) {
+    next(err);
+  }
+}
+

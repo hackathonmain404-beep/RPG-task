@@ -17,6 +17,7 @@ export interface AuthSessionUser {
   avatarUrl?: string | null;
   role?: string;
   title?: string | null;
+  badge?: { id: string; name: string; icon: string; sku?: string } | null;
 }
 
 export interface CharacterSummary {
@@ -199,6 +200,7 @@ export async function syncUser(
     }, { maxWait: 15000, timeout: 25000 });
 
     const title = await getUserLatestTitle(result.user.id);
+    const badge = await getUserBadge(result.user.id);
 
     return {
       user: {
@@ -208,6 +210,7 @@ export async function syncUser(
         avatarUrl: (result.user as any).avatarUrl || null,
         role: (result.user as any).role || 'USER',
         title,
+        badge,
       },
       character: {
         level: result.character.level,
@@ -549,6 +552,7 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
       }
 
       const title = await getUserLatestTitle(user.id);
+      const badge = await getUserBadge(user.id);
       const attributes = ((character as any).attributes || []).map((a: any) => ({
         key: a.key,
         displayName: a.displayName,
@@ -563,6 +567,7 @@ export async function getAuthMe(userId: string): Promise<SyncResult> {
           avatarUrl: (user as any).avatarUrl || null,
           role: (user as any).role || 'USER',
           title,
+          badge,
         },
         character: {
           level: character.level,
@@ -629,6 +634,7 @@ export async function updateUserProfile(
   }
 
   const title = await getUserLatestTitle(updatedUser.id);
+  const badge = await getUserBadge(updatedUser.id);
 
   return {
     user: {
@@ -638,6 +644,7 @@ export async function updateUserProfile(
       avatarUrl: (updatedUser as any).avatarUrl || null,
       role: (updatedUser as any).role || 'USER',
       title,
+      badge,
     },
     character: {
       level: character.level,
@@ -649,3 +656,79 @@ export async function updateUserProfile(
     },
   };
 }
+
+/**
+ * Resolves the primary equipped or purchased badge for a user.
+ * Prioritizes shop badges in inventoryItems, then achievement badges in userBadges.
+ */
+export async function getUserBadge(
+  userId: string
+): Promise<{ id: string; name: string; icon: string; sku?: string } | null> {
+  try {
+    // 1. Check shop badges purchased in inventoryItems
+    const invBadge = await prisma.inventoryItem.findFirst({
+      where: {
+        userId,
+        shopItem: { itemType: 'BADGE' },
+      },
+      include: { shopItem: true },
+      orderBy: { purchasedAt: 'desc' },
+    });
+
+    if (invBadge) {
+      return {
+        id: invBadge.shopItem.id,
+        name: invBadge.shopItem.name,
+        sku: invBadge.shopItem.sku,
+        icon:
+          invBadge.shopItem.sku === 'badge_shadow'
+            ? '/assets/items/badge_shadow.svg'
+            : ((invBadge.shopItem.metadataJson as any)?.imageUrl || '/assets/items/badge_shadow.svg'),
+      };
+    }
+
+    // 2. Check achievement badges in userBadges
+    const userBadge = await prisma.userBadge.findFirst({
+      where: { userId },
+      include: { badge: true },
+      orderBy: { unlockedAt: 'desc' },
+    });
+
+    if (userBadge) {
+      return {
+        id: userBadge.badge.id,
+        name: userBadge.badge.name,
+        sku: userBadge.badge.key,
+        icon: userBadge.badge.icon,
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Permanently delete a user account and all cascading data from PostgreSQL database.
+ */
+export async function deleteUserAccount(userId: string): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError(404, 'NOT_FOUND', 'User account not found.');
+  }
+
+  // Protect the primary citadel administrator account
+  if (user.role === 'ADMIN' && user.email === 'Achiever_admin_4.com') {
+    throw new AppError(403, 'FORBIDDEN', 'The primary citadel administrator account cannot be deleted.');
+  }
+
+  // Delete user record (Prisma cascading constraints will delete Character, Tasks, Inventory, Badges, Chat, etc.)
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+}
+

@@ -5,6 +5,13 @@
  * Frontend MUST NOT invent fields not documented in the shared specification.
  */
 
+export interface UserBadgeInfo {
+  id: string;
+  name: string;
+  icon?: string;
+  sku?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -12,6 +19,7 @@ export interface User {
   avatarUrl?: string | null;
   role?: 'USER' | 'ADMIN' | string;
   title?: string | null;
+  badge?: UserBadgeInfo | null;
 }
 
 export interface UpdateProfileRequest {
@@ -450,6 +458,7 @@ export interface ChatUser {
   avatarUrl?: string | null;
   role?: string;
   level: number;
+  badge?: UserBadgeInfo | null;
 }
 
 export interface ChatMessage {

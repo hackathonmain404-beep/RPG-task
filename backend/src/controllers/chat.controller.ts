@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma.js';
 import { AppError } from '../utils/errors.js';
 import { sseHub } from '../utils/sseHub.js';
+import { getUserBadge } from '../services/auth.service.js';
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 const MAX_MESSAGE_LENGTH = 500;
@@ -10,7 +11,7 @@ const MAX_MESSAGE_LENGTH = 500;
  * GET /api/chat/messages
  * 
  * Fetch community chat messages from the last 3 days.
- * Returns messages in chronological order with user info and character level.
+ * Returns messages in chronological order with user info, level, and badge.
  */
 export async function getChatMessages(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -44,20 +45,26 @@ export async function getChatMessages(req: Request, res: Response, next: NextFun
       },
     });
 
-    // Flatten user.character for the frontend
-    const formatted = messages.map((msg) => ({
-      id: msg.id,
-      userId: msg.userId,
-      content: msg.content,
-      createdAt: msg.createdAt.toISOString(),
-      user: {
-        id: msg.user.id,
-        displayName: msg.user.displayName,
-        avatarUrl: msg.user.avatarUrl,
-        role: msg.user.role,
-        level: msg.user.character?.level ?? 1,
-      },
-    }));
+    // Flatten user.character and attach user badge for the frontend
+    const formatted = await Promise.all(
+      messages.map(async (msg) => {
+        const badge = await getUserBadge(msg.userId);
+        return {
+          id: msg.id,
+          userId: msg.userId,
+          content: msg.content,
+          createdAt: msg.createdAt.toISOString(),
+          user: {
+            id: msg.user.id,
+            displayName: msg.user.displayName,
+            avatarUrl: msg.user.avatarUrl,
+            role: msg.user.role,
+            level: msg.user.character?.level ?? 1,
+            badge,
+          },
+        };
+      })
+    );
 
     res.json({
       messages: formatted,
@@ -123,6 +130,8 @@ export async function sendChatMessage(req: Request, res: Response, next: NextFun
       },
     });
 
+    const badge = await getUserBadge(userId);
+
     const formatted = {
       id: message.id,
       userId: message.userId,
@@ -134,6 +143,7 @@ export async function sendChatMessage(req: Request, res: Response, next: NextFun
         avatarUrl: message.user.avatarUrl,
         role: message.user.role,
         level: message.user.character?.level ?? 1,
+        badge,
       },
     };
 

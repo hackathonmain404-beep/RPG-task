@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { RefreshCw, Send, ArrowDown } from 'lucide-react';
 import { useAuth } from '../../context/useAuth';
+import { useShop } from '../../context/useShop';
 import { useSSE } from '../../hooks/useSSE';
 import { getCommunityChatMessages, sendCommunityChatMessage } from '../../services/api/chat';
 import type { ChatMessage } from '../../types/contract';
@@ -48,6 +49,25 @@ function getAvatarColor(name: string): string {
 
 export const CommunityChatPage: React.FC = () => {
   const { user } = useAuth();
+  const { inventory } = useShop();
+
+  // Active badge: user.badge from backend or any owned badge from shop inventory
+  const ownedBadgeItem = inventory?.find(
+    (i) =>
+      i.shopItem?.itemType === 'BADGE' ||
+      (i.itemId || i.shopItemId)?.startsWith('badge_')
+  );
+  const activeBadge =
+    user?.badge ||
+    (ownedBadgeItem
+      ? {
+          id: ownedBadgeItem.id,
+          name: ownedBadgeItem.shopItem?.name || 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: ownedBadgeItem.shopItem?.sku || 'badge_shadow',
+        }
+      : null);
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -210,6 +230,7 @@ export const CommunityChatPage: React.FC = () => {
         avatarUrl: user?.avatarUrl,
         role: user?.role,
         level: (user as any)?.character?.level ?? 1,
+        badge: activeBadge,
       },
     };
 
@@ -341,30 +362,61 @@ export const CommunityChatPage: React.FC = () => {
             const isOwn = msg.userId === user?.id || msg.id.startsWith('temp-');
             const isAdmin = msg.user.role === 'ADMIN';
             const avatarColor = getAvatarColor(msg.user.displayName);
+            const msgBadge = msg.user.badge || (isOwn ? activeBadge : null);
 
             return (
               <div
                 key={msg.id}
                 className={`chat-message-row ${isOwn ? 'is-own' : ''}`}
               >
-                <div
-                  className="chat-msg-avatar"
-                  style={{
-                    background: msg.user.avatarUrl
-                      ? 'transparent'
-                      : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}88)`,
-                  }}
-                >
-                  {msg.user.avatarUrl ? (
-                    <img
-                      src={msg.user.avatarUrl}
-                      alt={msg.user.displayName}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
+                <div className="chat-avatar-wrapper" style={{ position: 'relative', flexShrink: 0 }}>
+                  <div
+                    className="chat-msg-avatar"
+                    style={{
+                      background: msg.user.avatarUrl
+                        ? 'transparent'
+                        : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}88)`,
+                    }}
+                  >
+                    {msg.user.avatarUrl ? (
+                      <img
+                        src={msg.user.avatarUrl}
+                        alt={msg.user.displayName}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      msg.user.displayName.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  {msgBadge && (
+                    <div
+                      className="chat-msg-pfp-badge"
+                      title={`${msgBadge.name} (Badge)`}
+                      style={{
+                        position: 'absolute',
+                        bottom: '-2px',
+                        right: '-3px',
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        background: '#0c111e',
+                        border: '1.5px solid #a855f7',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 0 8px rgba(168, 85, 247, 0.7)',
+                        zIndex: 2,
                       }}
-                    />
-                  ) : (
-                    msg.user.displayName.charAt(0).toUpperCase()
+                    >
+                      <img
+                        src={msgBadge.icon || '/assets/items/badge_shadow.svg'}
+                        alt={msgBadge.name}
+                        style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                        onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                      />
+                    </div>
                   )}
                 </div>
                 <div className="chat-msg-body">
@@ -372,6 +424,33 @@ export const CommunityChatPage: React.FC = () => {
                     <span className={`chat-msg-name ${isAdmin ? 'is-admin' : ''}`}>
                       {msg.user.displayName}
                     </span>
+                    {msgBadge && (
+                      <span
+                        className="chat-msg-badge-tag"
+                        title={`${msgBadge.name} (Badge)`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          padding: '1px 6px',
+                          background: 'rgba(168, 85, 247, 0.15)',
+                          border: '1px solid rgba(168, 85, 247, 0.35)',
+                          borderRadius: '8px',
+                          fontSize: '0.62rem',
+                          fontWeight: 700,
+                          color: '#e9d5ff',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        <img
+                          src={msgBadge.icon || '/assets/items/badge_shadow.svg'}
+                          alt={msgBadge.name}
+                          style={{ width: '11px', height: '11px', objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                        />
+                        <span>{msgBadge.name}</span>
+                      </span>
+                    )}
                     <span className="chat-msg-level">Lv. {msg.user.level}</span>
                     {isAdmin && (
                       <span className="chat-msg-admin-badge">🛡️ Admin</span>

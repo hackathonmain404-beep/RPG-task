@@ -23,8 +23,12 @@ import {
   Sparkles,
   Lock,
   Compass,
-  ArrowUpRight
+  ArrowUpRight,
+  AlertTriangle,
+  X
 } from 'lucide-react';
+import { useShop } from '../../context/useShop';
+import { authApi } from '../../services/api/auth';
 import './settings-center.css';
 
 interface HudThemeDef {
@@ -133,11 +137,29 @@ export const SettingsPage: React.FC = () => {
   useDocumentMetadata('Citadel Settings', { noindex: true });
 
   const { user, character, logout, updateProfile } = useAuth();
+  const { inventory } = useShop();
   const themeContext = useContext(ThemeContext);
   const navigate = useNavigate();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isEquippingKey, setIsEquippingKey] = useState<string | null>(null);
+
+  // Active badge: user.badge from backend or any owned badge from shop inventory
+  const ownedBadgeItem = inventory?.find(
+    (i) =>
+      i.shopItem?.itemType === 'BADGE' ||
+      (i.itemId || i.shopItemId)?.startsWith('badge_')
+  );
+  const activeBadge =
+    user?.badge ||
+    (ownedBadgeItem
+      ? {
+          id: ownedBadgeItem.id,
+          name: ownedBadgeItem.shopItem?.name || 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: ownedBadgeItem.shopItem?.sku || 'badge_shadow',
+        }
+      : null);
 
   // Identity editing state
   const [displayName, setDisplayName] = useState(user?.displayName || '');
@@ -145,6 +167,32 @@ export const SettingsPage: React.FC = () => {
   const [isCompressing, setIsCompressing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Account deletion state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteAccount = async () => {
+    const requiredPhrase = (user?.displayName || 'delete my account').trim();
+    if (deleteConfirmInput.trim() !== requiredPhrase) {
+      setDeleteError(`You must type "${requiredPhrase}" exactly to confirm.`);
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await authApi.deleteAccount();
+      await logout();
+      navigate('/register', { replace: true });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete account. Please try again.';
+      setDeleteError(msg);
+      setIsDeleting(false);
+    }
+  };
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -463,9 +511,38 @@ export const SettingsPage: React.FC = () => {
               {/* Display Name */}
               <div className="field-group">
                 <div className="field-header-row">
-                  <label htmlFor="settings-display-name" className="field-label">
-                    <span>Display Name</span>
-                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <label htmlFor="settings-display-name" className="field-label">
+                      <span>Display Name</span>
+                    </label>
+                    {activeBadge && (
+                      <span
+                        className="profile-badge-tag"
+                        title={`${activeBadge.name} (Badge)`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '2px 8px',
+                          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(88, 28, 135, 0.45))',
+                          border: '1px solid rgba(168, 85, 247, 0.5)',
+                          borderRadius: '12px',
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          color: '#e9d5ff',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        <img
+                          src={activeBadge.icon || '/assets/items/badge_shadow.svg'}
+                          alt={activeBadge.name}
+                          style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                        />
+                        <span>{activeBadge.name}</span>
+                      </span>
+                    )}
+                  </div>
                   <span className="field-counter">
                     {displayName.length}/50
                   </span>
@@ -600,8 +677,42 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Footer: Save Button */}
-          <div className="settings-deck-footer">
+          {/* Action Footer: Terms & Privacy on Left, Save Button on Right */}
+          <div className="settings-deck-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="settings-legal-links" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+              <Link
+                to="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s ease',
+                  fontWeight: 500,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#38bdf8')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              >
+                Terms of Service
+              </Link>
+              <span>·</span>
+              <Link
+                to="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'var(--text-secondary)',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s ease',
+                  fontWeight: 500,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#38bdf8')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              >
+                Privacy Policy
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={isSaving || isCompressing || !hasUnsavedChanges}
@@ -749,25 +860,235 @@ export const SettingsPage: React.FC = () => {
           End your active Citadel session. Your progression, inventory, and character state are securely stored in the PostgreSQL database.
         </p>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="session-signout-btn"
-        >
-          {isLoggingOut ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              <span>Invalidating Session...</span>
-            </>
-          ) : (
-            <>
-              <LogOut size={16} />
-              <span>Sign Out of Life RPG</span>
-            </>
-          )}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="session-signout-btn"
+          >
+            {isLoggingOut ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>Invalidating Session...</span>
+              </>
+            ) : (
+              <>
+                <LogOut size={16} />
+                <span>Sign Out of Life RPG</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setDeleteConfirmInput('');
+              setDeleteError(null);
+              setIsDeleteModalOpen(true);
+            }}
+            className="session-delete-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1.25rem',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+              color: '#f87171',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+              e.currentTarget.style.borderColor = '#ef4444';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.35)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <Trash2 size={16} />
+            <span>Delete ACC.</span>
+          </button>
+        </div>
       </section>
+
+      {/* GitHub-Style Delete Account Modal */}
+      {isDeleteModalOpen && (
+        <div
+          className="delete-modal-backdrop"
+          onClick={() => !isDeleting && setIsDeleteModalOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="delete-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '480px',
+              width: '100%',
+              background: '#0d1117',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              borderRadius: '14px',
+              padding: '1.75rem',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(239, 68, 68, 0.12)',
+              position: 'relative',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <AlertTriangle size={20} color="#ef4444" />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#f87171', fontWeight: 700 }}>
+                  Delete Account Permanently
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={isDeleting}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-tertiary)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              borderRadius: '8px',
+              padding: '0.9rem 1rem',
+              marginBottom: '1.25rem',
+              fontSize: '0.84rem',
+              lineHeight: 1.5,
+              color: '#fca5a5',
+            }}>
+              <strong>Warning:</strong> This action <u>cannot</u> be undone. This will permanently delete your character, XP level, inventory items, unlocked badges, quest progress, and tavern chat messages.
+            </div>
+
+            <p style={{ fontSize: '0.88rem', color: '#cbd5e1', marginBottom: '0.75rem', lineHeight: 1.4 }}>
+              To confirm, please type <strong style={{ color: '#f87171', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: '4px' }}>{user?.displayName || 'delete my account'}</strong> below:
+            </p>
+
+            <input
+              type="text"
+              value={deleteConfirmInput}
+              onChange={(e) => setDeleteConfirmInput(e.target.value)}
+              placeholder={`Type "${user?.displayName || 'delete my account'}" to confirm`}
+              disabled={isDeleting}
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                fontSize: '0.9rem',
+                marginBottom: '1rem',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+
+            {deleteError && (
+              <div style={{ color: '#f87171', fontSize: '0.82rem', marginBottom: '1rem' }}>
+                {deleteError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setDeleteConfirmInput('');
+                  setDeleteError(null);
+                }}
+                disabled={isDeleting}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: '#cbd5e1',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={isDeleting || deleteConfirmInput.trim() !== (user?.displayName || 'delete my account').trim()}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  borderRadius: '8px',
+                  background: deleteConfirmInput.trim() === (user?.displayName || 'delete my account').trim() ? '#dc2626' : 'rgba(220, 38, 38, 0.25)',
+                  border: '1px solid rgba(220, 38, 38, 0.5)',
+                  color: deleteConfirmInput.trim() === (user?.displayName || 'delete my account').trim() ? '#fff' : '#9ca3af',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: deleteConfirmInput.trim() === (user?.displayName || 'delete my account').trim() ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    <span>Deleting Account...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={15} />
+                    <span>I understand the consequences, delete my account</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
