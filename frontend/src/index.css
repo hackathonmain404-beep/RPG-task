@@ -1242,7 +1242,7 @@ textarea:focus-visible,
   background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
   display: flex;
   flex-direction: column;
-  justifyContent: space-between;
+  justify-content: space-between;
   box-sizing: border-box;
 }
 
@@ -1365,7 +1365,7 @@ textarea:focus-visible,
   font-weight: 600;
   display: flex;
   align-items: center;
-  justifyContent: center;
+  justify-content: center;
   gap: 0.75rem;
   border-radius: 8px;
   cursor: pointer;
