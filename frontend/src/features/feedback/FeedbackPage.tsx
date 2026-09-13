@@ -93,13 +93,33 @@ export const FeedbackPage: React.FC = () => {
   }, [tab]);
 
   // Real-time SSE updates for admin status changes
-  const sseHandlers = useMemo(() => ({
-    'feedback:reply': (data: any) => {
-      if (data?.feedback) {
-        setHistoryItems(prev => prev.map(item => item.id === data.feedback.id ? data.feedback : item));
-      }
-    }
-  }), []);
+  const sseHandlers = useMemo(
+    () => ({
+      'feedback:reply': (data: any) => {
+        const targetId = data?.feedbackId || data?.feedback?.id;
+        const adminReply = data?.adminReply || data?.feedback?.adminReply;
+        const status = data?.status || data?.feedback?.status || 'REVIEWED';
+        const repliedAt = data?.repliedAt || data?.feedback?.repliedAt || new Date().toISOString();
+
+        if (targetId) {
+          setHistoryItems((prev) =>
+            prev.map((item) =>
+              item.id === targetId
+                ? {
+                    ...item,
+                    ...(data?.feedback || {}),
+                    adminReply: adminReply || item.adminReply,
+                    status: status || item.status,
+                    repliedAt: repliedAt || item.repliedAt,
+                  }
+                : item
+            )
+          );
+        }
+      },
+    }),
+    []
+  );
 
   useSSE(sseHandlers);
 
@@ -352,32 +372,156 @@ export const FeedbackPage: React.FC = () => {
 
           {!isLoadingHistory && filteredHistory.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {filteredHistory.map(item => (
-                <div
-                  key={item.id}
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '10px',
-                    backgroundColor: 'var(--bg-surface-elevated)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-xp)' }}>
-                      {item.type.replace('_', ' ')}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </span>
+              {filteredHistory.map((item) => {
+                const isBug = item.type === 'BUG_REPORT';
+                const isFeature = item.type === 'FEATURE_REQUEST';
+                const badgeColor = isBug ? '#f43f5e' : isFeature ? '#f59e0b' : '#38bdf8';
+                const badgeBg = isBug
+                  ? 'rgba(244, 63, 94, 0.14)'
+                  : isFeature
+                  ? 'rgba(245, 158, 11, 0.14)'
+                  : 'rgba(56, 189, 248, 0.14)';
+                const label = isBug ? '🐞 Bug Report' : isFeature ? '💡 Feature Idea' : '💬 General';
+                const isResolved = item.status === 'RESOLVED';
+                const isReviewed = item.status === 'REVIEWED' || !!item.adminReply;
+
+                return (
+                  <div
+                    key={item.id}
+                    style={{
+                      padding: '1.15rem',
+                      borderRadius: '12px',
+                      backgroundColor: 'var(--bg-surface-elevated)',
+                      border: item.adminReply
+                        ? '1px solid rgba(16, 185, 129, 0.35)'
+                        : '1px solid var(--border-subtle)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.75rem',
+                      boxShadow: item.adminReply ? '0 0 16px rgba(16, 185, 129, 0.08)' : 'none',
+                    }}
+                  >
+                    {/* Header Row: Category Badge, Status Pill, & Date */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span
+                          style={{
+                            fontSize: '0.74rem',
+                            fontWeight: 700,
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            color: badgeColor,
+                            backgroundColor: badgeBg,
+                            border: `1px solid ${badgeColor}40`,
+                          }}
+                        >
+                          {label}
+                        </span>
+
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '2px 7px',
+                            borderRadius: '5px',
+                            color: isResolved || isReviewed ? '#34d399' : '#fbbf24',
+                            backgroundColor: isResolved || isReviewed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.12)',
+                            border: isResolved || isReviewed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.25)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                          }}
+                        >
+                          {isResolved ? 'RESOLVED' : isReviewed ? 'REVIEWED BY ADMIN' : 'PENDING REVIEW'}
+                        </span>
+                      </div>
+
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                        {new Date(item.createdAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Original Message */}
+                    <div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 600, marginBottom: '0.2rem' }}>
+                        YOUR TRANSMISSION:
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.55 }}>
+                        {item.message}
+                      </p>
+                    </div>
+
+                    {/* Admin Reply Box */}
+                    {item.adminReply ? (
+                      <div
+                        style={{
+                          marginTop: '0.35rem',
+                          padding: '0.85rem 1rem',
+                          borderRadius: '10px',
+                          backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.35rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          <span
+                            style={{
+                              fontSize: '0.74rem',
+                              fontWeight: 800,
+                              color: '#34d399',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                            }}
+                          >
+                            🛡️ Citadel Council / Admin Reply
+                          </span>
+                          {item.repliedAt && (
+                            <span style={{ fontSize: '0.7rem', color: '#6ee7b7' }}>
+                              {new Date(item.repliedAt).toLocaleDateString(undefined, {
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: '0.86rem',
+                            color: '#a7f3d0',
+                            lineHeight: 1.5,
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {item.adminReply}
+                        </p>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          fontSize: '0.74rem',
+                          color: 'var(--text-tertiary)',
+                          padding: '0.4rem 0.6rem',
+                          borderRadius: '6px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px dashed rgba(255, 255, 255, 0.08)',
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        ⏳ Transmitted to Council — Awaiting evaluation.
+                      </div>
+                    )}
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                    {item.message}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
