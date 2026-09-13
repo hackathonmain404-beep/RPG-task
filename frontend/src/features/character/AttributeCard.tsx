@@ -73,15 +73,14 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
 
   return (
     <div
-      className={`rpg-card ${isRecentlyUpdated ? 'attribute-card-updated' : ''}`}
+      className={`rpg-card attribute-card attr-card-${attribute.key.toLowerCase()} ${isRecentlyUpdated ? 'attribute-card-updated' : ''}`}
       style={{
         padding: '1.25rem',
         display: 'flex',
         flexDirection: 'column',
         gap: '0.85rem',
-        border: isRecentlyUpdated ? `2px solid ${meta.colorVar}` : '1px solid var(--border-subtle)',
+        border: isRecentlyUpdated ? `2px solid ${meta.colorVar}` : undefined,
         boxShadow: isRecentlyUpdated ? `0 0 20px ${meta.colorVar}40` : undefined,
-        transition: 'border 0.3s ease, box-shadow 0.3s ease',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -90,6 +89,7 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.85rem', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 0, flex: 1 }}>
           <div
+            className="attr-icon-box"
             style={{
               width: '42px',
               height: '42px',
@@ -106,10 +106,11 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+              <h3 className="attr-title" style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 {attribute.displayName}
               </h3>
               <span
+                className="attr-domain-badge"
                 style={{
                   fontSize: '0.7rem',
                   fontWeight: 600,
@@ -123,7 +124,7 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
                 {meta.domain}
               </span>
             </div>
-            <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+            <p className="attr-tagline" style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
               {meta.tagline}
             </p>
           </div>
@@ -134,7 +135,7 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
           <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', display: 'block', fontWeight: 600 }}>
             Rank
           </span>
-          <span className="mono-numbers" style={{ fontSize: '1.35rem', fontWeight: 800, color: meta.colorVar }}>
+          <span className="mono-numbers attr-rank-value" style={{ fontSize: '1.35rem', fontWeight: 800, color: meta.colorVar }}>
             {attribute.value}
           </span>
         </div>
