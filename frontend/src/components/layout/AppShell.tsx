@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { HeaderHUD } from './HeaderHUD';
 import { 
   LayoutDashboard, 
@@ -10,19 +10,28 @@ import {
   Palette,
   Sparkles,
   MessageSquarePlus,
+  MessageCircle,
   X,
   ExternalLink,
   AlertTriangle,
   Info,
   PartyPopper,
   Flame,
-  Keyboard
+  Keyboard,
+  LogOut,
+  Crown,
+  Award,
+  Zap,
+  Coins,
+  User as UserIcon
 } from 'lucide-react';
+import { useAuth } from '../../context/useAuth';
 import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal.tsx';
+import { LeaderboardProvider, useLeaderboard } from '../../context/LeaderboardContext';
+import { LeaderboardModal } from '../common/LeaderboardModal';
 import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { useAuth } from '../../context/useAuth';
 import { ShopContext } from '../../context/shopContextDef';
 import { QuestsContext } from '../../context/questsContextDef';
 import { PageTransition } from '../common/PageTransition';
@@ -46,7 +55,16 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/app/character', label: 'Character', icon: UserCircle, iconClass: 'icon-character' },
   { to: '/app/shop', label: 'Shop', icon: Store, iconClass: 'icon-shop' },
   { to: '/app/themes', label: 'Themes', icon: Palette, iconClass: 'icon-themes' },
+  { to: '/app/community-chat', label: 'Community Chat', icon: MessageCircle, iconClass: 'icon-chat', badge: 'LIVE' },
   { to: '/app/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
+];
+
+export const PRIMARY_BOTTOM_NAV_ITEMS: NavItem[] = [
+  { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard, iconClass: 'icon-dashboard' },
+  { to: '/app/quests', label: 'Quests', icon: Scroll, iconClass: 'icon-quests' },
+  { to: '/app/character', label: 'Character', icon: UserCircle, iconClass: 'icon-character' },
+  { to: '/app/shop', label: 'Shop', icon: Store, iconClass: 'icon-shop' },
+  { to: '/app/themes', label: 'Themes', icon: Palette, iconClass: 'icon-themes' },
 ];
 
 const routePreloaders: Record<string, () => Promise<unknown>> = {
@@ -58,6 +76,7 @@ const routePreloaders: Record<string, () => Promise<unknown>> = {
   '/app/inventory': () => import('../../features/inventory/InventoryPage'),
   '/app/settings': () => import('../../features/settings/SettingsPage'),
   '/app/feedback': () => import('../../features/feedback/FeedbackPage'),
+  '/app/community-chat': () => import('../../features/chat/CommunityChatPage'),
 };
 const prefetchedRoutes = new Set<string>();
 
@@ -73,6 +92,8 @@ const prefetchRoute = (path: string) => {
 };
 
 const AppShellInner: React.FC = () => {
+  const { user, character, logout, isAdmin, refreshCharacter } = useAuth();
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState<boolean>(() => {
     try {
@@ -82,8 +103,9 @@ const AppShellInner: React.FC = () => {
     }
   });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
-  const { user, refreshCharacter } = useAuth();
+  const { isLeaderboardOpen, closeLeaderboard } = useLeaderboard();
   const shopContext = React.useContext(ShopContext);
   const questsContext = React.useContext(QuestsContext);
   const location = useLocation();
@@ -97,7 +119,16 @@ const AppShellInner: React.FC = () => {
   const refreshCharacterRef = React.useRef(refreshCharacter);
   refreshCharacterRef.current = refreshCharacter;
 
-  // Authoritative database synchronization when navigating between sections
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      setIsSidebarOpen(false);
+      await logout();
+      navigate('/');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
   useEffect(() => {
     setPendingPath(null);
     if (!user) return;
@@ -130,6 +161,24 @@ const AppShellInner: React.FC = () => {
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
+
+  // Prevent background scrolling and handle Escape when mobile drawer is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setIsSidebarOpen(false);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isSidebarOpen]);
 
   // Global Keyboard Shortcuts (1-7, N, F, B, ?, Esc)
   useKeyboardShortcuts({
@@ -383,14 +432,29 @@ const AppShellInner: React.FC = () => {
                 {item.badge && (
                   <span
                     style={{
-                      fontSize: '0.65rem',
+                      fontSize: '0.6rem',
                       fontWeight: 700,
-                      padding: '0.15rem 0.4rem',
+                      padding: '0.15rem 0.45rem',
                       borderRadius: '4px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      color: 'var(--text-tertiary)',
+                      backgroundColor: item.badge === 'LIVE' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                      color: item.badge === 'LIVE' ? '#10b981' : 'var(--text-tertiary)',
+                      border: item.badge === 'LIVE' ? '1px solid rgba(16, 185, 129, 0.3)' : 'none',
+                      letterSpacing: '0.05em',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
                   >
+                    {item.badge === 'LIVE' && (
+                      <span style={{
+                        width: '5px',
+                        height: '5px',
+                        borderRadius: '50%',
+                        background: '#10b981',
+                        display: 'inline-block',
+                        animation: 'chatPulse 1.8s ease-in-out infinite',
+                      }} />
+                    )}
                     {item.badge}
                   </span>
                 )}
@@ -499,6 +563,7 @@ const AppShellInner: React.FC = () => {
         {isSidebarOpen && (
           <div
             onClick={closeSidebar}
+            className="mobile-drawer-overlay"
             style={{
               position: 'fixed',
               top: '57px',
@@ -512,57 +577,275 @@ const AppShellInner: React.FC = () => {
           >
             <div
               onClick={e => e.stopPropagation()}
+              className="mobile-drawer-panel"
               style={{
-                width: 'min(280px, 85vw)',
+                width: 'min(310px, 86vw)',
                 height: '100%',
                 backgroundColor: 'var(--bg-surface)',
                 borderRight: '1px solid var(--border-strong)',
-                padding: '1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) 1rem',
+                padding: '1.25rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) 1rem',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.5rem',
+                gap: '0.65rem',
                 overflowY: 'auto',
-                boxShadow: '0 0 30px rgba(0, 0, 0, 0.8)',
+                boxShadow: '0 0 35px rgba(0, 0, 0, 0.85)',
               }}
             >
-              {NAV_ITEMS.map(item => {
-                const Icon = item.icon;
-                const isPending = pendingPath === item.to;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => {
-                      setPendingPath(item.to);
-                      closeSidebar();
-                    }}
-                    onMouseEnter={() => prefetchRoute(item.to)}
-                    onFocus={() => prefetchRoute(item.to)}
-                    style={({ isActive }) => {
-                      const active = isActive || isPending;
-                      return {
+              {/* Account Profile Card (Shifted from mobile Header HUD) */}
+              <div
+                style={{
+                  padding: '0.9rem',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95))',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.65rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                        border: '2px solid rgba(56, 189, 248, 0.4)',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.75rem 1rem',
-                        borderRadius: '8px',
-                        textDecoration: 'none',
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        color: active ? '#ffffff' : 'var(--text-secondary)',
-                        backgroundColor: active ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                        border: active ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
-                        minHeight: '44px',
-                      };
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        boxShadow: '0 0 12px rgba(56, 189, 248, 0.25)',
+                      }}
+                    >
+                      {user?.avatarUrl ? (
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.displayName || 'Profile'}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <UserIcon size={20} color="#38bdf8" />
+                      )}
+                    </div>
+                    <div style={{ overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.95rem',
+                          color: '#f8fafc',
+                          whiteSpace: 'nowrap',
+                          textOverflow: 'ellipsis',
+                          overflow: 'hidden',
+                          maxWidth: '160px',
+                        }}
+                      >
+                        {user?.displayName || 'Adventurer'}
+                      </div>
+                      {user?.email && (
+                        <div
+                          style={{
+                            fontSize: '0.72rem',
+                            color: '#94a3b8',
+                            whiteSpace: 'nowrap',
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            maxWidth: '160px',
+                          }}
+                        >
+                          {user.email}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {isAdmin && (
+                    <span
+                      style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        color: '#c084fc',
+                        backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                        border: '1px solid rgba(168, 85, 247, 0.4)',
+                        padding: '0.15rem 0.45rem',
+                        borderRadius: '9999px',
+                        letterSpacing: '0.05em',
+                        flexShrink: 0,
+                      }}
+                    >
+                      ADMIN
+                    </span>
+                  )}
+                </div>
+
+                {/* Bestowed Hero Title */}
+                {(user?.title || character?.title) ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.3rem 0.55rem',
+                      borderRadius: '6px',
+                      background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(168, 85, 247, 0.18))',
+                      border: '1px solid rgba(245, 158, 11, 0.45)',
+                      color: '#fbbf24',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <Icon size={18} />
-                      <span>{item.label}</span>
-                    </div>
-                  </NavLink>
-                );
-              })}
+                    <Award size={13} color="#fbbf24" />
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {user?.title || character?.title}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '6px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      color: '#94a3b8',
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    <Award size={12} color="#64748b" />
+                    <span>Novice Adventurer</span>
+                  </div>
+                )}
+
+                {/* Level & Gold Stats */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.35rem 0.6rem',
+                    borderRadius: '6px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#38bdf8', fontWeight: 600 }}>
+                    <Zap size={13} color="#38bdf8" />
+                    Level {character?.level || 1} ({character?.totalXp || 0} XP)
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#fbbf24', fontWeight: 600 }}>
+                    <Coins size={13} color="#fbbf24" />
+                    {character?.gold ?? 0} Gold
+                  </span>
+                </div>
+              </div>
+
+              {/* Citadel Navigation Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  margin: '0.35rem 0 0.15rem 0',
+                  color: 'var(--text-muted, #64748b)',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                <span>Citadel Navigation</span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                {NAV_ITEMS.map(item => {
+                  const Icon = item.icon;
+                  const isPending = pendingPath === item.to;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => {
+                        setPendingPath(item.to);
+                        closeSidebar();
+                      }}
+                      onMouseEnter={() => prefetchRoute(item.to)}
+                      onFocus={() => prefetchRoute(item.to)}
+                      style={({ isActive }) => {
+                        const active = isActive || isPending;
+                        return {
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '0.65rem 0.9rem',
+                          borderRadius: '8px',
+                          textDecoration: 'none',
+                          fontSize: '0.92rem',
+                          fontWeight: 600,
+                          color: active ? '#ffffff' : 'var(--text-secondary)',
+                          backgroundColor: active ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                          border: active ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
+                          minHeight: '42px',
+                        };
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Icon size={18} />
+                        <span>{item.label}</span>
+                      </div>
+                    </NavLink>
+                  );
+                })}
+              </div>
+
+              {/* Account & Actions Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  margin: '0.45rem 0 0.15rem 0',
+                  color: 'var(--text-muted, #64748b)',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                <span>Account & Actions</span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
+              </div>
+
+              {/* Admin Panel (if Admin) */}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={closeSidebar}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '0.65rem 0.9rem',
+                    borderRadius: '8px',
+                    backgroundColor: 'rgba(168, 85, 247, 0.12)',
+                    border: '1px solid rgba(168, 85, 247, 0.35)',
+                    color: '#d8b4fe',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    minHeight: '42px',
+                  }}
+                >
+                  <Crown size={18} color="#c084fc" />
+                  <span>Admin Control</span>
+                </Link>
+              )}
 
               {/* Mobile Drawer Feedback Action Button */}
               <button
@@ -575,21 +858,48 @@ const AppShellInner: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.75rem',
-                  padding: '0.75rem 1rem',
+                  padding: '0.65rem 0.9rem',
                   borderRadius: '8px',
                   backgroundColor: 'rgba(139, 92, 246, 0.12)',
                   border: '1px solid rgba(139, 92, 246, 0.3)',
                   color: '#c084fc',
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   textAlign: 'left',
-                  minHeight: '44px',
+                  minHeight: '42px',
                 }}
                 aria-label="Open Feedback Modal"
               >
                 <MessageSquarePlus size={18} />
                 <span>Feedback</span>
+              </button>
+
+              {/* Sign Out Button in Drawer */}
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.65rem 0.9rem',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(244, 63, 94, 0.12)',
+                  border: '1px solid rgba(244, 63, 94, 0.3)',
+                  color: '#fda4af',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: isLoggingOut ? 'not-allowed' : 'pointer',
+                  textAlign: 'left',
+                  minHeight: '42px',
+                  marginTop: '0.25rem',
+                }}
+                aria-label="Sign Out"
+              >
+                <LogOut size={18} color="#fb7185" />
+                <span>{isLoggingOut ? 'Leaving...' : 'Sign Out'}</span>
               </button>
             </div>
           </div>
@@ -614,7 +924,7 @@ const AppShellInner: React.FC = () => {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Bar (<768px) */}
+      {/* Mobile Bottom Navigation Bar (<768px, 5 Primary Destinations) */}
       <nav
         style={{
           position: 'sticky',
@@ -623,18 +933,18 @@ const AppShellInner: React.FC = () => {
           right: 0,
           backgroundColor: 'var(--bg-surface)',
           borderTop: '1px solid var(--border-subtle)',
-          padding: '0.4rem 0.25rem calc(0.4rem + env(safe-area-inset-bottom, 0px)) 0.25rem',
+          padding: '0.45rem 0.5rem calc(0.45rem + env(safe-area-inset-bottom, 0px)) 0.5rem',
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
+          gap: '0.25rem',
           zIndex: 80,
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
+          overflowX: 'hidden',
         }}
         className="mobile-bottom-nav"
         aria-label="Mobile Navigation"
       >
-        {NAV_ITEMS.map(item => {
+        {PRIMARY_BOTTOM_NAV_ITEMS.map(item => {
           const Icon = item.icon;
           const isPending = pendingPath === item.to;
           return (
@@ -651,20 +961,23 @@ const AppShellInner: React.FC = () => {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.15rem',
+                  gap: '0.2rem',
                   textDecoration: 'none',
                   color: active ? '#38bdf8' : 'var(--text-secondary)',
-                  fontSize: '0.65rem',
-                  fontWeight: 600,
-                  padding: '0.3rem 0.35rem',
-                  minWidth: '44px',
-                  minHeight: '44px',
-                  flexShrink: 0,
+                  fontSize: '0.72rem',
+                  fontWeight: active ? 700 : 500,
+                  padding: '0.35rem 0.4rem',
+                  minWidth: '54px',
+                  minHeight: '48px',
+                  borderRadius: '8px',
+                  backgroundColor: active ? 'rgba(56, 189, 248, 0.1)' : 'transparent',
+                  flex: 1,
+                  transition: 'all 0.18s ease',
                 };
               }}
             >
-              <Icon size={18} />
-              <span style={{ letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>{item.label}</span>
+              <Icon size={19} />
+              <span style={{ letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>{item.label}</span>
             </NavLink>
           );
         })}
@@ -672,6 +985,9 @@ const AppShellInner: React.FC = () => {
 
       {/* Global Unified Feedback Modal */}
       <FeedbackModal isOpen={isFeedbackOpen} onClose={closeFeedback} />
+
+      {/* Global Leaderboard Modal */}
+      <LeaderboardModal isOpen={isLeaderboardOpen} onClose={closeLeaderboard} />
 
       {/* Global Keyboard Shortcuts Help Modal */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
@@ -682,7 +998,9 @@ const AppShellInner: React.FC = () => {
 export const AppShell: React.FC = () => {
   return (
     <FeedbackProvider>
-      <AppShellInner />
+      <LeaderboardProvider>
+        <AppShellInner />
+      </LeaderboardProvider>
     </FeedbackProvider>
   );
 };

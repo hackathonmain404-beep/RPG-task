@@ -200,7 +200,7 @@ export interface GenerateAvatarRequest {
 
 export interface GenerateAvatarResponse {
   success: boolean;
-  avatar: ShopItem;
+  avatar?: ShopItem;
   avatarUrl?: string;
   inventoryItem?: {
     id: string;
@@ -411,4 +411,57 @@ export interface UpdateMarketItemRequest {
   displayOrder?: number;
 }
 
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  role: 'USER' | 'ADMIN' | string;
+  githubUsername: string | null;
+  level: number;
+  totalXp: number;
+  gold: number;
+  streakCurrent: number;
+  progressPercent: number;
+}
 
+export interface CurrentUserRank {
+  rank: number;
+  level: number;
+  totalXp: number;
+  gold: number;
+}
+
+export interface LeaderboardResponse {
+  sortBy: 'level' | 'xp' | 'coins';
+  totalAdventurers: number;
+  currentUserRank: CurrentUserRank | null;
+  leaderboard: LeaderboardEntry[];
+  updatedAt: string;
+}
+
+/* ==========================================================================
+   COMMUNITY CHAT TYPES
+   ========================================================================== */
+
+export interface ChatUser {
+  id: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  role?: string;
+  level: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  user: ChatUser;
+}
+
+export interface ChatMessagesResponse {
+  messages: ChatMessage[];
+  count: number;
+  retentionDays: number;
+}

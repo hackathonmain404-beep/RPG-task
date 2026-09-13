@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useFeedback } from '../../context/FeedbackContext';
-import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, MoreVertical, Settings } from 'lucide-react';
+import { useLeaderboard } from '../../context/LeaderboardContext';
+import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, Settings, Trophy } from 'lucide-react';
 
 interface HeaderHUDProps {
   onToggleSidebar?: () => void;
@@ -12,6 +13,7 @@ interface HeaderHUDProps {
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   const { user, character, logout, isAdmin } = useAuth();
   const { openFeedback } = useFeedback();
+  const { openLeaderboard } = useLeaderboard();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -59,6 +61,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
       }}
     >
       <div
+        className="hud-header-inner"
         style={{
           width: '100%',
           padding: '0.75rem clamp(0.75rem, 2.5vw, 1.5rem)',
@@ -69,7 +72,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
         }}
       >
         {/* Left: Brand Logo & Mobile Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="hud-left-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {onToggleSidebar && (
             <button
               type="button"
@@ -109,12 +112,37 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
         </div>
 
         {/* Right: Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="hud-right-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Leaderboard Trigger */}
+          <button
+            type="button"
+            onClick={openLeaderboard}
+            className="rpg-btn hud-leaderboard-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.4rem 0.75rem',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              borderRadius: '8px',
+              backgroundColor: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              color: '#fbbf24',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            aria-label="View Global Leaderboard"
+            title="Global Rankings Leaderboard"
+          >
+            <Trophy size={16} color="#fbbf24" />
+            <span className="desktop-only">Leaderboard</span>
+          </button>
           {/* Feedback Trigger — immediately to the left of player profile */}
           <button
             type="button"
             onClick={openFeedback}
-            className="rpg-btn hud-feedback-btn"
+            className="rpg-btn hud-feedback-btn desktop-only-action"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -148,8 +176,8 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             </Link>
           )}
 
-          {/* Interactive Profile Dropdown (housing Feedback & Sign Out) */}
-          <div ref={menuRef} className="hud-profile-container" style={{ position: 'relative' }}>
+          {/* Interactive Profile Dropdown (housing Feedback & Sign Out) - Hidden on mobile, shifted into drawer */}
+          <div ref={menuRef} className="hud-profile-container desktop-only-profile" style={{ position: 'relative' }}>
             <button
               type="button"
               onClick={() => setIsMenuOpen(prev => !prev)}
@@ -158,37 +186,29 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               aria-expanded={isMenuOpen}
               aria-label="User Profile Menu"
             >
-              {/* Desktop view: full avatar, name, title badge, and chevron */}
-              <div className="hud-profile-desktop-content">
-                <div className="hud-user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
-                  {user?.avatarUrl ? (
-                    <img
-                      src={user.avatarUrl}
-                      alt={user.displayName || 'Profile'}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                    />
-                  ) : (
-                    <User size={14} className="hud-user-icon" />
-                  )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
-                  <span className="hud-user-name">
-                    {user?.displayName || 'Adventurer'}
+              <div className="hud-user-avatar" style={{ overflow: 'hidden', position: 'relative' }}>
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.displayName || 'Profile'}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                  />
+                ) : (
+                  <User size={14} className="hud-user-icon" />
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
+                <span className="hud-user-name">
+                  {user?.displayName || 'Adventurer'}
+                </span>
+                {(user?.title || character?.title) && (
+                  <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <Award size={10} color="#fbbf24" />
+                    {user?.title || character?.title}
                   </span>
-                  {(user?.title || character?.title) && (
-                    <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                      <Award size={10} color="#fbbf24" />
-                      {user?.title || character?.title}
-                    </span>
-                  )}
-                </div>
-                <ChevronDown size={14} className={`hud-profile-chevron ${isMenuOpen ? 'is-open' : ''}`} />
+                )}
               </div>
-
-              {/* Mobile view: three dots icon */}
-              <div className="hud-profile-mobile-content" aria-hidden="true" title="Account & Options">
-                <MoreVertical size={20} className="hud-more-icon" />
-              </div>
+              <ChevronDown size={14} className={`hud-profile-chevron ${isMenuOpen ? 'is-open' : ''}`} />
             </button>
 
             {/* Glassmorphic Profile Dropdown Menu */}
@@ -224,7 +244,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                     </div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
-                        {user?.displayName || 'Adventurer Profile'}
+                        Adventurer Profile
                       </div>
                       {user?.email && (
                         <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>
@@ -316,7 +336,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               <Link
                 to="/app/settings"
                 onClick={() => setIsMenuOpen(false)}
-                className="hud-dropdown-item"
+                className="hud-dropdown-item hud-dropdown-settings"
               >
                 <Settings size={16} className="hud-item-icon" />
                 <span>Account Settings</span>
@@ -326,11 +346,25 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               <Link
                 to="/app/character"
                 onClick={() => setIsMenuOpen(false)}
-                className="hud-dropdown-item"
+                className="hud-dropdown-item hud-dropdown-character"
               >
                 <User size={16} className="hud-item-icon" />
                 <span>Character Sheet</span>
               </Link>
+
+              {/* Leaderboard Item */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  openLeaderboard();
+                }}
+                className="hud-dropdown-item"
+                aria-label="Global Leaderboard"
+              >
+                <Trophy size={16} color="#fbbf24" className="hud-item-icon" />
+                <span>Leaderboard</span>
+              </button>
 
               {/* Feedback Item */}
               <button

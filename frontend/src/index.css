@@ -9,6 +9,16 @@
   --bg-surface-elevated: #161d28;
   --bg-surface-sunken: #06080b;
 
+  /* Theme System Mappings */
+  --theme-primary: var(--color-xp, #38bdf8);
+  --theme-secondary: var(--color-gold, #f59e0b);
+  --theme-background: var(--bg-canvas, #090c10);
+  --theme-surface: var(--bg-surface, #0f141c);
+  --theme-surface-hover: var(--bg-surface-elevated, #161d28);
+  --theme-text: var(--text-primary, #f8fafc);
+  --theme-text-muted: var(--text-secondary, #94a3b8);
+  --theme-border: var(--border-subtle, rgba(255, 255, 255, 0.08));
+
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.18);
@@ -917,11 +927,10 @@ div[role="radiogroup"] button:hover {
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
   }
   .app-main-content {
-    padding: 1.25rem 1rem calc(4.75rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
+    padding: 1.25rem clamp(0.75rem, 3.5vw, 1.25rem) calc(5.25rem + env(safe-area-inset-bottom, 0px)) clamp(0.75rem, 3.5vw, 1.25rem) !important;
   }
   .floating-system-control {
-    bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)) !important;
-    right: 1rem !important;
+    display: none !important;
   }
 }
 
@@ -964,7 +973,8 @@ div[role="radiogroup"] button:hover {
 /* 7. Small Mobile (<=360px) */
 @media (max-width: 360px) {
   .hud-brand-name {
-    display: none !important;
+    font-size: 1.05rem !important;
+    letter-spacing: -0.01em !important;
   }
   .hud-user-name {
     max-width: 65px;
@@ -1863,20 +1873,200 @@ textarea:focus-visible,
   }
 }
 
-/* Responsive Breakpoints */
+/* Responsive Breakpoints - Mobile Optimization (Phone Experience) */
 @media (max-width: 768px) {
+  /* Hero Fullscreen Container adjustments on Mobile */
+  .hero-fullscreen {
+    min-height: 100dvh !important;
+    padding-top: calc(60px + 0.6rem) !important;
+    padding-bottom: 1.25rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    justify-content: flex-start !important;
+    overflow-y: visible !important;
+  }
+
+  .hero-headline-group {
+    margin: 0 0 0.5rem 0 !important;
+    width: 100% !important;
+  }
+
+  /* Eyebrow badge */
+  .hero-badge-el {
+    font-size: 0.65rem !important;
+    padding: 0.25rem 0.75rem !important;
+    margin-bottom: 0.65rem !important;
+    letter-spacing: 0.05em !important;
+    max-width: 96% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Responsive H1 Headline */
+  .hero-main-h1 {
+    font-size: clamp(1.75rem, 7vw, 2.25rem) !important;
+    line-height: 1.14 !important;
+    margin-bottom: 0.65rem !important;
+    letter-spacing: -0.025em !important;
+    max-width: 100% !important;
+    padding: 0 0.25rem !important;
+  }
+
+  .hero-main-h1 .headline-row-1 {
+    font-size: inherit !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  .hero-main-h1 .headline-row-2 {
+    font-size: inherit !important;
+  }
+
+  /* Subtitle paragraph */
+  .hero-desc-el {
+    font-size: 0.85rem !important;
+    line-height: 1.45 !important;
+    max-width: 340px !important;
+    margin-bottom: 0.85rem !important;
+    color: #94a3b8 !important;
+  }
+
+  /* Primary CTA Button */
+  .hero-cta-btn {
+    padding: 0.7rem 1.6rem !important;
+    font-size: 0.92rem !important;
+    width: 100% !important;
+    max-width: 290px !important;
+    box-sizing: border-box !important;
+    justify-content: center !important;
+  }
+
+  /* Energy Connector */
+  .hero-hud-energy-connector {
+    height: 8px !important;
+    margin: 0.15rem auto !important;
+  }
+
+  /* Hero Progression Simulator Card */
+  .hero-progression-hud-wrapper {
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.25rem !important;
+    width: 100% !important;
+  }
+
+  .hero-hud-parallax-inner {
+    width: 100% !important;
+  }
+
   .hero-progression-hud-card {
-    max-width: 95%;
-    padding: 0.75rem 1rem;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0.65rem 0.75rem 0.55rem !important;
+    border-radius: 12px !important;
+    background: rgba(8, 14, 28, 0.95) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(56, 189, 248, 0.12) !important;
   }
+
+  /* HUD 2-Tier Mobile Grid System */
   .hud-main-grid {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0.75rem !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.45rem !important;
+    padding: 0.5rem 0.6rem !important;
+    border-radius: 8px !important;
+    background: rgba(15, 23, 42, 0.6) !important;
   }
+
+  /* Node 1: Active Quest Banner (Full Width) */
+  .hero-hud-quest-pill {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    padding-bottom: 0.4rem !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.12) !important;
+  }
+
+  .hero-hud-quest-pill .hud-hex-node svg {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Hide raw inline arrow connectors on mobile */
+  .hud-arrow-connector {
+    display: none !important;
+  }
+
+  /* Node 2: XP Node (Column 1) */
+  .hud-hex-node-group {
+    grid-column: 1 / 2 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    min-width: 0 !important;
+  }
+
+  .hud-hex-node-group .hud-hex-node svg {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  /* Node 3: Attribute Node (Column 2) */
+  .hero-hud-attr-pill {
+    grid-column: 2 / 3 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.4rem !important;
+    min-width: 0 !important;
+  }
+
+  .hero-hud-attr-pill .hud-hex-node svg {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  /* Node 4: Progress Bar (Full Width) */
+  .hero-hud-progress-col {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: 0.1rem !important;
+    padding-top: 0.35rem !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+
+  /* Pipeline Track - single unified horizontal line */
   .hud-pipeline-track {
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0.2rem !important;
+    font-size: 0.55rem !important;
+    padding-top: 0.4rem !important;
+    margin-top: 0.4rem !important;
+  }
+
+  .hud-pipeline-step {
+    gap: 0.2rem !important;
+    font-size: 0.55rem !important;
+  }
+
+  .hud-pipeline-step svg {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .hud-pipeline-track > span {
+    font-size: 0.55rem !important;
+  }
+
+  .hero-scroll-indicator {
+    margin-top: 0.4rem !important;
+    transform: scale(0.85) !important;
   }
 }
 

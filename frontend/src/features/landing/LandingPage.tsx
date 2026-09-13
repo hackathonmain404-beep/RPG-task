@@ -197,14 +197,14 @@ export const LandingPage: React.FC = () => {
         }, 0)
         .to('.hero-headline-group', {
           y: isMobile ? -25 : -55,
-          opacity: 0,
+          opacity: isMobile ? 0.15 : 0,
           ease: 'none',
-        }, 0.05)
+        }, isMobile ? 0.2 : 0.05)
         .to('.hero-progression-hud-wrapper', {
           y: isMobile ? -18 : -38,
           opacity: 0,
           ease: 'none',
-        }, 0.08)
+        }, isMobile ? 0.35 : 0.08)
         .to('.hero-content-layer', {
           opacity: 0,
           ease: 'none',
@@ -770,6 +770,7 @@ export const LandingPage: React.FC = () => {
 
               {/* H1 Heading */}
               <h1
+                className="hero-main-h1"
                 style={{
                   fontSize: 'clamp(2.5rem, 5.5vw, 4.25rem)',
                   maxWidth: '920px',
@@ -787,7 +788,7 @@ export const LandingPage: React.FC = () => {
                     marginBottom: '0.1em',
                   }}
                 >
-                  Your Life is the Game.
+                  Your Goals. Your Progress.
                 </span>
                 <span
                   className="headline-row-2 xp-sweep-active"
@@ -800,7 +801,7 @@ export const LandingPage: React.FC = () => {
                     filter: 'drop-shadow(0 0 25px rgba(56, 189, 248, 0.3))',
                   }}
                 >
-                  Start Gaining XP.
+                  Start Achieving More.
                   <span className="xp-spark" style={{ top: '-4px', right: '-8px' }} />
                   <span className="xp-spark" style={{ bottom: '2px', right: '-12px', animationDelay: '2.05s' }} />
                 </span>
@@ -1137,6 +1138,7 @@ export const LandingPage: React.FC = () => {
 
                       {/* Node 4: Next Level Progress */}
                       <div
+                        className="hero-hud-progress-col"
                         style={{
                           display: 'flex',
                           flexDirection: 'column',
