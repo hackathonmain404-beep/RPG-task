@@ -12,6 +12,7 @@ import { shopApi } from './api/shop';
 
 const EQUIPPED_THEME_KEY = 'liferpg_active_theme_id';
 const OWNED_THEMES_KEY = 'liferpg_owned_themes';
+let activeThemePersistenceId = 0;
 
 class ThemeService {
   private memoryThemes: Theme[] | null = null;
@@ -239,8 +240,11 @@ class ThemeService {
 
   /**
    * Persist active theme locally and in database across Supabase and backend.
+   * Uses sequence tracking so that if a newer theme is selected while this is saving,
+   * stale operations abort immediately without overwriting the newer selection.
    */
   async setActiveTheme(themeId: string, userId?: string): Promise<void> {
+    const currentSeq = ++activeThemePersistenceId;
     const slug = (themeId || '').toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
     localStorage.setItem(EQUIPPED_THEME_KEY, slug);
 
@@ -253,12 +257,17 @@ class ThemeService {
           .or(`key.eq.${slug},key.eq.${slug.replace(/-/g, '_')},key.eq.cyberpunk`)
           .maybeSingle();
 
+        // If a newer theme was selected while fetching, abort immediately
+        if (currentSeq !== activeThemePersistenceId) return;
+
         if (t) {
           // Clear previous equips for this user
           await supabase
             .from('UserTheme')
             .update({ equippedAt: null })
             .eq('userId', userId);
+
+          if (currentSeq !== activeThemePersistenceId) return;
 
           // Find existing UserTheme row
           const { data: existingUt } = await supabase
@@ -267,6 +276,8 @@ class ThemeService {
             .eq('userId', userId)
             .eq('themeId', t.id)
             .maybeSingle();
+
+          if (currentSeq !== activeThemePersistenceId) return;
 
           if (existingUt) {
             await supabase
@@ -287,6 +298,8 @@ class ThemeService {
       } catch (err) {
         console.warn('Supabase UserTheme equip notice:', err);
       }
+
+      if (currentSeq !== activeThemePersistenceId) return;
 
       // Also notify backend inventory equip endpoint if reachable
       try {

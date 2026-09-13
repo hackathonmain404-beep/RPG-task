@@ -142,7 +142,6 @@ export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isEquippingKey, setIsEquippingKey] = useState<string | null>(null);
 
   // Active badge: user.badge from backend or any owned badge from shop inventory
   const ownedBadgeItem = inventory?.find(
@@ -195,54 +194,58 @@ export const SettingsPage: React.FC = () => {
   };
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const isInitializedRef = useRef(false);
 
-  // Sync state when user object loads or updates
+  // Initialize display name and avatar preview once when user object is loaded.
+  // Never re-sync or overwrite user's in-progress typing while they are editing.
   useEffect(() => {
-    if (user?.displayName && !displayName) {
-      setDisplayName(user.displayName);
+    if (user && !isInitializedRef.current) {
+      setDisplayName(user.displayName || '');
+      setAvatarPreview(user.avatarUrl || null);
+      isInitializedRef.current = true;
     }
-    if (user?.avatarUrl !== undefined) {
-      setAvatarPreview(user.avatarUrl);
-    }
-  }, [user, displayName]);
+  }, [user]);
 
-  const handleSelectTheme = async (themeDef: HudThemeDef) => {
-    setIsEquippingKey(themeDef.key);
+  // Local active theme slug for instantaneous 0ms card selection state
+  const [selectedThemeSlug, setSelectedThemeSlug] = useState<string>(() => {
     try {
-      // 1. Immediately set data-theme attribute on document root & body
-      document.documentElement.setAttribute('data-theme', themeDef.key);
-      if (typeof document !== 'undefined' && document.body) {
-        document.body.setAttribute('data-theme', themeDef.key);
+      return localStorage.getItem('liferpg_active_theme_id') || 'dark-citadel';
+    } catch {
+      return 'dark-citadel';
+    }
+  });
+
+  const handleSelectTheme = (themeDef: HudThemeDef) => {
+    setSelectedThemeSlug(themeDef.slug);
+
+    // 1. Immediately set data-theme attribute on document root & body (0ms synchronous)
+    document.documentElement.setAttribute('data-theme', themeDef.key);
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.setAttribute('data-theme', themeDef.key);
+    }
+
+    // 2. Persist to local storage synchronously for instant restore
+    try {
+      localStorage.setItem('liferpg_active_theme_id', themeDef.slug);
+    } catch {
+      // Ignore
+    }
+
+    // 3. Apply full design token CSS variables instantly (0ms latency)
+    applyThemeColors(themeDef.slug);
+
+    // 4. Update ThemeContext in background without blocking UI
+    if (themeContext?.equipTheme) {
+      const targetTheme = themeContext.themes.find(t => 
+        t.slug === themeDef.slug || 
+        t.slug === themeDef.key ||
+        t.id === themeDef.slug || 
+        t.name.toLowerCase() === themeDef.name.toLowerCase()
+      );
+
+      if (targetTheme) {
+        void themeContext.equipTheme(targetTheme);
       }
-
-      // 2. Persist to local storage
-      try {
-        localStorage.setItem('liferpg_active_theme_id', themeDef.slug);
-      } catch {
-        // Ignore
-      }
-
-      // 3. Apply full design token CSS variables
-      applyThemeColors(themeDef.slug);
-
-      // 4. If ThemeContext is available, equip in context and Supabase/DB
-      if (themeContext?.equipTheme) {
-        const targetTheme = themeContext.themes.find(t => 
-          t.slug === themeDef.slug || 
-          t.slug === themeDef.key ||
-          t.id === themeDef.slug || 
-          t.name.toLowerCase() === themeDef.name.toLowerCase()
-        );
-
-        if (targetTheme) {
-          await themeContext.equipTheme(targetTheme);
-        }
-      }
-
-      // 5. Ensure data-theme remains themeDef.key for exact test contract match
-      document.documentElement.setAttribute('data-theme', themeDef.key);
-    } finally {
-      setIsEquippingKey(null);
     }
   };
 
@@ -752,7 +755,7 @@ export const SettingsPage: React.FC = () => {
 
         <div className="theme-customizer-grid">
           {PREGIVEN_HUD_THEMES.map(theme => {
-            const activeSlug = themeContext?.activeTheme?.slug || (typeof document !== 'undefined' ? document.documentElement.getAttribute('data-theme') : null) || 'dark-citadel';
+            const activeSlug = selectedThemeSlug || themeContext?.activeTheme?.slug || (typeof document !== 'undefined' ? document.documentElement.getAttribute('data-theme') : null) || 'dark-citadel';
             const isSelected = 
               activeSlug === theme.slug ||
               activeSlug === theme.key ||
@@ -761,14 +764,11 @@ export const SettingsPage: React.FC = () => {
               (theme.key === 'mystic_forest' && (activeSlug === 'mystic-forest' || activeSlug === 'mystic_forest')) ||
               (theme.key === 'solaris_gold' && (activeSlug === 'solaris-gold' || activeSlug === 'solaris_gold'));
 
-            const isProcessing = isEquippingKey === theme.key;
-
             return (
               <button
                 type="button"
                 key={theme.key}
                 onClick={() => handleSelectTheme(theme)}
-                disabled={isProcessing}
                 className={`theme-preview-card ${isSelected ? 'selected' : ''}`}
                 style={{
                   '--card-theme-border': theme.border,

@@ -31,17 +31,46 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const latestThemeSlugRef = React.useRef<string>(activeTheme.slug);
+  const latestRequestIdRef = React.useRef<number>(0);
+
   // Apply CSS custom properties to document.documentElement (:root)
   const applyTheme = useCallback((theme: Theme) => {
     applyThemeColors(theme);
   }, []);
 
-  // Set active theme and apply CSS variables
+  // Set active theme and apply CSS variables with 0ms UI latency and race-condition immunity
   const setActiveTheme = useCallback(async (theme: Theme) => {
+    const reqId = ++latestRequestIdRef.current;
+    latestThemeSlugRef.current = theme.slug;
+
+    // 1. Instant local application (0ms)
     setActiveThemeState(theme);
     applyThemeColors(theme);
-    await themeService.setActiveTheme(theme.slug, user?.id);
-    window.dispatchEvent(new CustomEvent('liferpg-theme-changed', { detail: { themeSlug: theme.slug } }));
+    const themeKey = theme.slug;
+    document.documentElement.setAttribute('data-theme', themeKey);
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.setAttribute('data-theme', themeKey);
+    }
+    try {
+      localStorage.setItem('liferpg_active_theme_id', theme.slug);
+    } catch {
+      // Ignore
+    }
+
+    // 2. Dispatch event immediately for other listeners (Shop, etc.) with reqId
+    window.dispatchEvent(
+      new CustomEvent('liferpg-theme-changed', {
+        detail: { themeSlug: theme.slug, requestId: reqId },
+      })
+    );
+
+    // 3. Persist in background (fire-and-forget, never blocking UI, discarded if superseded)
+    try {
+      await themeService.setActiveTheme(theme.slug, user?.id);
+    } catch (err) {
+      console.warn('Background theme save notice:', err);
+    }
   }, [user?.id]);
 
   // Load catalog and user ownership
@@ -57,22 +86,30 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setOwnedThemeIds(owned);
 
         const activeId = await themeService.getActiveThemeId(user.id);
-        const match = fetchedThemes.find(t => t.slug === activeId || t.id === activeId);
-        if (match) {
-          setActiveThemeState(match);
-          applyTheme(match);
-        } else {
-          setActiveThemeState(DEFAULT_THEME);
-          applyTheme(DEFAULT_THEME);
+        // Only apply if user hasn't actively switched themes during the initial fetch
+        if (latestThemeSlugRef.current === activeTheme.slug || !latestThemeSlugRef.current) {
+          const match = fetchedThemes.find(t => t.slug === activeId || t.id === activeId);
+          if (match) {
+            setActiveThemeState(match);
+            applyTheme(match);
+            latestThemeSlugRef.current = match.slug;
+          } else {
+            setActiveThemeState(DEFAULT_THEME);
+            applyTheme(DEFAULT_THEME);
+            latestThemeSlugRef.current = DEFAULT_THEME.slug;
+          }
         }
       } else {
         setOwnedThemeIds(new Set());
         // For guest/logged-out users, check cached theme or use default
         const activeId = await themeService.getActiveThemeId();
-        const match = fetchedThemes.find(t => t.slug === activeId || t.id === activeId);
-        const selected = match || DEFAULT_THEME;
-        setActiveThemeState(selected);
-        applyTheme(selected);
+        if (latestThemeSlugRef.current === activeTheme.slug || !latestThemeSlugRef.current) {
+          const match = fetchedThemes.find(t => t.slug === activeId || t.id === activeId);
+          const selected = match || DEFAULT_THEME;
+          setActiveThemeState(selected);
+          applyTheme(selected);
+          latestThemeSlugRef.current = selected.slug;
+        }
       }
     } catch (err: any) {
       setError(err?.message || 'Failed to load themes.');
@@ -81,7 +118,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, applyTheme]);
+  }, [user?.id, applyTheme, activeTheme.slug]);
 
   // Initial load & user session change
   useEffect(() => {
@@ -91,16 +128,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Listen to cross-component theme events (e.g. equipping/purchasing from Shop/Armory)
   useEffect(() => {
     const onThemeChange = (e: Event) => {
-      const detail = (e as CustomEvent<{ themeSlug: string }>).detail;
-      if (detail?.themeSlug) {
-        const clean = detail.themeSlug.toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
-        const found = themes.find(t => t.slug === clean || t.id === clean || t.name.toLowerCase().includes(clean));
-        if (found) {
-          setActiveThemeState(found);
-          applyThemeColors(found);
-        } else {
-          applyThemeColors(detail.themeSlug);
-        }
+      const detail = (e as CustomEvent<{ themeSlug: string; requestId?: number }>).detail;
+      if (!detail?.themeSlug) return;
+
+      // Ignore stale requests if a newer request was made locally
+      if (detail.requestId !== undefined && detail.requestId < latestRequestIdRef.current) {
+        return;
+      }
+
+      const clean = detail.themeSlug.toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
+      // If user has already chosen a different theme more recently, ignore
+      if (latestThemeSlugRef.current && clean !== latestThemeSlugRef.current) {
+        return;
+      }
+
+      latestThemeSlugRef.current = clean;
+      const found = themes.find(t => t.slug === clean || t.id === clean || t.name.toLowerCase().includes(clean));
+      if (found) {
+        setActiveThemeState(found);
+        applyThemeColors(found);
+      } else {
+        applyThemeColors(detail.themeSlug);
       }
     };
 
