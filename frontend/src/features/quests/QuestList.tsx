@@ -79,47 +79,27 @@ export const QuestList: React.FC<QuestListProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Controls Header: Search & Filters */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1rem',
-          backgroundColor: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '12px',
-          padding: 'clamp(0.85rem, 2.5vw, 1.25rem)',
-        }}
-      >
+      <div className="quest-controls-panel">
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           {/* Search Input */}
-          <div style={{ position: 'relative', flex: '1 1 min(100%, 240px)' }}>
+          <div className="quest-search-wrapper">
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search active or completed quests..."
-              className="rpg-input"
-              style={{ paddingLeft: '2.4rem' }}
+              className="rpg-input quest-search-input"
               aria-label="Search quests"
             />
             <Search
               size={18}
-              color="var(--text-tertiary)"
-              style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }}
+              className="quest-search-icon"
             />
           </div>
 
           {/* Status Tabs */}
           <div
-            style={{
-              display: 'flex',
-              backgroundColor: 'var(--bg-surface-sunken)',
-              padding: '0.25rem',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-            }}
+            className="quest-status-tabs"
             role="tablist"
             aria-label="Filter quests by status"
           >
@@ -128,17 +108,7 @@ export const QuestList: React.FC<QuestListProps> = ({
               role="tab"
               aria-selected={statusFilter === 'all'}
               onClick={() => setStatusFilter('all')}
-              style={{
-                padding: '0.45rem 0.85rem',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: statusFilter === 'all' ? 'var(--bg-surface-elevated)' : 'transparent',
-                color: statusFilter === 'all' ? '#ffffff' : 'var(--text-secondary)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
+              className={`quest-status-tab tab-all ${statusFilter === 'all' ? 'active' : ''}`}
             >
               All ({tasks.length})
             </button>
@@ -147,17 +117,7 @@ export const QuestList: React.FC<QuestListProps> = ({
               role="tab"
               aria-selected={statusFilter === 'active'}
               onClick={() => setStatusFilter('active')}
-              style={{
-                padding: '0.45rem 0.85rem',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: statusFilter === 'active' ? 'var(--bg-surface-elevated)' : 'transparent',
-                color: statusFilter === 'active' ? '#38bdf8' : 'var(--text-secondary)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
+              className={`quest-status-tab tab-active ${statusFilter === 'active' ? 'active' : ''}`}
             >
               Active ({activeCount})
             </button>
@@ -166,17 +126,7 @@ export const QuestList: React.FC<QuestListProps> = ({
               role="tab"
               aria-selected={statusFilter === 'completed'}
               onClick={() => setStatusFilter('completed')}
-              style={{
-                padding: '0.45rem 0.85rem',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: statusFilter === 'completed' ? 'var(--bg-surface-elevated)' : 'transparent',
-                color: statusFilter === 'completed' ? '#10b981' : 'var(--text-secondary)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
+              className={`quest-status-tab tab-completed ${statusFilter === 'completed' ? 'active' : ''}`}
             >
               Completed ({completedCount})
             </button>
@@ -185,13 +135,7 @@ export const QuestList: React.FC<QuestListProps> = ({
 
         {/* Discipline Filter Pills */}
         <div
-          style={{
-            display: 'flex',
-            gap: '0.5rem',
-            overflowX: 'auto',
-            paddingBottom: '0.25rem',
-            scrollbarWidth: 'none',
-          }}
+          className="quest-discipline-pills"
           aria-label="Filter quests by discipline"
         >
           {DISCIPLINES.map(d => {
@@ -201,18 +145,7 @@ export const QuestList: React.FC<QuestListProps> = ({
                 type="button"
                 key={d.key}
                 onClick={() => setDisciplineFilter(d.key)}
-                style={{
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '9999px',
-                  backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.15)' : 'var(--bg-surface-sunken)',
-                  border: isSelected ? '1px solid var(--border-focus)' : '1px solid var(--border-subtle)',
-                  color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s ease',
-                }}
+                className={`quest-discipline-pill quest-discipline-${d.key} ${isSelected ? 'active' : ''}`}
               >
                 {d.label}
               </button>

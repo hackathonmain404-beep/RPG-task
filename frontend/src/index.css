@@ -310,13 +310,21 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 220ms ease,
+              border-color 220ms ease,
+              filter 220ms ease,
+              color 200ms ease;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   text-decoration: none;
   user-select: none;
 }
 
 .rpg-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97) translate3d(0, 0, 0);
 }
 
 .rpg-btn-primary {
@@ -327,9 +335,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .rpg-btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
-  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.5);
-  transform: translateY(-1px);
+  filter: brightness(1.08);
+  border-color: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.52), 0 0 16px rgba(56, 189, 248, 0.3);
+  transform: translate3d(0, -1.5px, 0);
 }
 
 .rpg-btn-gold {
@@ -721,30 +730,27 @@ select.rpg-input option:checked {
   text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
 }
 
-/* Stat Card Labels — Subtle scale pop on hover */
+/* Stat Card Labels — Smooth color & glow transition (zero layout shift) */
 .rpg-card .rpg-label {
-  transition: color 0.25s var(--ease-spring),
-              letter-spacing 0.35s var(--ease-spring),
-              text-shadow 0.3s var(--ease-spring);
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: default;
 }
 
 .rpg-card:hover .rpg-label {
   color: var(--text-primary);
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
-/* Stat Card Numbers — Pop glow on hover */
+/* Stat Card Numbers — Smooth brightness & glow transition */
 .rpg-card .mono-numbers {
-  transition: transform 0.35s var(--ease-spring),
-              text-shadow 0.35s var(--ease-spring),
-              filter 0.35s var(--ease-spring);
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .rpg-card:hover .mono-numbers {
-  transform: scale(1.03) translateY(-1px);
-  text-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
   filter: brightness(1.1);
 }
 
@@ -851,48 +857,935 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   transition: text-shadow 0.4s var(--ease-spring);
 }
 
-/* Status Tabs (Quest Page) — Hover pop */
-div[role="tablist"] button {
-  transition: all 0.25s var(--ease-spring) !important;
+/* ==========================================================================
+   QUEST BOARD & TASK ENGINE — FLUID HOVER PHYSICS & MICRO-TRANSITIONS
+   ========================================================================== */
+
+/* Keyframe Entrances */
+@keyframes questSectionEntrance {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
-div[role="tablist"] button:hover {
-  transform: translateY(-1px);
-  background-color: rgba(255, 255, 255, 0.06) !important;
+@keyframes questCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
-/* Discipline Filter Pills — Hover scale */
-div[aria-label="Filter quests by discipline"] button {
-  transition: all 0.25s var(--ease-spring) !important;
+@keyframes modalBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-div[aria-label="Filter quests by discipline"] button:hover {
-  transform: scale(1.04) translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+@keyframes modalContentScaleUp {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+.modal-backdrop-anim {
+  animation: modalBackdropFadeIn 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal-card-anim {
+  animation: modalContentScaleUp 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 1. Header Banner & Badge */
+.quest-header-banner {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(56, 189, 248, 0.12) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 16px;
+  padding: clamp(1rem, 3vw, 2rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  animation: questSectionEntrance 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: border-color 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: border-color, box-shadow;
+}
+
+.quest-header-banner:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 10px 36px -6px rgba(2, 132, 199, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.quest-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background-color: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  transition: background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.quest-header-banner:hover .quest-header-badge {
+  background-color: rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+/* 2. + New Quest CTA Button */
+.quest-create-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 280ms ease,
+              filter 260ms ease !important;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.quest-create-btn:hover:not(:disabled) {
+  transform: translate3d(0, -2.5px, 0);
+  border-color: rgba(56, 189, 248, 0.8);
+  box-shadow: 0 10px 28px -2px rgba(2, 132, 199, 0.6),
+              0 0 26px rgba(56, 189, 248, 0.45);
+  filter: brightness(1.1);
+}
+
+.quest-create-btn svg {
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.quest-create-btn:hover:not(:disabled) svg {
+  transform: translate3d(0, -1px, 0) rotate(90deg) scale(1.12);
+}
+
+.quest-create-btn:active:not(:disabled) {
+  transform: translate3d(0, 0.5px, 0) scale(0.97);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+  filter: brightness(0.96);
+}
+
+/* 3. Stat Cards — Ultra-Smooth Spring Lift & Responsive Ambient Bloom */
+.quest-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem !important;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+  animation: questSectionEntrance 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.quest-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  opacity: 0.4;
+  transition: opacity 320ms ease, background 320ms ease;
+  pointer-events: none;
+}
+
+.quest-stat-card:hover::after {
+  opacity: 1;
+}
+
+.quest-stat-cyan { animation-delay: 50ms; }
+.quest-stat-amber { animation-delay: 100ms; }
+.quest-stat-emerald { animation-delay: 150ms; }
+.quest-stat-purple { animation-delay: 200ms; }
+
+.quest-stat-card .quest-stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.quest-stat-card .quest-stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  transition: color 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quest-stat-card .quest-stat-number {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.15;
+  transition: color 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Card 1: Total Quests (Cyan) */
+.quest-stat-cyan .quest-stat-icon {
+  background-color: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+.quest-stat-cyan:hover {
+  transform: translate3d(0, -4.5px, 0);
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 28px -2px rgba(56, 189, 248, 0.28);
+  background-color: rgba(18, 25, 38, 0.98);
+}
+.quest-stat-cyan:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.8), transparent);
+}
+.quest-stat-cyan:hover .quest-stat-icon {
+  transform: translate3d(0, -2.5px, 0) scale(1.1);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+  border-color: rgba(56, 189, 248, 0.6);
+  filter: brightness(1.2);
+}
+.quest-stat-cyan:hover .quest-stat-label {
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+.quest-stat-cyan:hover .quest-stat-number {
+  filter: brightness(1.15);
+  text-shadow: 0 0 18px rgba(56, 189, 248, 0.4);
+}
+
+/* Card 2: Active Trials (Amber) */
+.quest-stat-amber .quest-stat-icon {
+  background-color: rgba(245, 158, 11, 0.14);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.quest-stat-amber:hover {
+  transform: translate3d(0, -4.5px, 0);
+  border-color: rgba(245, 158, 11, 0.55);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 28px -2px rgba(245, 158, 11, 0.28);
+  background-color: rgba(28, 23, 16, 0.98);
+}
+.quest-stat-amber:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.8), transparent);
+}
+.quest-stat-amber:hover .quest-stat-icon {
+  transform: translate3d(0, -2.5px, 0) scale(1.1);
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+  border-color: rgba(245, 158, 11, 0.6);
+  filter: brightness(1.2);
+}
+.quest-stat-amber:hover .quest-stat-label {
+  color: #f59e0b;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+.quest-stat-amber:hover .quest-stat-number {
+  filter: brightness(1.15);
+  text-shadow: 0 0 18px rgba(254, 240, 138, 0.45);
+}
+
+/* Card 3: Victories Claimed (Emerald) */
+.quest-stat-emerald .quest-stat-icon {
+  background-color: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.quest-stat-emerald:hover {
+  transform: translate3d(0, -4.5px, 0);
+  border-color: rgba(16, 185, 129, 0.55);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 28px -2px rgba(16, 185, 129, 0.28);
+  background-color: rgba(14, 26, 20, 0.98);
+}
+.quest-stat-emerald:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.8), transparent);
+}
+.quest-stat-emerald:hover .quest-stat-icon {
+  transform: translate3d(0, -2.5px, 0) scale(1.1);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.45);
+  border-color: rgba(16, 185, 129, 0.6);
+  filter: brightness(1.2);
+}
+.quest-stat-emerald:hover .quest-stat-label {
+  color: #10b981;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+.quest-stat-emerald:hover .quest-stat-number {
+  filter: brightness(1.15);
+  text-shadow: 0 0 18px rgba(134, 239, 172, 0.45);
+}
+
+/* Card 4: Completion Rate (Purple) */
+.quest-stat-purple .quest-stat-icon {
+  background-color: rgba(168, 85, 247, 0.14);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+.quest-stat-purple:hover {
+  transform: translate3d(0, -4.5px, 0);
+  border-color: rgba(168, 85, 247, 0.55);
+  box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.7), 0 0 28px -2px rgba(168, 85, 247, 0.28);
+  background-color: rgba(24, 16, 32, 0.98);
+}
+.quest-stat-purple:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.8), transparent);
+}
+.quest-stat-purple:hover .quest-stat-icon {
+  transform: translate3d(0, -2.5px, 0) scale(1.1);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+  border-color: rgba(168, 85, 247, 0.6);
+  filter: brightness(1.2);
+}
+.quest-stat-purple:hover .quest-stat-label {
+  color: #a855f7;
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+.quest-stat-purple:hover .quest-stat-number {
+  filter: brightness(1.15);
+  text-shadow: 0 0 18px rgba(216, 180, 254, 0.45);
+}
+
+/* 4. Controls Panel (Search & Filters) */
+.quest-controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: clamp(0.85rem, 2.5vw, 1.25rem);
+  box-shadow: var(--shadow-sm);
+  animation: questSectionEntrance 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 140ms;
+  transition: border-color 340ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quest-controls-panel:focus-within {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 8px 26px -4px rgba(0, 0, 0, 0.45), 0 0 20px -4px rgba(56, 189, 248, 0.18);
+}
+
+.quest-search-wrapper {
+  position: relative;
+  flex: 1 1 min(100%, 240px);
+}
+
+.quest-search-input {
+  padding-left: 2.5rem !important;
+  background-color: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: border-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.quest-search-input:hover {
+  border-color: var(--border-strong);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.quest-search-input:focus {
+  border-color: var(--border-focus) !important;
+  background-color: var(--bg-surface) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18), 0 0 22px rgba(56, 189, 248, 0.15) !important;
+}
+
+.quest-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+  transition: color 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quest-search-wrapper:focus-within .quest-search-icon {
+  color: #38bdf8;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* 5. Status Tabs */
+.quest-status-tabs {
+  display: flex;
+  background-color: var(--bg-surface-sunken);
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 0.15rem;
+}
+
+.quest-status-tab {
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  user-select: none;
+}
+
+.quest-status-tab:not(.active):hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  transform: translate3d(0, -1.5px, 0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.quest-status-tab.active {
+  background-color: var(--bg-surface-elevated);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.quest-status-tab.active.tab-all {
+  color: #ffffff;
+}
+
+.quest-status-tab.active.tab-active {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 14px rgba(56, 189, 248, 0.2);
+}
+
+.quest-status-tab.active.tab-completed {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 14px rgba(16, 185, 129, 0.2);
+}
+
+.quest-status-tab.active:hover {
+  filter: brightness(1.1);
+  transform: translate3d(0, -1.5px, 0);
+}
+
+.quest-status-tab:active {
+  transform: scale(0.95) translate3d(0, 0, 0);
+}
+
+/* 6. Discipline Filter Pills */
+.quest-discipline-pills {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.quest-discipline-pill {
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background-color: var(--bg-surface-sunken);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 240ms ease,
+              border-color 240ms ease,
+              color 240ms ease,
+              box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  user-select: none;
+}
+
+/* Individual Addictive Discipline Glows on Hover */
+.quest-discipline-pill.quest-discipline-all:hover:not(.active) {
+  transform: translate3d(0, -2px, 0);
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 12px rgba(255, 255, 255, 0.12);
+}
+
+.quest-discipline-pill.quest-discipline-intellect:hover:not(.active) {
+  transform: translate3d(0, -2px, 0);
+  background-color: rgba(56, 189, 248, 0.09);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #7dd3fc;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 14px rgba(56, 189, 248, 0.22);
+}
+
+.quest-discipline-pill.quest-discipline-strength:hover:not(.active) {
+  transform: translate3d(0, -2px, 0);
+  background-color: rgba(239, 68, 68, 0.09);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 14px rgba(239, 68, 68, 0.22);
+}
+
+.quest-discipline-pill.quest-discipline-wisdom:hover:not(.active) {
+  transform: translate3d(0, -2px, 0);
+  background-color: rgba(16, 185, 129, 0.09);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #6ee7b7;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 14px rgba(16, 185, 129, 0.22);
+}
+
+.quest-discipline-pill.quest-discipline-charisma:hover:not(.active) {
+  transform: translate3d(0, -2px, 0);
+  background-color: rgba(168, 85, 247, 0.09);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #d8b4fe;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 14px rgba(168, 85, 247, 0.22);
+}
+
+.quest-discipline-pill.quest-discipline-vitality:hover:not(.active) {
+  transform: translate3d(0, -2px, 0);
+  background-color: rgba(244, 63, 94, 0.09);
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 14px rgba(244, 63, 94, 0.22);
+}
+
+/* Active State Disciplines */
+.quest-discipline-pill.active {
+  background-color: rgba(56, 189, 248, 0.18);
+  border-color: var(--border-focus);
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.28);
+}
+
+.quest-discipline-pill.active:hover {
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.45), 0 6px 14px rgba(0, 0, 0, 0.35);
+  transform: translate3d(0, -2px, 0);
+}
+
+.quest-discipline-pill.active.quest-discipline-strength {
+  background-color: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.75);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.28);
+}
+.quest-discipline-pill.active.quest-discipline-strength:hover {
+  box-shadow: 0 0 22px rgba(239, 68, 68, 0.45), 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.quest-discipline-pill.active.quest-discipline-wisdom {
+  background-color: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.75);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.28);
+}
+.quest-discipline-pill.active.quest-discipline-wisdom:hover {
+  box-shadow: 0 0 22px rgba(16, 185, 129, 0.45), 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.quest-discipline-pill.active.quest-discipline-charisma {
+  background-color: rgba(168, 85, 247, 0.18);
+  border-color: rgba(168, 85, 247, 0.75);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.28);
+}
+.quest-discipline-pill.active.quest-discipline-charisma:hover {
+  box-shadow: 0 0 22px rgba(168, 85, 247, 0.45), 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.quest-discipline-pill.active.quest-discipline-vitality {
+  background-color: rgba(244, 63, 94, 0.18);
+  border-color: rgba(244, 63, 94, 0.75);
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.28);
+}
+.quest-discipline-pill.active.quest-discipline-vitality:hover {
+  box-shadow: 0 0 22px rgba(244, 63, 94, 0.45), 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.quest-discipline-pill:active {
+  transform: scale(0.95) translate3d(0, 0, 0);
+}
+
+/* 7. Quest Item Card in List — Discipline-Tailored Addictive Auras */
+.quest-item-card {
+  padding: 1.25rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.85rem !important;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  animation: questCardEntrance 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Vertical Left Discipline Indicator Accent Bar */
+.quest-item-card::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3.5px;
+  border-radius: 0 4px 4px 0;
+  background-color: rgba(255, 255, 255, 0.15);
+  opacity: 0.55;
+  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              width 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* Specular Top Sheen Gradient */
+.quest-item-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  opacity: 0;
+  transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.quest-item-card:hover {
+  transform: translate3d(0, -3.5px, 0);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 22px -2px rgba(56, 189, 248, 0.2);
+  background-color: rgba(20, 26, 36, 0.96);
+}
+
+.quest-item-card:hover::before {
+  opacity: 1;
+  width: 4.5px;
+}
+
+.quest-item-card:hover::after {
+  opacity: 1;
+}
+
+/* Discipline Specific Indicator Colors & Aura Bloom */
+.quest-cat-intellect::before { background-color: #38bdf8; }
+.quest-cat-intellect:hover {
+  border-color: rgba(56, 189, 248, 0.48);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 24px -2px rgba(56, 189, 248, 0.24);
+  background-color: rgba(18, 25, 38, 0.98);
+}
+.quest-cat-intellect:hover::before {
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.75);
+}
+.quest-cat-intellect:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.7), transparent);
+}
+
+.quest-cat-strength::before { background-color: #ef4444; }
+.quest-cat-strength:hover {
+  border-color: rgba(239, 68, 68, 0.48);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 24px -2px rgba(239, 68, 68, 0.24);
+  background-color: rgba(30, 20, 22, 0.98);
+}
+.quest-cat-strength:hover::before {
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.75);
+}
+.quest-cat-strength:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.7), transparent);
+}
+
+.quest-cat-wisdom::before { background-color: #10b981; }
+.quest-cat-wisdom:hover {
+  border-color: rgba(16, 185, 129, 0.48);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 24px -2px rgba(16, 185, 129, 0.24);
+  background-color: rgba(16, 28, 22, 0.98);
+}
+.quest-cat-wisdom:hover::before {
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.75);
+}
+.quest-cat-wisdom:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.7), transparent);
+}
+
+.quest-cat-charisma::before { background-color: #a855f7; }
+.quest-cat-charisma:hover {
+  border-color: rgba(168, 85, 247, 0.48);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 24px -2px rgba(168, 85, 247, 0.24);
+  background-color: rgba(26, 18, 34, 0.98);
+}
+.quest-cat-charisma:hover::before {
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.75);
+}
+.quest-cat-charisma:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.7), transparent);
+}
+
+.quest-cat-vitality::before { background-color: #f43f5e; }
+.quest-cat-vitality:hover {
+  border-color: rgba(244, 63, 94, 0.48);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 24px -2px rgba(244, 63, 94, 0.24);
+  background-color: rgba(32, 18, 24, 0.98);
+}
+.quest-cat-vitality:hover::before {
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.75);
+}
+.quest-cat-vitality:hover::after {
+  background: linear-gradient(90deg, transparent, rgba(244, 63, 94, 0.7), transparent);
+}
+
+/* Quest Card Title hover reaction */
+.quest-item-title {
+  transition: color 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.quest-item-card:hover .quest-item-title:not([style*="line-through"]) {
+  color: #ffffff !important;
+}
+
+.quest-item-card.quest-item-completed {
+  background-color: rgba(15, 20, 28, 0.6);
+  border-color: rgba(255, 255, 255, 0.05);
+  opacity: 0.75;
+}
+
+.quest-item-card.quest-item-completed::before {
+  background-color: #10b981;
+  opacity: 0.3;
+}
+
+.quest-item-card.quest-item-completed:hover {
+  opacity: 0.96;
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 14px 28px -4px rgba(0, 0, 0, 0.65), 0 0 18px -2px rgba(16, 185, 129, 0.16);
+  background-color: rgba(16, 24, 22, 0.85);
+}
+
+/* Checkbox Button — Tactile Target Ring & Pop Animation */
+.quest-checkbox {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background-color: var(--bg-surface-sunken);
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms ease,
+              background-color 220ms ease,
+              box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+}
+
+.quest-checkbox:hover:not(:disabled) {
+  transform: scale(1.12) translate3d(0, 0, 0);
+  border-color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2), 0 0 14px rgba(56, 189, 248, 0.45);
+}
+
+.quest-checkbox:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.quest-checkbox.completed {
+  background-color: #10b981;
+  border: 1px solid #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+  cursor: default;
+  animation: checkmarkPop 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes checkmarkPop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+.quest-checkbox.completed:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+}
+
+/* Action Buttons (Edit, Delete) — Fluid Micro-Lift & Soft Glow */
+.quest-action-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 220ms ease,
+              color 220ms ease,
+              box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 220ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.quest-action-btn:hover:not(:disabled) {
+  transform: translate3d(0, -1.5px, 0) scale(1.12);
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+.quest-action-edit:hover:not(:disabled) {
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.32);
+}
+
+.quest-action-delete:hover:not(:disabled) {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.32);
+}
+
+.quest-action-btn:active:not(:disabled) {
+  transform: scale(0.92);
 }
 
 /* Difficulty Tier Buttons (Quest Composer) — Hover glow */
 div[role="radiogroup"] button {
-  transition: all 0.28s var(--ease-spring) !important;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 div[role="radiogroup"] button:hover {
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
   background-color: var(--bg-surface-elevated) !important;
 }
 
 /* CTA Buttons — Enhanced hover pop */
-.rpg-btn-primary:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.3),
-              0 0 32px rgba(56, 189, 248, 0.1);
+.rpg-btn-secondary:hover {
+  transform: translate3d(0, -1.5px, 0);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
-.rpg-btn-secondary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+/* Mobile Touch Support (Zero Sticky Hover) */
+@media (hover: none) {
+  .quest-stat-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  .quest-stat-card:active {
+    transform: scale(0.98);
+  }
+  .quest-discipline-pill:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .quest-discipline-pill:active {
+    transform: scale(0.96);
+  }
+  .quest-status-tab:hover {
+    transform: none;
+  }
+  .quest-status-tab:active {
+    transform: scale(0.96);
+  }
+  .quest-item-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  .quest-item-card:active {
+    transform: scale(0.99);
+  }
+  .quest-create-btn:hover {
+    transform: none;
+  }
+  .quest-create-btn:active {
+    transform: scale(0.98);
+  }
+  .quest-checkbox:hover {
+    transform: none;
+  }
+  .quest-action-btn:hover {
+    transform: none;
+  }
 }
 
 /* ==========================================================================

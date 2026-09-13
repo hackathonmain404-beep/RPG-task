@@ -136,35 +136,9 @@ export const QuestsPage: React.FC = () => {
       )}
 
       {/* Top Banner & Header */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(56, 189, 248, 0.12) 100%)',
-          border: '1px solid rgba(56, 189, 248, 0.25)',
-          borderRadius: '16px',
-          padding: 'clamp(1rem, 3vw, 2rem)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1.25rem',
-        }}
-      >
+      <div className="quest-header-banner">
         <div>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.2rem 0.6rem',
-              borderRadius: '9999px',
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
-              color: '#38bdf8',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              marginBottom: '0.75rem',
-            }}
-          >
+          <div className="quest-header-badge">
             <Scroll size={13} /> Active Campaign Ledger
           </div>
           <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -177,8 +151,7 @@ export const QuestsPage: React.FC = () => {
 
         <button
           onClick={handleOpenCreate}
-          className="rpg-btn rpg-btn-primary"
-          style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}
+          className="rpg-btn rpg-btn-primary quest-create-btn"
           id="btn-open-new-quest"
         >
           <Plus size={18} /> New Quest
@@ -193,89 +166,49 @@ export const QuestsPage: React.FC = () => {
           gap: '1rem',
         }}
       >
-        <div className="rpg-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <div className="rpg-card quest-stat-card quest-stat-cyan">
+          <div className="quest-stat-icon">
             <Target size={20} color="#38bdf8" />
           </div>
           <div>
-            <div className="rpg-label">Total Quests</div>
-            <div className="mono-numbers" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff' }}>
+            <div className="rpg-label quest-stat-label">Total Quests</div>
+            <div className="mono-numbers quest-stat-number" style={{ color: '#ffffff' }}>
               {totalCount}
             </div>
           </div>
         </div>
 
-        <div className="rpg-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(245, 158, 11, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <div className="rpg-card quest-stat-card quest-stat-amber">
+          <div className="quest-stat-icon">
             <Clock size={20} color="#f59e0b" />
           </div>
           <div>
-            <div className="rpg-label">Active Trials</div>
-            <div className="mono-numbers" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fef08a' }}>
+            <div className="rpg-label quest-stat-label">Active Trials</div>
+            <div className="mono-numbers quest-stat-number" style={{ color: '#fef08a' }}>
               {activeCount}
             </div>
           </div>
         </div>
 
-        <div className="rpg-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(16, 185, 129, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <div className="rpg-card quest-stat-card quest-stat-emerald">
+          <div className="quest-stat-icon">
             <CheckCircle2 size={20} color="#10b981" />
           </div>
           <div>
-            <div className="rpg-label">Victories Claimed</div>
-            <div className="mono-numbers" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#86efac' }}>
+            <div className="rpg-label quest-stat-label">Victories Claimed</div>
+            <div className="mono-numbers quest-stat-number" style={{ color: '#86efac' }}>
               {completedCount}
             </div>
           </div>
         </div>
 
-        <div className="rpg-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem' }}>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(168, 85, 247, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <div className="rpg-card quest-stat-card quest-stat-purple">
+          <div className="quest-stat-icon">
             <Sparkles size={20} color="#a855f7" />
           </div>
           <div>
-            <div className="rpg-label">Completion Rate</div>
-            <div className="mono-numbers" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#d8b4fe' }}>
+            <div className="rpg-label quest-stat-label">Completion Rate</div>
+            <div className="mono-numbers quest-stat-number" style={{ color: '#d8b4fe' }}>
               {totalCount > 0 ? `${Math.round((completedCount / totalCount) * 100)}%` : '0%'}
             </div>
           </div>

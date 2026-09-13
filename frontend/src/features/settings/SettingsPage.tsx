@@ -264,6 +264,10 @@ export const SettingsPage: React.FC = () => {
 
     // 3. Apply full design token CSS variables instantly (0ms latency)
     applyThemeColors(themeDef.slug);
+    document.documentElement.setAttribute('data-theme', themeDef.key);
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.setAttribute('data-theme', themeDef.key);
+    }
 
     // 4. Update ThemeContext in background without blocking UI
     if (themeContext?.equipTheme) {
