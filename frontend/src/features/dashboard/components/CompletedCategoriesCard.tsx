@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Folder } from 'lucide-react';
 import type { Task } from '../../../types/contract';
 
@@ -14,18 +14,40 @@ interface CategoryItem {
   count: number;
 }
 
+interface SegmentGeometry {
+  cat: CategoryItem;
+  sliceX: number;
+  sliceY: number;
+  isRight: boolean;
+  strokeDasharray: string;
+  strokeDashoffset: number;
+}
+
 const CATEGORY_META: Record<string, { name: string; color: string }> = {
   intellect: { name: 'Imp. Work', color: '#3b82f6' },
-  vitality: { name: 'Personal', color: '#a855f7' },
+  vitality: { name: 'Health & Vitality', color: '#10b981' },
   personal: { name: 'Personal', color: '#a855f7' },
   wisdom: { name: 'Learning', color: '#38bdf8' },
   strength: { name: 'Strength', color: '#ef4444' },
   charisma: { name: 'Social', color: '#eab308' },
-  general: { name: 'General', color: '#f59e0b' },
+  general: { name: 'General', color: '#10b981' },
+  low: { name: 'Low Priority', color: '#10b981' },
+  easy: { name: 'Low Priority', color: '#10b981' },
+  medium: { name: 'Med Priority', color: '#f59e0b' },
+  hard: { name: 'High Priority', color: '#ef4444' },
+  epic: { name: 'Urgent Priority', color: '#ec4899' },
 };
+
+function getSphereStyles(color: string): React.CSSProperties {
+  return {
+    background: `radial-gradient(circle at 35% 35%, #ffffff 0%, ${color} 45%, rgba(0, 0, 0, 0.75) 130%)`,
+    boxShadow: `0 0 10px ${color}80, inset 0 -2px 3px rgba(0, 0, 0, 0.5)`,
+  };
+}
 
 export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = ({ tasks = [] }) => {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const hoverTimeoutRef = useRef<number | null>(null);
 
   // Derive strictly from the user's real completed tasks
   const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
@@ -70,11 +92,94 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
   const totalGap = numCategories * gap;
   const availableCircumference = Math.max(0, circumference - totalGap);
 
-  let accumulatedOffset = 0;
+  // Precompute precise segment geometries and anchor coordinates for the floating tooltip
+  const segmentGeometries = useMemo<SegmentGeometry[]>(() => {
+    let accumulated = 0;
+    return categories.map((cat) => {
+      const fraction = totalCompleted > 0 ? cat.count / totalCompleted : 0;
+      const arcLength = Math.max(2, fraction * availableCircumference);
+      const strokeDasharray = `${arcLength} ${circumference - arcLength}`;
+      const strokeDashoffset = -accumulated;
+
+      // Midpoint of arc along circumference
+      const midOffset = accumulated + arcLength / 2;
+      accumulated += arcLength + gap;
+
+      // Angle in radians (SVG rotate(-90deg) starts at 12 o'clock / -PI/2)
+      const fractionOfCircle = circumference > 0 ? midOffset / circumference : 0;
+      const angle = fractionOfCircle * 2 * Math.PI - Math.PI / 2;
+
+      // Outer anchor point near the edge of the donut ring
+      const sliceX = size / 2 + Math.cos(angle) * (radius + 6);
+      const sliceY = size / 2 + Math.sin(angle) * (radius + 6);
+      const isRight = Math.cos(angle) >= 0;
+
+      return {
+        cat,
+        sliceX,
+        sliceY,
+        isRight,
+        strokeDasharray,
+        strokeDashoffset,
+      };
+    });
+  }, [categories, totalCompleted, availableCircumference, circumference, gap, radius, size]);
+
+  const activeGeometry = useMemo(() => {
+    if (!hoveredCategory) return null;
+    return segmentGeometries.find((g) => g.cat.id === hoveredCategory) || null;
+  }, [segmentGeometries, hoveredCategory]);
+
+  const [lastGeometry, setLastGeometry] = useState<SegmentGeometry | null>(null);
+
+  useEffect(() => {
+    if (activeGeometry) {
+      setLastGeometry(activeGeometry);
+    }
+  }, [activeGeometry]);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const displayedGeometry = activeGeometry || lastGeometry;
+  const isVisible = Boolean(activeGeometry);
+
+  const handleMouseEnter = (catId: string) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoveredCategory(catId);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredCategory(null);
+    }, 120);
+  };
 
   const activeCategory = useMemo(() => {
     return categories.find(c => c.id === hoveredCategory) || null;
   }, [categories, hoveredCategory]);
+
+  const tooltipStyle = useMemo<React.CSSProperties>(() => {
+    if (!displayedGeometry) return { opacity: 0, pointerEvents: 'none' };
+
+    const clampedY = Math.max(25, Math.min(125, displayedGeometry.sliceY));
+
+    return {
+      left: `${Math.round(displayedGeometry.sliceX)}px`,
+      top: `${Math.round(clampedY)}px`,
+    };
+  }, [displayedGeometry]);
 
   return (
     <div className="analytics-card card-analytics-categories anim-entrance-6">
@@ -98,13 +203,8 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
             />
 
             {/* Render Segments based 100% on real completed tasks with zero-overlap precision */}
-            {categories.map((cat) => {
-              const fraction = totalCompleted > 0 ? cat.count / totalCompleted : 0;
-              const arcLength = Math.max(2, fraction * availableCircumference);
-              const strokeDasharray = `${arcLength} ${circumference - arcLength}`;
-              const strokeDashoffset = -accumulatedOffset;
-              accumulatedOffset += arcLength + gap;
-
+            {segmentGeometries.map((geom) => {
+              const cat = geom.cat;
               const isHovered = hoveredCategory === cat.id;
 
               return (
@@ -115,9 +215,9 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                   r={radius}
                   fill="transparent"
                   stroke={cat.color}
-                  strokeWidth={isHovered ? strokeWidth + 3 : strokeWidth}
-                  strokeDasharray={strokeDasharray}
-                  strokeDashoffset={strokeDashoffset}
+                  strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
+                  strokeDasharray={geom.strokeDasharray}
+                  strokeDashoffset={geom.strokeDashoffset}
                   strokeLinecap="butt"
                   transform={`rotate(-90 ${size / 2} ${size / 2})`}
                   className={`donut-segment-slice ${isHovered ? 'is-hovered' : ''}`}
@@ -126,8 +226,8 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                     opacity: hoveredCategory && !isHovered ? 0.35 : 1,
                     transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
-                  onMouseEnter={() => setHoveredCategory(cat.id)}
-                  onMouseLeave={() => setHoveredCategory(null)}
+                  onMouseEnter={() => handleMouseEnter(cat.id)}
+                  onMouseLeave={handleMouseLeave}
                 />
               );
             })}
@@ -154,6 +254,32 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
               {activeCategory ? activeCategory.name.toUpperCase() : 'TOTAL'}
             </span>
           </div>
+
+          {/* Floating Segment Tooltip Message - Emerges smoothly directly from hovered area */}
+          {displayedGeometry && (
+            <div
+              className={`donut-segment-tooltip ${displayedGeometry.isRight ? 'align-right' : 'align-left'} ${isVisible ? 'is-visible' : ''}`}
+              style={tooltipStyle}
+              aria-hidden={!isVisible}
+            >
+              <div className="donut-tooltip-top">
+                <span
+                  className="donut-tooltip-sphere"
+                  style={getSphereStyles(displayedGeometry.cat.color)}
+                  aria-hidden="true"
+                />
+                <span className="donut-tooltip-title">
+                  {displayedGeometry.cat.name}
+                </span>
+              </div>
+              <div className="donut-tooltip-bottom">
+                <span className="donut-tooltip-sparkle" aria-hidden="true">✨</span>
+                <span className="donut-tooltip-count">
+                  {displayedGeometry.cat.count} {displayedGeometry.cat.count === 1 ? 'Task' : 'Tasks'} Completed
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Legend List */}
@@ -173,8 +299,8 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                     backgroundColor: isHovered ? `${cat.color}18` : 'transparent',
                     border: isHovered ? `1px solid ${cat.color}45` : '1px solid transparent',
                   }}
-                  onMouseEnter={() => setHoveredCategory(cat.id)}
-                  onMouseLeave={() => setHoveredCategory(null)}
+                  onMouseEnter={() => handleMouseEnter(cat.id)}
+                  onMouseLeave={handleMouseLeave}
                 >
                   <div className="category-legend-left">
                     <span
