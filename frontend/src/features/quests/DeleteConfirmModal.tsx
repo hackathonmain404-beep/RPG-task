@@ -31,6 +31,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
 
   return (
     <div
+      className="modal-backdrop-anim"
       style={{
         position: 'fixed',
         top: 0,
@@ -53,7 +54,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       aria-labelledby="delete-modal-title"
     >
       <div
-        className="rpg-card"
+        className="rpg-card modal-card-anim"
         style={{
           width: '100%',
           maxWidth: 'min(92vw, 440px)',

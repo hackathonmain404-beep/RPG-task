@@ -730,30 +730,27 @@ select.rpg-input option:checked {
   text-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
 }
 
-/* Stat Card Labels — Subtle scale pop on hover */
+/* Stat Card Labels — Smooth color & glow transition (zero layout shift) */
 .rpg-card .rpg-label {
-  transition: color 0.25s var(--ease-spring),
-              letter-spacing 0.35s var(--ease-spring),
-              text-shadow 0.3s var(--ease-spring);
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: default;
 }
 
 .rpg-card:hover .rpg-label {
   color: var(--text-primary);
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
-/* Stat Card Numbers — Pop glow on hover */
+/* Stat Card Numbers — Smooth brightness & glow transition */
 .rpg-card .mono-numbers {
-  transition: transform 0.35s var(--ease-spring),
-              text-shadow 0.35s var(--ease-spring),
-              filter 0.35s var(--ease-spring);
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .rpg-card:hover .mono-numbers {
-  transform: scale(1.03) translateY(-1px);
-  text-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
   filter: brightness(1.1);
 }
 
@@ -864,6 +861,57 @@ div[style*="linear-gradient(135deg"]:hover h1 {
    QUEST BOARD & TASK ENGINE — FLUID HOVER PHYSICS & MICRO-TRANSITIONS
    ========================================================================== */
 
+/* Keyframe Entrances */
+@keyframes questSectionEntrance {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes questCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes modalBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalContentScaleUp {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+.modal-backdrop-anim {
+  animation: modalBackdropFadeIn 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal-card-anim {
+  animation: modalContentScaleUp 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* 1. Header Banner & Badge */
 .quest-header-banner {
   background: linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(56, 189, 248, 0.12) 100%);
@@ -875,14 +923,15 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   align-items: center;
   flex-wrap: wrap;
   gap: 1.25rem;
-  transition: border-color 360ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: questSectionEntrance 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: border-color 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: border-color, box-shadow;
 }
 
 .quest-header-banner:hover {
   border-color: rgba(56, 189, 248, 0.45);
-  box-shadow: 0 8px 32px -4px rgba(2, 132, 199, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 36px -6px rgba(2, 132, 199, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .quest-header-badge {
@@ -898,7 +947,9 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   text-transform: uppercase;
   margin-bottom: 0.75rem;
   border: 1px solid rgba(56, 189, 248, 0.2);
-  transition: all 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .quest-header-banner:hover .quest-header-badge {
@@ -924,48 +975,30 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
   cursor: pointer;
   overflow: hidden;
-  transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
-              filter 240ms ease !important;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 280ms ease,
+              filter 260ms ease !important;
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
 }
 
-.quest-create-btn::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -60%;
-  width: 40%;
-  height: 200%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-  transform: rotate(25deg);
-  opacity: 0;
-  transition: transform 550ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease;
-  pointer-events: none;
-}
-
 .quest-create-btn:hover:not(:disabled) {
-  transform: translate3d(0, -2px, 0) scale(1.02);
+  transform: translate3d(0, -2px, 0);
   border-color: rgba(56, 189, 248, 0.7);
   box-shadow: 0 8px 24px -2px rgba(2, 132, 199, 0.55),
               0 0 24px rgba(56, 189, 248, 0.4);
-  filter: brightness(1.08);
-}
-
-.quest-create-btn:hover:not(:disabled)::after {
-  opacity: 1;
-  transform: translateX(420%) rotate(25deg);
-}
-
-.quest-create-btn:hover:not(:disabled) svg {
-  transform: rotate(90deg) scale(1.1);
+  filter: brightness(1.1);
 }
 
 .quest-create-btn svg {
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.quest-create-btn:hover:not(:disabled) svg {
+  transform: translate3d(0, -1px, 0) scale(1.1);
 }
 
 .quest-create-btn:active:not(:disabled) {
@@ -984,14 +1017,20 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   cursor: default;
-  transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 350ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  animation: questSectionEntrance 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 320ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
 }
+
+.quest-stat-cyan { animation-delay: 50ms; }
+.quest-stat-amber { animation-delay: 100ms; }
+.quest-stat-emerald { animation-delay: 150ms; }
+.quest-stat-purple { animation-delay: 200ms; }
 
 .quest-stat-card .quest-stat-icon {
   width: 42px;
@@ -1001,10 +1040,10 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
-              filter 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: transform;
 }
 
@@ -1014,17 +1053,17 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-secondary);
-  transition: color 260ms ease, letter-spacing 260ms ease;
+  transition: color 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              text-shadow 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .quest-stat-card .quest-stat-number {
   font-size: 1.55rem;
   font-weight: 800;
   line-height: 1.15;
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
-              text-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
+  transition: color 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              text-shadow 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Card 1: Total Quests (Cyan) */
@@ -1036,22 +1075,22 @@ div[style*="linear-gradient(135deg"]:hover h1 {
 .quest-stat-cyan:hover {
   transform: translate3d(0, -3.5px, 0);
   border-color: rgba(56, 189, 248, 0.45);
-  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(56, 189, 248, 0.22);
+  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(56, 189, 248, 0.24);
   background-color: rgba(20, 26, 36, 0.95);
 }
 .quest-stat-cyan:hover .quest-stat-icon {
-  transform: scale(1.1) rotate(3deg);
+  transform: translate3d(0, -2px, 0) scale(1.06);
   box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
   border-color: rgba(56, 189, 248, 0.5);
   filter: brightness(1.15);
 }
 .quest-stat-cyan:hover .quest-stat-label {
   color: #38bdf8;
-  letter-spacing: 0.07em;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
 }
 .quest-stat-cyan:hover .quest-stat-number {
-  transform: scale(1.05) translate3d(0, -1px, 0);
-  text-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+  filter: brightness(1.12);
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.28);
 }
 
 /* Card 2: Active Trials (Amber) */
@@ -1063,21 +1102,21 @@ div[style*="linear-gradient(135deg"]:hover h1 {
 .quest-stat-amber:hover {
   transform: translate3d(0, -3.5px, 0);
   border-color: rgba(245, 158, 11, 0.45);
-  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(245, 158, 11, 0.22);
+  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(245, 158, 11, 0.24);
   background-color: rgba(28, 24, 18, 0.95);
 }
 .quest-stat-amber:hover .quest-stat-icon {
-  transform: scale(1.1) rotate(3deg);
+  transform: translate3d(0, -2px, 0) scale(1.06);
   box-shadow: 0 0 16px rgba(245, 158, 11, 0.35);
   border-color: rgba(245, 158, 11, 0.5);
   filter: brightness(1.15);
 }
 .quest-stat-amber:hover .quest-stat-label {
   color: #f59e0b;
-  letter-spacing: 0.07em;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
 }
 .quest-stat-amber:hover .quest-stat-number {
-  transform: scale(1.05) translate3d(0, -1px, 0);
+  filter: brightness(1.12);
   text-shadow: 0 0 16px rgba(254, 240, 138, 0.35);
 }
 
@@ -1090,21 +1129,21 @@ div[style*="linear-gradient(135deg"]:hover h1 {
 .quest-stat-emerald:hover {
   transform: translate3d(0, -3.5px, 0);
   border-color: rgba(16, 185, 129, 0.45);
-  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(16, 185, 129, 0.22);
+  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(16, 185, 129, 0.24);
   background-color: rgba(16, 26, 22, 0.95);
 }
 .quest-stat-emerald:hover .quest-stat-icon {
-  transform: scale(1.1) rotate(3deg);
+  transform: translate3d(0, -2px, 0) scale(1.06);
   box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
   border-color: rgba(16, 185, 129, 0.5);
   filter: brightness(1.15);
 }
 .quest-stat-emerald:hover .quest-stat-label {
   color: #10b981;
-  letter-spacing: 0.07em;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.25);
 }
 .quest-stat-emerald:hover .quest-stat-number {
-  transform: scale(1.05) translate3d(0, -1px, 0);
+  filter: brightness(1.12);
   text-shadow: 0 0 16px rgba(134, 239, 172, 0.35);
 }
 
@@ -1117,21 +1156,21 @@ div[style*="linear-gradient(135deg"]:hover h1 {
 .quest-stat-purple:hover {
   transform: translate3d(0, -3.5px, 0);
   border-color: rgba(168, 85, 247, 0.45);
-  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(168, 85, 247, 0.22);
+  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.65), 0 0 22px -2px rgba(168, 85, 247, 0.24);
   background-color: rgba(24, 18, 30, 0.95);
 }
 .quest-stat-purple:hover .quest-stat-icon {
-  transform: scale(1.1) rotate(3deg);
+  transform: translate3d(0, -2px, 0) scale(1.06);
   box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
   border-color: rgba(168, 85, 247, 0.5);
   filter: brightness(1.15);
 }
 .quest-stat-purple:hover .quest-stat-label {
   color: #a855f7;
-  letter-spacing: 0.07em;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
 }
 .quest-stat-purple:hover .quest-stat-number {
-  transform: scale(1.05) translate3d(0, -1px, 0);
+  filter: brightness(1.12);
   text-shadow: 0 0 16px rgba(216, 180, 254, 0.35);
 }
 
@@ -1145,8 +1184,10 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   border-radius: 12px;
   padding: clamp(0.85rem, 2.5vw, 1.25rem);
   box-shadow: var(--shadow-sm);
-  transition: border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: questSectionEntrance 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 140ms;
+  transition: border-color 340ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .quest-controls-panel:focus-within {
@@ -1166,7 +1207,9 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 0.95rem;
-  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: border-color 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 280ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
 }
 
 .quest-search-input:hover {
@@ -1187,12 +1230,11 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   transform: translateY(-50%);
   color: var(--text-tertiary);
   pointer-events: none;
-  transition: color 260ms ease, transform 260ms ease;
+  transition: color 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .quest-search-wrapper:focus-within .quest-search-icon {
   color: #38bdf8;
-  transform: translateY(-50%) scale(1.1);
 }
 
 /* 5. Status Tabs */
@@ -1217,11 +1259,11 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
-              color 220ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              color 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: transform;
   transform: translate3d(0, 0, 0);
   user-select: none;
@@ -1283,11 +1325,11 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 220ms ease,
-              border-color 220ms ease,
-              color 220ms ease,
-              box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 240ms ease,
+              border-color 240ms ease,
+              color 240ms ease,
+              box-shadow 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   user-select: none;
@@ -1363,11 +1405,12 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   position: relative;
-  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 280ms ease !important;
+  animation: questCardEntrance 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 380ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 300ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
   will-change: transform, box-shadow;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -1375,8 +1418,8 @@ div[style*="linear-gradient(135deg"]:hover h1 {
 
 .quest-item-card:hover {
   transform: translate3d(0, -2.5px, 0);
-  border-color: rgba(56, 189, 248, 0.38);
-  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.6), 0 0 16px -2px rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.42);
+  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.65), 0 0 18px -2px rgba(56, 189, 248, 0.16);
 }
 
 .quest-item-card.quest-item-completed {
@@ -1388,7 +1431,7 @@ div[style*="linear-gradient(135deg"]:hover h1 {
 .quest-item-card.quest-item-completed:hover {
   opacity: 0.95;
   border-color: rgba(16, 185, 129, 0.3);
-  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.6), 0 0 16px -2px rgba(16, 185, 129, 0.12);
+  box-shadow: 0 12px 26px -4px rgba(0, 0, 0, 0.6), 0 0 16px -2px rgba(16, 185, 129, 0.12);
 }
 
 /* Checkbox Button */
@@ -1404,15 +1447,16 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   cursor: pointer;
   flex-shrink: 0;
   margin-top: 2px;
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 200ms ease,
-              background-color 200ms ease,
-              box-shadow 220ms ease;
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 220ms ease,
+              background-color 220ms ease,
+              box-shadow 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .quest-checkbox:hover:not(:disabled) {
-  transform: scale(1.12);
+  transform: scale(1.08) translate3d(0, 0, 0);
   border-color: #38bdf8;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
 }
@@ -1441,13 +1485,14 @@ div[style*="linear-gradient(135deg"]:hover h1 {
   background-color: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
               background-color 200ms ease,
               color 200ms ease,
-              box-shadow 200ms ease;
+              box-shadow 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  will-change: transform;
 }
 
 .quest-action-btn:hover:not(:disabled) {

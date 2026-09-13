@@ -101,6 +101,7 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
 
   return (
     <div
+      className="modal-backdrop-anim"
       style={{
         position: 'fixed',
         top: 0,
@@ -123,7 +124,7 @@ const QuestComposerDialog: React.FC<Omit<QuestComposerModalProps, 'isOpen'>> = (
       aria-labelledby="composer-modal-title"
     >
       <div
-        className="rpg-card"
+        className="rpg-card modal-card-anim"
         style={{
           width: '100%',
           maxWidth: '560px',
