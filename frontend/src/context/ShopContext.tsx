@@ -21,7 +21,8 @@ export function mapItemIdToThemeKey(itemId?: string): string {
   if (lower.includes('solaris')) return 'solaris-gold';
   if (lower.includes('retro')) return 'retro';
   if (lower.includes('lofi') || lower.includes('lo-fi')) return 'lofi';
-  return 'dark-citadel';
+  if (lower === 'default') return 'dark-citadel';
+  return '';
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
