@@ -458,6 +458,7 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   user: ChatUser;
+  status?: 'sending' | 'sent' | 'failed';
 }
 
 export interface ChatMessagesResponse {

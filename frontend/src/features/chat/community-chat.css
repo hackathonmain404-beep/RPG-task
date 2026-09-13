@@ -293,6 +293,52 @@
   white-space: nowrap;
 }
 
+.chat-msg-status {
+  font-size: 0.65rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 3px;
+}
+
+.chat-msg-status.sending {
+  color: #94a3b8;
+  opacity: 0.85;
+}
+
+.chat-msg-status.sent {
+  color: #10b981;
+}
+
+.chat-msg-status.failed {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 1px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.65rem;
+}
+
+.chat-msg-status.failed:hover {
+  background: rgba(239, 68, 68, 0.28);
+}
+
+.chat-sending-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #38bdf8;
+  animation: sendingPulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes sendingPulse {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
 .chat-msg-text {
   font-size: 0.89rem;
   color: #cbd5e1;
