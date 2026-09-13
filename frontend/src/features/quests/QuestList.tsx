@@ -252,8 +252,8 @@ export const QuestList: React.FC<QuestListProps> = ({
         </div>
       )}
 
-      {/* Loading Skeletons */}
-      {isLoading ? (
+      {/* Loading Skeletons - only show on initial load when 0 tasks exist */}
+      {isLoading && tasks.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }} aria-busy="true" aria-label="Loading quests">
           {[1, 2, 3].map(n => (
             <div

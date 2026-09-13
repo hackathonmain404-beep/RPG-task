@@ -146,7 +146,9 @@ export const QuestsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    setIsLoading(true);
+    if (tasks.length === 0) {
+      setIsLoading(true);
+    }
     setError(null);
     try {
       const data = await tasksApi.getTasks();

@@ -89,23 +89,29 @@ const AppShellInner: React.FC = () => {
   const location = useLocation();
   const [pendingPath, setPendingPath] = useState<string | null>(null);
 
+  // Store context handlers in refs to avoid re-triggering navigation sync on every state change
+  const shopContextRef = React.useRef(shopContext);
+  shopContextRef.current = shopContext;
+  const questsContextRef = React.useRef(questsContext);
+  questsContextRef.current = questsContext;
+  const refreshCharacterRef = React.useRef(refreshCharacter);
+  refreshCharacterRef.current = refreshCharacter;
+
   // Authoritative database synchronization when navigating between sections
   useEffect(() => {
     setPendingPath(null);
     if (!user) return;
 
     const path = location.pathname;
-    if (path.includes('/inventory')) {
-      void shopContext?.loadInventory();
-    } else if (path.includes('/shop')) {
-      void shopContext?.loadShop();
-      void shopContext?.loadInventory();
+    if (path.includes('/shop')) {
+      void shopContextRef.current?.loadShop();
+      void shopContextRef.current?.loadInventory();
     } else if (path.includes('/quests')) {
-      void questsContext?.loadTasks();
+      void questsContextRef.current?.loadTasks();
     } else if (path.includes('/character') || path.includes('/settings') || path.includes('/dashboard')) {
-      void refreshCharacter();
+      void refreshCharacterRef.current();
     }
-  }, [location.pathname, user, shopContext, questsContext, refreshCharacter]);
+  }, [location.pathname, user?.id]);
 
   const toggleSidebar = () => {
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
