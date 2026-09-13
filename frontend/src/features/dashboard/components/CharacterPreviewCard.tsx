@@ -14,19 +14,19 @@ export const CharacterPreviewCard: React.FC<CharacterPreviewCardProps> = ({
   attributes = [],
 }) => {
   const { user } = useAuth();
-  const level = character?.level ?? 12;
+  const level = character?.level ?? 1;
 
-  // Key attributes map or fallback to realistic default scores
-  const getAttrVal = (key: string, fallback: number) => {
+  // Real server-authoritative attribute values (starts at 0 for new adventurers)
+  const getAttrVal = (key: string) => {
     const found = attributes.find(a => a.key.toLowerCase() === key.toLowerCase());
-    return found ? (found.value > 0 ? found.value : fallback) : fallback;
+    return found ? found.value : 0;
   };
 
-  const str = getAttrVal('strength', 72);
-  const intVal = getAttrVal('intellect', 91);
-  const vit = getAttrVal('vitality', 64);
-  const wis = getAttrVal('wisdom', 80);
-  const cha = getAttrVal('charisma', 55);
+  const str = getAttrVal('strength');
+  const intVal = getAttrVal('intellect');
+  const vit = getAttrVal('vitality');
+  const wis = getAttrVal('wisdom');
+  const cha = getAttrVal('charisma');
 
   return (
     <div className="character-preview-card rpg-card">
@@ -84,7 +84,7 @@ export const CharacterPreviewCard: React.FC<CharacterPreviewCardProps> = ({
             <span className="char-attr-name">STR</span>
           </div>
           <div className="rpg-progress-track char-attr-track" role="progressbar" aria-valuenow={str} aria-valuemin={0} aria-valuemax={100}>
-            <div className="rpg-progress-fill attr-fill-strength" style={{ width: `${Math.min(100, str)}%` }} />
+            <div className="rpg-progress-fill attr-fill-strength" style={{ width: `${Math.min(100, str * 5)}%` }} />
           </div>
           <span className="char-attr-score mono-numbers">{str}</span>
         </div>
@@ -96,7 +96,7 @@ export const CharacterPreviewCard: React.FC<CharacterPreviewCardProps> = ({
             <span className="char-attr-name">INT</span>
           </div>
           <div className="rpg-progress-track char-attr-track" role="progressbar" aria-valuenow={intVal} aria-valuemin={0} aria-valuemax={100}>
-            <div className="rpg-progress-fill attr-fill-intellect" style={{ width: `${Math.min(100, intVal)}%` }} />
+            <div className="rpg-progress-fill attr-fill-intellect" style={{ width: `${Math.min(100, intVal * 5)}%` }} />
           </div>
           <span className="char-attr-score mono-numbers">{intVal}</span>
         </div>
@@ -108,7 +108,7 @@ export const CharacterPreviewCard: React.FC<CharacterPreviewCardProps> = ({
             <span className="char-attr-name">VIT</span>
           </div>
           <div className="rpg-progress-track char-attr-track" role="progressbar" aria-valuenow={vit} aria-valuemin={0} aria-valuemax={100}>
-            <div className="rpg-progress-fill attr-fill-vitality" style={{ width: `${Math.min(100, vit)}%` }} />
+            <div className="rpg-progress-fill attr-fill-vitality" style={{ width: `${Math.min(100, vit * 5)}%` }} />
           </div>
           <span className="char-attr-score mono-numbers">{vit}</span>
         </div>

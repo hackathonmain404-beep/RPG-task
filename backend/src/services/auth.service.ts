@@ -101,11 +101,11 @@ export async function syncUser(
             streakBest: 0,
             attributes: {
               create: [
-                { key: 'intellect', displayName: 'Intellect', value: 10 },
-                { key: 'strength', displayName: 'Strength', value: 10 },
-                { key: 'wisdom', displayName: 'Wisdom', value: 10 },
-                { key: 'charisma', displayName: 'Charisma', value: 10 },
-                { key: 'vitality', displayName: 'Vitality', value: 10 },
+                { key: 'intellect', displayName: 'Intellect', value: 0 },
+                { key: 'strength', displayName: 'Strength', value: 0 },
+                { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+                { key: 'charisma', displayName: 'Charisma', value: 0 },
+                { key: 'vitality', displayName: 'Vitality', value: 0 },
               ],
             },
           },
@@ -163,18 +163,14 @@ export async function syncUser(
         } as any,
       });
 
-      // Determine starter boost based on discipline
-      const starterKey = input?.starterDiscipline || 'intellect';
+      // All attributes start at 0 for new accounts
       const baseAttrs = [
-        { key: 'intellect', displayName: 'Intellect', value: 10 },
-        { key: 'strength', displayName: 'Strength', value: 10 },
-        { key: 'wisdom', displayName: 'Wisdom', value: 10 },
-        { key: 'charisma', displayName: 'Charisma', value: 10 },
-        { key: 'vitality', displayName: 'Vitality', value: 10 },
-      ].map(a => ({
-        ...a,
-        value: a.key === starterKey ? 15 : 10, // +5 bonus to chosen discipline
-      }));
+        { key: 'intellect', displayName: 'Intellect', value: 0 },
+        { key: 'strength', displayName: 'Strength', value: 0 },
+        { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+        { key: 'charisma', displayName: 'Charisma', value: 0 },
+        { key: 'vitality', displayName: 'Vitality', value: 0 },
+      ];
 
       const newChar = await tx.character.create({
         data: {
@@ -258,11 +254,11 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
         streakBest: 0,
         attributes: {
           create: [
-            { key: 'intellect', displayName: 'Intellect', value: 10 },
-            { key: 'strength', displayName: 'Strength', value: 10 },
-            { key: 'wisdom', displayName: 'Wisdom', value: 10 },
-            { key: 'charisma', displayName: 'Charisma', value: 10 },
-            { key: 'vitality', displayName: 'Vitality', value: 10 },
+            { key: 'intellect', displayName: 'Intellect', value: 0 },
+            { key: 'strength', displayName: 'Strength', value: 0 },
+            { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+            { key: 'charisma', displayName: 'Charisma', value: 0 },
+            { key: 'vitality', displayName: 'Vitality', value: 0 },
           ],
         },
       },
@@ -443,11 +439,11 @@ export async function loginOrRegisterWithGithub(profile: GithubAuthInput): Promi
             streakBest: 0,
             attributes: {
               create: [
-                { key: 'intellect', displayName: 'Intellect', value: 10 },
-                { key: 'strength', displayName: 'Strength', value: 10 },
-                { key: 'wisdom', displayName: 'Wisdom', value: 10 },
-                { key: 'charisma', displayName: 'Charisma', value: 10 },
-                { key: 'vitality', displayName: 'Vitality', value: 10 },
+                { key: 'intellect', displayName: 'Intellect', value: 0 },
+                { key: 'strength', displayName: 'Strength', value: 0 },
+                { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+                { key: 'charisma', displayName: 'Charisma', value: 0 },
+                { key: 'vitality', displayName: 'Vitality', value: 0 },
               ],
             },
           },

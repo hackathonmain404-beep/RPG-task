@@ -63,7 +63,7 @@ model Attribute {
 
   key         String    // intellect, strength, wisdom, charisma, vitality
   displayName String    // Intellect, Strength, Wisdom, Charisma, Vitality
-  value       Int       @default(10)
+  value       Int       @default(0)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

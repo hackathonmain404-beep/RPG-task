@@ -195,30 +195,11 @@ describe('Global Feedback System', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('allows viewing submissions history tab', async () => {
-    vi.spyOn(feedbackApi, 'getMyFeedback').mockResolvedValueOnce({
-      feedbacks: [
-        {
-          id: 'fb_hist_1',
-          userId: 'usr_feedback_1',
-          type: 'BUG_REPORT',
-          message: 'XP bar does not animate immediately after quest completion.',
-          status: 'RESOLVED',
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    });
-
+  it('does NOT show submissions history button so regular users cannot see submissions', () => {
     renderWithProviders(
       <FeedbackModal isOpen={true} onClose={vi.fn()} />
     );
 
-    const submissionsTabBtn = screen.getByRole('button', { name: /Submissions/i });
-    fireEvent.click(submissionsTabBtn);
-
-    await waitFor(() => {
-      expect(screen.getByText(/XP bar does not animate immediately after quest completion./i)).toBeInTheDocument();
-      expect(screen.getByText('RESOLVED')).toBeInTheDocument();
-    });
+    expect(screen.queryByRole('button', { name: /Submissions/i })).not.toBeInTheDocument();
   });
 });

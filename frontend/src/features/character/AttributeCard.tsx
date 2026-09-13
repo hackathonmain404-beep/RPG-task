@@ -69,7 +69,7 @@ export const AttributeCard: React.FC<AttributeCardProps> = ({ attribute, changeN
 
   // Calculate visual progress meter (bounded between 0 and 100)
   // Uses server-authoritative value without altering backend state
-  const meterPercent = Math.min(100, Math.max(4, attribute.value * 4));
+  const meterPercent = attribute.value === 0 ? 0 : Math.min(100, attribute.value * 4);
 
   return (
     <div

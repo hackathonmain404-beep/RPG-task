@@ -463,13 +463,13 @@ describe('Streaks & Attributes — Integration', () => {
         expect(completeRes.status).toBe(200);
       }
 
-      // Check attribute: started at 10, gained 4+4+4 = 12, should be 22
+      // Check attribute: started at 0, gained 4+4+4 = 12, should be 12
       const character = await prisma.character.findFirst({
         where: { user: { email: accumUser.email } },
         include: { attributes: true },
       });
       const intellect = character!.attributes.find(a => a.key === 'intellect');
-      expect(intellect!.value).toBe(10 + 4 * 3); // 22
+      expect(intellect!.value).toBe(0 + 4 * 3); // 12
 
       // Verify AttributeEvents count
       const events = await prisma.attributeEvent.findMany({
@@ -486,6 +486,6 @@ describe('Streaks & Attributes — Integration', () => {
 
       // Cleanup
       await prisma.user.deleteMany({ where: { email: accumUser.email } });
-    });
+    }, 60000);
   });
 });

@@ -47,8 +47,8 @@ describe('Productivity Analytics Dashboard Components (100% Real User Data)', ()
   it('renders VibeScoreCard dynamically computed from real on-time and missed quests', () => {
     render(<VibeScoreCard tasks={mockTasks} />);
     expect(screen.getByText('Vibe Score')).toBeInTheDocument();
-    // 100 base + 1 on-time (+10) - 1 missed (-5) = 105
-    expect(screen.getByText('105')).toBeInTheDocument();
+    // 0 base + 1 on-time (+10) - 1 missed (-5) = 5
+    expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText(/\+10 for on-time finishes \(1\), -5 for missed deadlines \(1\)/i)).toBeInTheDocument();
   });
 

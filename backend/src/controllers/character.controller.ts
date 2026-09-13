@@ -27,11 +27,11 @@ export async function getCharacter(req: Request, res: Response, next: NextFuncti
         streakBest: 0,
         title,
         attributes: [
-          { key: 'intellect', displayName: 'Intellect', value: 10 },
-          { key: 'strength', displayName: 'Strength', value: 10 },
-          { key: 'wisdom', displayName: 'Wisdom', value: 10 },
-          { key: 'charisma', displayName: 'Charisma', value: 10 },
-          { key: 'vitality', displayName: 'Vitality', value: 10 },
+          { key: 'intellect', displayName: 'Intellect', value: 0 },
+          { key: 'strength', displayName: 'Strength', value: 0 },
+          { key: 'wisdom', displayName: 'Wisdom', value: 0 },
+          { key: 'charisma', displayName: 'Charisma', value: 0 },
+          { key: 'vitality', displayName: 'Vitality', value: 0 },
         ],
       });
       return;

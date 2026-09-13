@@ -8,7 +8,7 @@ interface VibeScoreCardProps {
 
 export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
   // Compute score strictly from actual user quest data:
-  // Baseline: 100
+  // Baseline: 0 for new adventurers (starts empty)
   // +10 for on-time finishes
   // -5 for missed deadlines
   const { score, onTimeCount, missedCount } = useMemo(() => {
@@ -16,29 +16,41 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
     let onTime = 0;
     let missed = 0;
 
+    // Helper to get end-of-day deadline timestamp
+    const getDueDeadline = (dueStr: string): number => {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dueStr)) {
+        const [y, m, d] = dueStr.split('-').map(Number);
+        return Date.UTC(y, m - 1, d, 23, 59, 59, 999);
+      }
+      return new Date(dueStr).getTime();
+    };
+
     for (const t of tasks) {
       if (t.completed) {
         if (!t.dueDate || !t.completedAt) {
           onTime += 1;
         } else {
-          const compDate = new Date(t.completedAt);
-          const dueDate = new Date(t.dueDate);
-          if (compDate <= dueDate) {
+          const compTime = new Date(t.completedAt).getTime();
+          const dueTime = getDueDeadline(t.dueDate);
+          if (compTime <= dueTime) {
             onTime += 1;
           } else {
             // Completed but late
             onTime += 0.5;
           }
         }
-      } else if (t.dueDate && new Date(t.dueDate) < now) {
-        missed += 1;
+      } else if (t.dueDate) {
+        const dueTime = getDueDeadline(t.dueDate);
+        if (dueTime < now.getTime()) {
+          missed += 1;
+        }
       }
     }
 
-    const calculated = Math.max(0, Math.round(100 + (onTime * 10) - (missed * 5)));
+    const calculated = Math.max(0, Math.round((onTime * 10) - (missed * 5)));
     return {
       score: calculated,
-      onTimeCount: Math.floor(onTime),
+      onTimeCount: Math.round(onTime),
       missedCount: missed,
     };
   }, [tasks]);
@@ -49,8 +61,8 @@ export const VibeScoreCard: React.FC<VibeScoreCardProps> = ({ tasks = [] }) => {
   const radius = (ringSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  // Ring fills based on score relative to 200 target
-  const fillPercent = Math.min(1, Math.max(0.1, score / 200));
+  // Ring fills based on score relative to 100 target (0 when 0, 10% when 10, etc.)
+  const fillPercent = Math.min(1, Math.max(0, score / 100));
   const strokeDashoffset = circumference * (1 - fillPercent);
 
   return (

@@ -7,9 +7,7 @@ import {
   X, 
   Loader2, 
   CheckCircle2, 
-  AlertCircle,
-  History,
-  PenLine
+  AlertCircle
 } from 'lucide-react';
 import { feedbackApi } from '../../services/api/feedback';
 import { AuthContext } from '../../context/authContextDef';
@@ -342,39 +340,6 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {/* Switch Tab between compose and history */}
-            <button
-              type="button"
-              onClick={() => setTab(t => (t === 'create' ? 'history' : 'create'))}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.35rem 0.65rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: tab === 'history' ? '#38bdf8' : '#94a3b8',
-                backgroundColor: tab === 'history' ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255, 255, 255, 0.05)',
-                border: tab === 'history' ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-              title={tab === 'create' ? 'View past submissions' : 'Compose new feedback'}
-            >
-              {tab === 'create' ? (
-                <>
-                  <History size={14} />
-                  <span>Submissions</span>
-                </>
-              ) : (
-                <>
-                  <PenLine size={14} />
-                  <span>Write</span>
-                </>
-              )}
-            </button>
-
             {/* Close Cross Button */}
             <button
               type="button"
