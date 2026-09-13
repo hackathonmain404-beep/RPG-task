@@ -420,6 +420,50 @@
   color: #38bdf8;
 }
 
+/* Desktop vs Mobile Account Trigger Presentation */
+.hud-profile-desktop-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.hud-profile-mobile-content {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: color 200ms ease;
+}
+
+.hud-profile-btn:hover .hud-profile-mobile-content,
+.hud-profile-btn.is-open .hud-profile-mobile-content {
+  color: #38bdf8;
+}
+
+@media (max-width: 768px) {
+  .hud-profile-desktop-content {
+    display: none !important;
+  }
+
+  .hud-profile-mobile-content {
+    display: flex !important;
+  }
+
+  .hud-profile-btn {
+    padding: 0.45rem !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
+  }
+
+  .hud-profile-dropdown {
+    right: 0 !important;
+    width: min(300px, 92vw) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+}
+
 /* Profile Dropdown Menu */
 .hud-profile-dropdown {
   position: absolute;
