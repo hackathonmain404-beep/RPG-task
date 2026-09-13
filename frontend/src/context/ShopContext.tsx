@@ -196,12 +196,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const matchingShopItem = shopItems.find(s => s.id === itemId);
           const newItem: InventoryItem = {
             id: res.inventoryItem.id,
-            shopItemId: res.inventoryItem.itemId,
+            shopItemId: res.inventoryItem.itemId || itemId,
+            itemId: itemId,
             purchasedAt: new Date().toISOString(),
             equipped: false,
             shopItem: matchingShopItem,
           };
-          setInventory(prev => [newItem, ...prev.filter(i => (i.itemId || i.shopItemId) !== itemId)]);
+          setInventory(prev => [newItem, ...prev.filter(i => (i.itemId || i.shopItemId) !== itemId && i.id !== res.inventoryItem?.id)]);
+          // Resync with backend database
+          void loadInventory();
 
           // Cache theme ownership locally and fire cross-event
           if (matchingShopItem && (matchingShopItem.itemType?.toUpperCase() === 'THEME' || matchingShopItem.sku?.startsWith('theme_') || matchingShopItem.name?.toLowerCase().includes('theme'))) {

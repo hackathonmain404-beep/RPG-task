@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../../context/useShop';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
@@ -19,6 +19,8 @@ const CATEGORIES = [
   { id: 'frame', label: 'Frames' },
   { id: 'badge', label: 'Badges' },
   { id: 'title', label: 'Titles' },
+  { id: 'consumable', label: 'Consumables & Potions' },
+  { id: 'gear', label: 'Gear & Cosmetics' },
 ];
 
 export const InventoryPage: React.FC = () => {
@@ -38,12 +40,23 @@ export const InventoryPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [equipMessage, setEquipMessage] = useState<string | null>(null);
 
+  // Automatically refresh user inventory from database on mount
+  useEffect(() => {
+    void loadInventory();
+  }, [loadInventory]);
+
   // Filter inventory items by category
   const filteredItems = inventory.filter(item => {
     if (selectedCategory === 'all') return true;
-    const targetId = item.itemId || item.shopItemId;
-    const type = item.shopItem?.itemType || (targetId.startsWith('theme_') ? 'theme' : 'item');
-    return type.toLowerCase() === selectedCategory.toLowerCase();
+    const targetId = item.itemId || item.shopItemId || '';
+    const rawType = (item.shopItem?.itemType || (targetId.startsWith('theme_') ? 'theme' : 'item')).toLowerCase();
+    if (selectedCategory === 'consumable') {
+      return rawType === 'potion' || rawType === 'consumable';
+    }
+    if (selectedCategory === 'gear') {
+      return !['theme', 'frame', 'badge', 'title', 'potion', 'consumable'].includes(rawType);
+    }
+    return rawType === selectedCategory.toLowerCase();
   });
 
   const handleEquip = async (itemId: string) => {

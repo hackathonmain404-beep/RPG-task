@@ -17,10 +17,13 @@ import {
   AlertTriangle,
   Info,
   PartyPopper,
-  Flame
+  Flame,
+  Keyboard
 } from 'lucide-react';
 import { FeedbackProvider, useFeedback } from '../../context/FeedbackContext';
 import { FeedbackModal } from '../common/FeedbackModal.tsx';
+import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { getActivePlatformBroadcast, getPlatformSurgeStatus } from '../../services/api/platform';
 import { useSSE } from '../../hooks/useSSE';
 import type { Broadcast } from '../../types/contract';
@@ -46,8 +49,16 @@ const NAV_ITEMS: NavItem[] = [
 
 const AppShellInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
   const navigate = useNavigate();
+
+  // Global Keyboard Shortcuts (1-7, N, F, B, ?, Esc)
+  useKeyboardShortcuts({
+    onToggleShortcutsModal: () => setIsShortcutsOpen(prev => !prev),
+    onOpenFeedback: openFeedback,
+    onToggleSidebar: () => setIsSidebarOpen(prev => !prev),
+  });
 
   // Live Platform Telemetry
   const [activeBroadcast, setActiveBroadcast] = useState<Broadcast | null>(null);
@@ -354,6 +365,59 @@ const AppShellInner: React.FC = () => {
             <MessageSquarePlus size={18} />
             <span>Feedback</span>
           </button>
+
+          {/* Keyboard Shortcuts Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setIsShortcutsOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              padding: '0.65rem 0.85rem',
+              borderRadius: '8px',
+              backgroundColor: 'transparent',
+              border: '1px solid transparent',
+              color: 'var(--text-secondary)',
+              fontSize: '0.88rem',
+              fontWeight: 600,
+              fontFamily: 'var(--font-display)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all var(--duration-fast) ease',
+              marginTop: '0.25rem',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = 'rgba(56, 189, 248, 0.1)';
+              e.currentTarget.style.color = '#38bdf8';
+              e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.25)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.borderColor = 'transparent';
+            }}
+            aria-label="View Keyboard Shortcuts"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <Keyboard size={18} />
+              <span>Shortcuts</span>
+            </div>
+            <kbd
+              style={{
+                fontSize: '0.7rem',
+                padding: '0.1rem 0.35rem',
+                backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '4px',
+                color: '#38bdf8',
+                fontWeight: 700,
+              }}
+            >
+              ?
+            </kbd>
+          </button>
         </aside>
 
         {/* Mobile Drawer Overlay */}
@@ -512,6 +576,9 @@ const AppShellInner: React.FC = () => {
 
       {/* Global Unified Feedback Modal */}
       <FeedbackModal isOpen={isFeedbackOpen} onClose={closeFeedback} />
+
+      {/* Global Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
     </div>
   );
 };
