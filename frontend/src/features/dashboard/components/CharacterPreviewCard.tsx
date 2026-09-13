@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { User, ArrowRight, ShieldCheck, Dumbbell, Brain, Heart, Sparkles, BookOpen } from 'lucide-react';
+import { useAuth } from '../../../context/useAuth';
 import type { Character, Attribute } from '../../../types/contract';
 
 interface CharacterPreviewCardProps {
@@ -12,6 +13,7 @@ export const CharacterPreviewCard: React.FC<CharacterPreviewCardProps> = ({
   character,
   attributes = [],
 }) => {
+  const { user } = useAuth();
   const level = character?.level ?? 12;
 
   // Key attributes map or fallback to realistic default scores
@@ -43,8 +45,21 @@ export const CharacterPreviewCard: React.FC<CharacterPreviewCardProps> = ({
       {/* Avatar HUD representation */}
       <div className="character-hud-hero">
         <div className="avatar-frame-hex">
-          <div className="avatar-inner-glow">
-            <User size={34} className="avatar-user-glyph" />
+          <div className="avatar-inner-glow" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.displayName || 'Avatar'}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                }}
+              />
+            ) : (
+              <User size={34} className="avatar-user-glyph" />
+            )}
           </div>
           <div className="avatar-level-badge mono-numbers">
             Lv.{level}

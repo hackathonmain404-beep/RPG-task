@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { 
@@ -81,6 +81,63 @@ export const SettingsPage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
           <User size={18} color="#38bdf8" />
           <h2 style={{ fontSize: '1.15rem' }}>Adventurer Identity</h2>
+        </div>
+
+        {/* Equipped Avatar Visual Banner */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-surface-sunken)', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              padding: '2px',
+              background: 'linear-gradient(135deg, #00f0ff, #a855f7)',
+              boxShadow: '0 0 15px rgba(56, 189, 248, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.displayName || 'Equipped Avatar'}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  backgroundColor: '#030712',
+                }}
+              />
+            ) : (
+              <User size={28} color="#38bdf8" />
+            )}
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>
+              Active Avatar
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+              {user?.avatarUrl ? 'Equipped Custom Avatar' : 'Default Identity Avatar (Equip avatars in Armory)'}
+            </div>
+            <Link
+              to="/app/shop"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontSize: '0.78rem',
+                color: '#38bdf8',
+                textDecoration: 'none',
+                marginTop: '0.35rem',
+                fontWeight: 600,
+              }}
+            >
+              <span>Explore Avatar Shop & Neural Forge</span> &rarr;
+            </Link>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>

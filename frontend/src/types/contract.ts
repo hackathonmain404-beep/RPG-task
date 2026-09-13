@@ -9,6 +9,7 @@ export interface User {
   id: string;
   email: string;
   displayName: string;
+  avatarUrl?: string | null;
   role?: 'USER' | 'ADMIN' | string;
   title?: string | null;
 }
@@ -176,6 +177,29 @@ export interface EquipResponse {
   success: boolean;
   equippedItemId: string;
   itemType?: string;
+  avatarUrl?: string | null;
+  equipped?: {
+    id: string;
+    itemId: string;
+    name: string;
+    type: string;
+    avatarUrl?: string | null;
+  };
+}
+
+export interface GenerateAvatarRequest {
+  prompt?: string;
+  archetype?: string;
+}
+
+export interface GenerateAvatarResponse {
+  success: boolean;
+  avatar: ShopItem;
+  inventoryItem: {
+    id: string;
+    itemId: string;
+  };
+  message?: string;
 }
 
 /* ==========================================================================

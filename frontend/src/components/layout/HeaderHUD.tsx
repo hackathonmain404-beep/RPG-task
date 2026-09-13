@@ -107,8 +107,33 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           </Link>
         </div>
 
-        {/* Right: Admin Quick Link & Interactive Profile Dropdown */}
+        {/* Right: Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Feedback Trigger — immediately to the left of player profile */}
+          <button
+            type="button"
+            onClick={openFeedback}
+            className="rpg-btn hud-feedback-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.4rem 0.75rem',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              borderRadius: '8px',
+              backgroundColor: 'rgba(139, 92, 246, 0.12)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              color: '#c084fc',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            aria-label="Send Feedback"
+          >
+            <MessageSquarePlus size={16} />
+            <span className="desktop-only">Feedback</span>
+          </button>
+
           {/* Admin Control Center Quick Link — ONLY visible to verified admins */}
           {isAdmin && (
             <Link
@@ -133,7 +158,20 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
               aria-label="User Profile Menu"
             >
               <div className="hud-user-avatar">
-                <User size={14} className="hud-user-icon" />
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.displayName || 'Avatar'}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                ) : (
+                  <User size={14} className="hud-user-icon" />
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
                 <span className="hud-user-name">
@@ -159,7 +197,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
-                      {user?.displayName || 'Adventurer'}
+                      Adventurer Profile
                     </div>
                     {user?.email && (
                       <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>
@@ -254,7 +292,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                   openFeedback();
                 }}
                 className="hud-dropdown-item hud-dropdown-feedback"
-                aria-label="Send Feedback"
+                aria-label="Give Feedback"
               >
                 <MessageSquarePlus size={16} className="hud-item-icon" />
                 <span>Feedback</span>

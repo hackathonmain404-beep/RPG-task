@@ -15,7 +15,7 @@ function mapItemIdToThemeKey(itemId: string): string {
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, reconcilePurchase } = useAuth();
+  const { user, reconcilePurchase, setEquippedAvatar } = useAuth();
 
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -164,13 +164,22 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Find the item being equipped
         const targetInv = inventory.find(i => (i.itemId || i.shopItemId) === itemId);
-        const itemType = targetInv?.shopItem?.itemType || (itemId.startsWith('theme_') ? 'theme' : 'item');
+        const matchingShop = shopItems.find(s => s.id === itemId);
+        const rawType = (targetInv?.shopItem?.itemType || matchingShop?.itemType || (itemId.startsWith('theme_') ? 'theme' : itemId.startsWith('avatar_') ? 'avatar' : 'item')).toLowerCase();
+        const rawCat = (targetInv?.shopItem?.category || matchingShop?.category || '').toLowerCase();
+        const isAvatar = rawType === 'avatar' || rawCat === 'avatar' || itemId.startsWith('avatar_');
+        const itemType = isAvatar ? 'avatar' : rawType;
 
         // Update inventory equipped state
         setInventory(prev =>
           prev.map(item => {
-            const currentType = item.shopItem?.itemType || ((item.itemId || item.shopItemId)?.startsWith('theme_') ? 'theme' : 'item');
-            if (currentType === itemType) {
+            const curType = (item.shopItem?.itemType || ((item.itemId || item.shopItemId)?.startsWith('theme_') ? 'theme' : (item.itemId || item.shopItemId)?.startsWith('avatar_') ? 'avatar' : 'item')).toLowerCase();
+            const curCat = (item.shopItem?.category || '').toLowerCase();
+            const isTargetKind = isAvatar
+              ? (curType === 'avatar' || curCat === 'avatar' || (item.itemId || item.shopItemId)?.startsWith('avatar_'))
+              : (curType === itemType);
+
+            if (isTargetKind) {
               const matches = (item.itemId || item.shopItemId) === itemId;
               return { ...item, equipped: matches, equippedAt: matches ? new Date().toISOString() : undefined };
             }
@@ -189,6 +198,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
+        // If it's an avatar, update user.avatarUrl across all surfaces
+        if (isAvatar) {
+          const avatarUrl = res.equipped?.avatarUrl || targetInv?.shopItem?.icon || matchingShop?.icon || targetInv?.shopItem?.imageUrl || matchingShop?.imageUrl || `/assets/items/${itemId}.svg`;
+          if (setEquippedAvatar) {
+            setEquippedAvatar(avatarUrl);
+          }
+        }
+
         return res;
       } finally {
         setPendingEquipItemIds(prev => {
@@ -198,7 +215,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
     },
-    [pendingEquipItemIds, inventory]
+    [pendingEquipItemIds, inventory, shopItems, setEquippedAvatar]
   );
 
   const isOwned = useCallback(
@@ -215,9 +232,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (itemId.startsWith('theme_')) {
         return mapItemIdToThemeKey(itemId) === equippedTheme;
       }
+      if (itemId.startsWith('avatar_') || invItem?.shopItem?.category?.toLowerCase() === 'avatar') {
+        const icon = invItem?.shopItem?.icon || invItem?.shopItem?.imageUrl || `/assets/items/${itemId}.svg`;
+        return Boolean(user?.avatarUrl && (user.avatarUrl === icon || user.avatarUrl.includes(itemId)));
+      }
       return false;
     },
-    [inventory, equippedTheme]
+    [inventory, equippedTheme, user?.avatarUrl]
   );
 
   return (

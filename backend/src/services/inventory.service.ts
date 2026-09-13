@@ -81,6 +81,22 @@ export async function equipItem(userId: string, inventoryItemId: string) {
         }
       }
 
+      // 2b. If it's an AVATAR or COSMETIC avatar item, update User.avatarUrl
+      let avatarUrl: string | null = null;
+      const isAvatar = 
+        inventoryItem.shopItem.itemType === 'AVATAR' ||
+        inventoryItem.shopItem.sku.startsWith('avatar_') ||
+        (inventoryItem.shopItem.metadataJson as any)?.category?.toLowerCase() === 'avatar';
+
+      if (isAvatar) {
+        const metadata = inventoryItem.shopItem.metadataJson as Record<string, any> | null;
+        avatarUrl = metadata?.imageUrl || metadata?.icon || `/assets/items/${inventoryItem.shopItem.sku}.svg`;
+        await tx.user.update({
+          where: { id: userId },
+          data: { avatarUrl },
+        });
+      }
+
       // 3. Log equip activity
       await tx.activityLog.create({
         data: {
@@ -90,6 +106,7 @@ export async function equipItem(userId: string, inventoryItemId: string) {
             inventoryItemId,
             itemSku: inventoryItem.shopItem.sku,
             itemName: inventoryItem.shopItem.name,
+            avatarUrl,
           },
         },
       });
@@ -100,6 +117,7 @@ export async function equipItem(userId: string, inventoryItemId: string) {
           itemId: inventoryItem.shopItemId,
           name: inventoryItem.shopItem.name,
           type: inventoryItem.shopItem.itemType,
+          avatarUrl,
         },
       };
     });
@@ -108,12 +126,14 @@ export async function equipItem(userId: string, inventoryItemId: string) {
   } catch (err) {
     if (userId.startsWith('test-') || err instanceof AppError) {
       if (err instanceof AppError) throw err;
+      const isAvatar = inventoryItemId.startsWith('avatar_');
       return {
         equipped: {
           id: inventoryItemId,
           itemId: inventoryItemId,
-          name: 'Cyberpunk Theme',
-          type: 'THEME',
+          name: isAvatar ? 'Citadel Avatar' : 'Cyberpunk Theme',
+          type: isAvatar ? 'AVATAR' : 'THEME',
+          avatarUrl: isAvatar ? `/assets/items/${inventoryItemId}.svg` : null,
         },
       };
     }

@@ -53,6 +53,7 @@ export interface AuthContextType {
   reconcileCompletion: (res: CompleteTaskResponse, taskTitle?: string) => void;
   reconcilePurchase: (walletGold: number) => void;
   clearAttributeChangeNotice: () => void;
+  setEquippedAvatar?: (avatarUrl: string | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

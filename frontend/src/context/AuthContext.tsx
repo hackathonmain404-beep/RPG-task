@@ -486,6 +486,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLastAttributeChange(null);
   }, [isGuest]);
 
+  const setEquippedAvatar = useCallback((avatarUrl: string | null) => {
+    setUser(prev => prev ? { ...prev, avatarUrl } : prev);
+  }, []);
+
   const isAdmin = Boolean(user && user.role === 'ADMIN');
 
   return (
@@ -512,6 +516,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reconcileCompletion,
         reconcilePurchase,
         clearAttributeChangeNotice,
+        setEquippedAvatar,
       }}
     >
       {children}
