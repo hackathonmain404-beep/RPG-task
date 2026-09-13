@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getAdminUsers, grantUserEconomy } from '../../services/api/admin';
 import type { AdminUserListItem } from '../../types/contract';
 import { 
@@ -8,14 +8,23 @@ import {
   Coins, 
   Zap, 
   ShieldAlert, 
-  Calendar, 
   Check, 
   X, 
   Loader2, 
   Sparkles,
   Award,
-  Crown
+  Crown,
+  Flame,
+  Copy,
+  RefreshCw,
+  LayoutGrid,
+  List,
+  ArrowUpDown
 } from 'lucide-react';
+
+type RoleFilter = 'all' | 'admins' | 'monarchs' | 'streaks';
+type SortField = 'level' | 'xp' | 'coins' | 'streak' | 'name';
+type ViewMode = 'grid' | 'list';
 
 export const UsersEconomyTab: React.FC = () => {
   const [users, setUsers] = useState<AdminUserListItem[]>([]);
@@ -23,6 +32,12 @@ export const UsersEconomyTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorText, setErrorText] = useState<string | null>(null);
+
+  // Filters, Sorting & View
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  const [sortBy, setSortBy] = useState<SortField>('level');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Grant Modal state
   const [selectedUser, setSelectedUser] = useState<AdminUserListItem | null>(null);
@@ -52,6 +67,101 @@ export const UsersEconomyTab: React.FC = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery, fetchUsers]);
+
+  // Modal ESC handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedUser) {
+        handleCloseGrantModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedUser]);
+
+  // Derive Real KPIs from Authoritative Database Data
+  const stats = useMemo(() => {
+    let totalXp = 0;
+    let totalCoins = 0;
+    let activeStreaks = 0;
+    let adminsCount = 0;
+
+    users.forEach((u) => {
+      const char = u.character;
+      const xp = char?.totalXp ?? u.totalXp ?? 0;
+      const coins = char?.gold ?? u.coins ?? u.gold ?? 0;
+      const streak = char?.streakCurrent ?? u.streakCurrent ?? 0;
+
+      totalXp += xp;
+      totalCoins += coins;
+      if (streak > 0) activeStreaks++;
+      if (u.role === 'ADMIN') adminsCount++;
+    });
+
+    return {
+      totalAdventurers: totalCount || users.length,
+      totalXp,
+      totalCoins,
+      activeStreaks,
+      adminsCount,
+    };
+  }, [users, totalCount]);
+
+  // Filter & Sort
+  const processedUsers = useMemo(() => {
+    let result = [...users];
+
+    // Role filter
+    if (roleFilter === 'admins') {
+      result = result.filter(u => u.role === 'ADMIN');
+    } else if (roleFilter === 'monarchs') {
+      result = result.filter(u => !!(u.title || u.character?.title));
+    } else if (roleFilter === 'streaks') {
+      result = result.filter(u => (u.character?.streakCurrent ?? u.streakCurrent ?? 0) > 0);
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      const aChar = a.character;
+      const bChar = b.character;
+
+      if (sortBy === 'level') {
+        const aLvl = aChar?.level ?? a.level ?? 1;
+        const bLvl = bChar?.level ?? b.level ?? 1;
+        return bLvl - aLvl;
+      }
+      if (sortBy === 'xp') {
+        const aXp = aChar?.totalXp ?? a.totalXp ?? 0;
+        const bXp = bChar?.totalXp ?? b.totalXp ?? 0;
+        return bXp - aXp;
+      }
+      if (sortBy === 'coins') {
+        const aGold = aChar?.gold ?? a.coins ?? a.gold ?? 0;
+        const bGold = bChar?.gold ?? b.coins ?? b.gold ?? 0;
+        return bGold - aGold;
+      }
+      if (sortBy === 'streak') {
+        const aStr = aChar?.streakCurrent ?? a.streakCurrent ?? 0;
+        const bStr = bChar?.streakCurrent ?? b.streakCurrent ?? 0;
+        return bStr - aStr;
+      }
+      if (sortBy === 'name') {
+        return (a.displayName || '').localeCompare(b.displayName || '');
+      }
+      return 0;
+    });
+
+    return result;
+  }, [users, roleFilter, sortBy]);
+
+  const handleCopyId = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (navigator.clipboard) {
+      void navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1800);
+    }
+  };
 
   const handleOpenGrantModal = (user: AdminUserListItem) => {
     setSelectedUser(user);
@@ -128,257 +238,487 @@ export const UsersEconomyTab: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header Bar: Title & Search */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-          padding: '1.25rem 1.5rem',
-          background: 'rgba(15, 23, 42, 0.65)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '12px',
-        }}
-      >
-        <div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Users size={22} color="#38bdf8" />
+    <div className="cmd-center-container">
+      {/* 1. Page Hero Banner */}
+      <section className="cmd-hero-panel">
+        <div className="cmd-hero-title-group">
+          <div className="cmd-hero-badge-tag">
+            <span className="cmd-live-dot" />
+            <span>Authoritative Command HUD</span>
+          </div>
+          <h2 className="cmd-hero-heading">
+            <Users size={24} color="#38bdf8" />
             <span>Heroes & Economy Management ({totalCount})</span>
           </h2>
-          <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.2rem' }}>
+          <p className="cmd-hero-sub">
             Inspect real PostgreSQL database players and authoritatively grant XP, Coins, or Titles.
           </p>
         </div>
 
-        {/* Search Field */}
-        <div style={{ position: 'relative', minWidth: '280px' }}>
-          <Search size={16} color="#64748b" style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)' }} />
-          <input
-            type="text"
-            placeholder="Search by name, email, or ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.65rem 1rem 0.65rem 2.4rem',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(15, 23, 42, 0.8)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#f8fafc',
-              fontSize: '0.85rem',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
+        <div className="cmd-hero-quick-status">
+          <div className="cmd-status-pill">
+            <span style={{ color: '#38bdf8', fontWeight: 700 }}>DATABASE:</span>
+            <span>PostgreSQL Active</span>
+          </div>
         </div>
-      </div>
+      </section>
 
+      {/* 2. Admin KPI Overview Deck */}
+      <section aria-label="Citadel KPI Metrics" className="cmd-kpi-grid">
+        {/* Total Users */}
+        <div className="cmd-kpi-card" style={{ '--kpi-accent': '#38bdf8', '--kpi-shadow': 'rgba(56, 189, 248, 0.2)' } as React.CSSProperties}>
+          <div className="cmd-kpi-header">
+            <span className="cmd-kpi-label">Total Adventurers</span>
+            <div className="cmd-kpi-icon-box" style={{ '--kpi-icon-bg': 'rgba(56, 189, 248, 0.12)', '--kpi-icon-border': 'rgba(56, 189, 248, 0.3)', '--kpi-icon-color': '#38bdf8' } as React.CSSProperties}>
+              <Users size={18} />
+            </div>
+          </div>
+          <div className="cmd-kpi-value-row">
+            <span className="cmd-kpi-number">{stats.totalAdventurers.toLocaleString()}</span>
+          </div>
+          <span className="cmd-kpi-subtext">Registered in Realm</span>
+        </div>
+
+        {/* Total Server XP */}
+        <div className="cmd-kpi-card" style={{ '--kpi-accent': '#a855f7', '--kpi-shadow': 'rgba(168, 85, 247, 0.2)' } as React.CSSProperties}>
+          <div className="cmd-kpi-header">
+            <span className="cmd-kpi-label">Total Server XP</span>
+            <div className="cmd-kpi-icon-box" style={{ '--kpi-icon-bg': 'rgba(168, 85, 247, 0.12)', '--kpi-icon-border': 'rgba(168, 85, 247, 0.3)', '--kpi-icon-color': '#c084fc' } as React.CSSProperties}>
+              <Zap size={18} />
+            </div>
+          </div>
+          <div className="cmd-kpi-value-row">
+            <span className="cmd-kpi-number" style={{ color: '#e9d5ff' }}>{stats.totalXp.toLocaleString()}</span>
+          </div>
+          <span className="cmd-kpi-subtext">Earned by Adventurers</span>
+        </div>
+
+        {/* Treasury Coins */}
+        <div className="cmd-kpi-card" style={{ '--kpi-accent': '#fbbf24', '--kpi-shadow': 'rgba(251, 191, 36, 0.2)' } as React.CSSProperties}>
+          <div className="cmd-kpi-header">
+            <span className="cmd-kpi-label">Treasury Coins</span>
+            <div className="cmd-kpi-icon-box" style={{ '--kpi-icon-bg': 'rgba(245, 158, 11, 0.12)', '--kpi-icon-border': 'rgba(245, 158, 11, 0.3)', '--kpi-icon-color': '#fbbf24' } as React.CSSProperties}>
+              <Coins size={18} />
+            </div>
+          </div>
+          <div className="cmd-kpi-value-row">
+            <span className="cmd-kpi-number" style={{ color: '#fef08a' }}>{stats.totalCoins.toLocaleString()}</span>
+          </div>
+          <span className="cmd-kpi-subtext">Total Gold In Circulation</span>
+        </div>
+
+        {/* Active Streaks */}
+        <div className="cmd-kpi-card" style={{ '--kpi-accent': '#ef4444', '--kpi-shadow': 'rgba(239, 68, 68, 0.2)' } as React.CSSProperties}>
+          <div className="cmd-kpi-header">
+            <span className="cmd-kpi-label">Active Streaks</span>
+            <div className="cmd-kpi-icon-box" style={{ '--kpi-icon-bg': 'rgba(239, 68, 68, 0.12)', '--kpi-icon-border': 'rgba(239, 68, 68, 0.3)', '--kpi-icon-color': '#fca5a5' } as React.CSSProperties}>
+              <Flame size={18} />
+            </div>
+          </div>
+          <div className="cmd-kpi-value-row">
+            <span className="cmd-kpi-number" style={{ color: '#fca5a5' }}>{stats.activeStreaks}</span>
+          </div>
+          <span className="cmd-kpi-subtext">Adventurers with &gt;0 Streak</span>
+        </div>
+
+        {/* Admins / Staff */}
+        <div className="cmd-kpi-card" style={{ '--kpi-accent': '#c084fc', '--kpi-shadow': 'rgba(192, 132, 252, 0.2)' } as React.CSSProperties}>
+          <div className="cmd-kpi-header">
+            <span className="cmd-kpi-label">Citadel Staff</span>
+            <div className="cmd-kpi-icon-box" style={{ '--kpi-icon-bg': 'rgba(192, 132, 252, 0.12)', '--kpi-icon-border': 'rgba(192, 132, 252, 0.3)', '--kpi-icon-color': '#d8b4fe' } as React.CSSProperties}>
+              <Crown size={18} />
+            </div>
+          </div>
+          <div className="cmd-kpi-value-row">
+            <span className="cmd-kpi-number" style={{ color: '#d8b4fe' }}>{stats.adminsCount}</span>
+          </div>
+          <span className="cmd-kpi-subtext">Verified Realm Admins</span>
+        </div>
+      </section>
+
+      {/* 3. Control Toolbar */}
+      <section aria-label="Management Toolbar" className="cmd-toolbar">
+        <div className="cmd-toolbar-left">
+          {/* Search Input */}
+          <div className="cmd-search-wrapper">
+            <Search size={16} className="cmd-search-icon" />
+            <input
+              type="text"
+              placeholder="Search by name, email, or ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="cmd-search-input"
+              aria-label="Search adventurers"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="cmd-search-clear"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Role Filter Pills */}
+          <div className="cmd-filter-pill-group" role="tablist" aria-label="Filter Adventurers">
+            <button
+              type="button"
+              onClick={() => setRoleFilter('all')}
+              className={`cmd-filter-pill ${roleFilter === 'all' ? 'active' : ''}`}
+            >
+              All ({users.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setRoleFilter('admins')}
+              className={`cmd-filter-pill ${roleFilter === 'admins' ? 'active' : ''}`}
+            >
+              Admins
+            </button>
+            <button
+              type="button"
+              onClick={() => setRoleFilter('monarchs')}
+              className={`cmd-filter-pill ${roleFilter === 'monarchs' ? 'active' : ''}`}
+            >
+              Titles
+            </button>
+            <button
+              type="button"
+              onClick={() => setRoleFilter('streaks')}
+              className={`cmd-filter-pill ${roleFilter === 'streaks' ? 'active' : ''}`}
+            >
+              Streaks
+            </button>
+          </div>
+        </div>
+
+        <div className="cmd-toolbar-right">
+          {/* Sorting Dropdown */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+            <ArrowUpDown size={14} color="#94a3b8" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortField)}
+              className="cmd-select-dropdown"
+              aria-label="Sort adventurers"
+            >
+              <option value="level">Level (High → Low)</option>
+              <option value="xp">Total XP (High → Low)</option>
+              <option value="coins">Coins (High → Low)</option>
+              <option value="streak">Streak (Highest)</option>
+              <option value="name">Name (A → Z)</option>
+            </select>
+          </div>
+
+          {/* View Mode Toggle */}
+          <div style={{ display: 'inline-flex', gap: '0.3rem' }}>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`cmd-action-icon-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              title="Grid View"
+              aria-label="Switch to Grid View"
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`cmd-action-icon-btn ${viewMode === 'list' ? 'active' : ''}`}
+              title="Compact List View"
+              aria-label="Switch to List View"
+            >
+              <List size={16} />
+            </button>
+          </div>
+
+          {/* Refresh Action */}
+          <button
+            type="button"
+            onClick={() => void fetchUsers(searchQuery)}
+            disabled={isLoading}
+            className="cmd-action-icon-btn"
+            title="Refresh database"
+            aria-label="Refresh player database"
+          >
+            <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      </section>
+
+      {/* Error Banner */}
       {errorText && (
-        <div
-          style={{
-            padding: '0.85rem 1rem',
-            borderRadius: '8px',
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#fca5a5',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <ShieldAlert size={18} />
-          <span>{errorText}</span>
+        <div className="cmd-error-banner" role="alert">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+            <ShieldAlert size={18} />
+            <span>{errorText}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => void fetchUsers(searchQuery)}
+            style={{
+              padding: '0.35rem 0.75rem',
+              borderRadius: '6px',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              color: '#ffffff',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Retry
+          </button>
         </div>
       )}
 
-      {/* Hero Cards Grid */}
+      {/* 4. Main Adventurers Content */}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem', color: '#38bdf8' }}>
-          <Loader2 size={32} className="animate-spin" />
+        <div className="cmd-adventurers-grid">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div key={idx} className="cmd-skeleton-card">
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <div className="cmd-skeleton" style={{ width: 44, height: 44, borderRadius: 12 }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <div className="cmd-skeleton" style={{ width: '60%', height: 16 }} />
+                  <div className="cmd-skeleton" style={{ width: '80%', height: 12 }} />
+                </div>
+              </div>
+              <div className="cmd-skeleton" style={{ width: '100%', height: 60, marginTop: 'auto' }} />
+              <div className="cmd-skeleton" style={{ width: '100%', height: 36 }} />
+            </div>
+          ))}
         </div>
-      ) : users.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '3.5rem',
-            background: 'rgba(15, 23, 42, 0.4)',
-            borderRadius: '12px',
-            border: '1px dashed rgba(255, 255, 255, 0.1)',
-            color: '#94a3b8',
-          }}
-        >
-          No adventurers found matching &quot;{searchQuery}&quot;.
+      ) : processedUsers.length === 0 ? (
+        <div className="cmd-empty-state">
+          <div className="cmd-empty-icon">
+            <Users size={28} />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc', margin: '0 0 0.35rem 0' }}>
+              No Adventurers Found
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: 0, maxWidth: '400px' }}>
+              {searchQuery
+                ? `No players matched the search "${searchQuery}". Try searching by another name, email, or user ID.`
+                : 'No players currently match the selected role filter.'}
+            </p>
+          </div>
+          {(searchQuery || roleFilter !== 'all') && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setRoleFilter('all');
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                background: 'rgba(56, 189, 248, 0.15)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                color: '#38bdf8',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
-      ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-            gap: '1.25rem',
-          }}
-        >
-          {users.map((u) => {
+      ) : viewMode === 'grid' ? (
+        /* GRID VIEW */
+        <div className="cmd-adventurers-grid">
+          {processedUsers.map((u) => {
             const isAdmin = u.role === 'ADMIN';
             const char = u.character;
+            const level = char?.level ?? u.level ?? 1;
+            const totalXp = char?.totalXp ?? u.totalXp ?? 0;
+            const coins = char?.gold ?? u.coins ?? u.gold ?? 0;
+            const streak = char?.streakCurrent ?? u.streakCurrent ?? 0;
+            const title = u.title || char?.title;
+            const initials = (u.displayName || 'Hero')
+              .split(' ')
+              .map(n => n[0])
+              .slice(0, 2)
+              .join('')
+              .toUpperCase();
+
+            // Computed visual progress indicator
+            const xpPercent = Math.min(100, Math.max(8, Math.round(((totalXp % 500) / 500) * 100)));
 
             return (
-              <div
+              <article
                 key={u.id}
-                style={{
-                  background: isAdmin
-                    ? 'linear-gradient(145deg, rgba(30, 27, 75, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)'
-                    : 'rgba(15, 23, 42, 0.65)',
-                  border: isAdmin ? '1px solid rgba(168, 85, 247, 0.45)' : '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '12px',
-                  padding: '1.25rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1rem',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  boxShadow: isAdmin ? '0 4px 20px rgba(124, 58, 237, 0.15)' : 'none',
-                }}
+                className={`cmd-user-card ${isAdmin ? 'is-admin' : ''}`}
               >
-                {/* User Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 700, fontSize: '1.05rem', color: '#f8fafc' }}>
+                {/* 1. Identity Header */}
+                <div className="cmd-card-identity">
+                  <div className="cmd-card-avatar">
+                    {initials}
+                  </div>
+
+                  <div className="cmd-identity-info">
+                    <div className="cmd-name-row">
+                      <span className="cmd-player-name" title={u.displayName}>
                         {u.displayName || 'Anonymous Hero'}
                       </span>
                       {isAdmin && (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            padding: '0.15rem 0.5rem',
-                            borderRadius: '9999px',
-                            backgroundColor: 'rgba(168, 85, 247, 0.2)',
-                            border: '1px solid rgba(168, 85, 247, 0.5)',
-                            color: '#c084fc',
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
-                            letterSpacing: '0.04em',
-                          }}
-                        >
-                          <Crown size={12} />
+                        <span className="cmd-role-badge admin">
+                          <Crown size={11} />
                           ADMIN
                         </span>
                       )}
                     </div>
-                    {/* Hero Title Badge */}
-                    {(u.title || char?.title) && (
-                      <div
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          marginTop: '0.35rem',
-                          padding: '0.15rem 0.55rem',
-                          borderRadius: '6px',
-                          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(168, 85, 247, 0.15))',
-                          border: '1px solid rgba(245, 158, 11, 0.45)',
-                          color: '#fbbf24',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          letterSpacing: '0.02em',
-                        }}
-                      >
+
+                    {title && (
+                      <div className="cmd-hero-title-tag">
                         <Award size={12} color="#fbbf24" />
-                        <span>{u.title || char?.title}</span>
+                        <span>{title}</span>
                       </div>
                     )}
-                    <div style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '0.2rem', fontFamily: 'var(--font-mono)' }}>
+
+                    <div className="cmd-player-email" title={u.email}>
                       {u.email}
                     </div>
-                  </div>
 
-                  <span
-                    style={{
-                      fontSize: '0.7rem',
-                      fontFamily: 'var(--font-mono)',
-                      color: '#64748b',
-                      padding: '0.2rem 0.45rem',
-                      borderRadius: '4px',
-                      background: 'rgba(255, 255, 255, 0.04)',
-                    }}
-                  >
-                    ID: {u.id.slice(0, 8)}...
-                  </span>
-                </div>
-
-                {/* Character Stat Pills */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: '0.5rem',
-                    background: 'rgba(0, 0, 0, 0.25)',
-                    padding: '0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(255, 255, 255, 0.04)',
-                  }}
-                >
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: '#94a3b8', fontSize: '0.7rem', textTransform: 'uppercase' }}>Level</div>
-                    <div style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1.15rem' }}>
-                      {char?.level ?? u.level ?? 1}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: '#94a3b8', fontSize: '0.7rem', textTransform: 'uppercase' }}>Total XP</div>
-                    <div style={{ color: '#a855f7', fontWeight: 800, fontSize: '1.15rem' }}>
-                      {char?.totalXp ?? u.totalXp ?? 0}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: '#94a3b8', fontSize: '0.7rem', textTransform: 'uppercase' }}>Coins</div>
-                    <div style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1.15rem' }}>
-                      {char?.gold ?? u.coins ?? u.gold ?? 0}
-                    </div>
+                    {/* Monospace Copyable ID Chip */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleCopyId(u.id, e)}
+                      className="cmd-id-chip"
+                      title="Click to copy full ID"
+                      aria-label={`Copy user ID ${u.id}`}
+                    >
+                      <Copy size={11} />
+                      <span>ID: {u.id.slice(0, 8)}...</span>
+                      {copiedId === u.id && (
+                        <span className="cmd-copy-toast">Copied!</span>
+                      )}
+                    </button>
                   </div>
                 </div>
 
-                {/* Footer Info & Grant Button */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '0.5rem' }}>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <Calendar size={13} />
-                    <span>Streak: {char?.streakCurrent ?? u.streakCurrent ?? 0}d</span>
+                {/* 2. Progression HUD Block */}
+                <div className="cmd-progression-hud">
+                  <div className="cmd-stats-columns">
+                    <div className="cmd-stat-block">
+                      <span className="cmd-stat-label">Level</span>
+                      <span className="cmd-stat-val level">{level}</span>
+                    </div>
+
+                    <div className="cmd-stat-block">
+                      <span className="cmd-stat-label">
+                        <Zap size={11} color="#c084fc" />
+                        <span>Total XP</span>
+                      </span>
+                      <span className="cmd-stat-val xp">{totalXp.toLocaleString()}</span>
+                    </div>
+
+                    <div className="cmd-stat-block">
+                      <span className="cmd-stat-label">
+                        <Coins size={11} color="#fbbf24" />
+                        <span>Coins</span>
+                      </span>
+                      <span className="cmd-stat-val coins">{coins.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="cmd-card-xp-bar" title={`XP Progression towards Tier Mastery (${xpPercent}%)`}>
+                    <div className="cmd-card-xp-fill" style={{ width: `${xpPercent}%` }} />
+                  </div>
+                </div>
+
+                {/* 3. Footer Actions & Streak */}
+                <div className="cmd-card-footer">
+                  <span className={`cmd-streak-badge ${streak === 0 ? 'zero' : ''}`}>
+                    <Flame size={13} />
+                    <span>Streak: {streak}d</span>
                   </span>
 
                   <button
                     type="button"
                     onClick={() => handleOpenGrantModal(u)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      padding: '0.45rem 0.85rem',
-                      borderRadius: '8px',
-                      background: 'rgba(56, 189, 248, 0.12)',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
-                      color: '#38bdf8',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(56, 189, 248, 0.25)';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(56, 189, 248, 0.12)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
+                    className="cmd-btn-grant"
+                    aria-label={`Grant economy rewards to ${u.displayName}`}
                   >
-                    <Gift size={14} />
+                    <Gift size={14} className="cmd-btn-grant-icon" />
                     <span>Grant Economy</span>
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        /* COMPACT LIST VIEW */
+        <div className="cmd-list-view">
+          {processedUsers.map((u) => {
+            const isAdmin = u.role === 'ADMIN';
+            const char = u.character;
+            const level = char?.level ?? u.level ?? 1;
+            const totalXp = char?.totalXp ?? u.totalXp ?? 0;
+            const coins = char?.gold ?? u.coins ?? u.gold ?? 0;
+            const streak = char?.streakCurrent ?? u.streakCurrent ?? 0;
+            const title = u.title || char?.title;
+
+            return (
+              <div key={u.id} className="cmd-list-row">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f8fafc' }}>
+                        {u.displayName || 'Anonymous Hero'}
+                      </span>
+                      {isAdmin && (
+                        <span className="cmd-role-badge admin">
+                          ADMIN
+                        </span>
+                      )}
+                      {title && (
+                        <span className="cmd-hero-title-tag" style={{ fontSize: '0.68rem', padding: '0.1rem 0.4rem' }}>
+                          {title}
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '0.76rem', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
+                      {u.email} · ID: {u.id.slice(0, 8)}...
+                    </span>
+                  </div>
+                </div>
+
+                <div className="cmd-list-stats-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase' }}>Level</div>
+                    <div style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1rem' }}>{level}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase' }}>Total XP</div>
+                    <div style={{ color: '#c084fc', fontWeight: 800, fontSize: '1rem' }}>{totalXp.toLocaleString()}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase' }}>Coins</div>
+                    <div style={{ color: '#fbbf24', fontWeight: 800, fontSize: '1rem' }}>{coins.toLocaleString()}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.68rem', color: '#64748b', textTransform: 'uppercase' }}>Streak</div>
+                    <div style={{ color: '#fca5a5', fontWeight: 800, fontSize: '1rem' }}>{streak}d</div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenGrantModal(u)}
+                    className="cmd-btn-grant"
+                    style={{ padding: '0.45rem 0.85rem' }}
+                  >
+                    <Gift size={13} />
+                    <span>Grant</span>
                   </button>
                 </div>
               </div>
@@ -387,257 +727,184 @@ export const UsersEconomyTab: React.FC = () => {
         </div>
       )}
 
-      {/* -------------------------------------------------------------- */}
-      {/* GRANT XP, COINS & TITLE MODAL                                   */}
-      {/* -------------------------------------------------------------- */}
+      {/* 5. Futuristic Grant Economy Action Dialog */}
       {selectedUser && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-          }}
+          className="cmd-modal-backdrop"
           onClick={handleCloseGrantModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="grant-modal-title"
         >
           <div
-            style={{
-              width: '100%',
-              maxWidth: '460px',
-              backgroundColor: '#0f172a',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              borderRadius: '16px',
-              padding: '1.75rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.15)',
-              position: 'relative',
-            }}
+            className="cmd-modal-dialog"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
+            <div className="cmd-sheet-drag-handle" />
+            {/* Close Trigger */}
             <button
               type="button"
               onClick={handleCloseGrantModal}
-              style={{
-                position: 'absolute',
-                top: '1.25rem',
-                right: '1.25rem',
-                background: 'none',
-                border: 'none',
-                color: '#94a3b8',
-                cursor: 'pointer',
-              }}
+              className="cmd-modal-close"
+              aria-label="Close dialog"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
 
-            {/* Modal Title */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#38bdf8', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <Sparkles size={16} />
+            {/* Header */}
+            <div className="cmd-modal-header">
+              <div className="cmd-modal-tag">
+                <Sparkles size={14} />
                 <span>Citadel Treasury Dispatch</span>
               </div>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#f8fafc', marginTop: '0.25rem' }}>
-                Grant to {selectedUser.displayName}
+              <h3 id="grant-modal-title" className="cmd-modal-title">
+                Grant Rewards to {selectedUser.displayName}
               </h3>
-              <p style={{ color: '#94a3b8', fontSize: '0.82rem', marginTop: '0.2rem' }}>
-                Recipient: <code style={{ color: '#e2e8f0' }}>{selectedUser.email}</code>
+              <p className="cmd-modal-recipient">
+                Recipient: <code>{selectedUser.email}</code>
               </p>
             </div>
 
             {grantSuccessMsg ? (
               <div
                 style={{
-                  padding: '1.5rem',
+                  padding: '2rem 1.5rem',
                   textAlign: 'center',
                   background: 'rgba(16, 185, 129, 0.12)',
                   border: '1px solid rgba(16, 185, 129, 0.4)',
-                  borderRadius: '10px',
+                  borderRadius: '14px',
                   color: '#10b981',
                 }}
               >
-                <Check size={32} style={{ margin: '0 auto 0.5rem' }} />
-                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Success!</div>
-                <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>{grantSuccessMsg}</div>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
+                  <Check size={28} />
+                </div>
+                <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#f8fafc' }}>
+                  Grant Dispatched!
+                </div>
+                <div style={{ fontSize: '0.88rem', marginTop: '0.35rem', color: '#a7f3d0' }}>
+                  {grantSuccessMsg}
+                </div>
               </div>
             ) : (
-              <form onSubmit={handleExecuteGrant} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+              <form onSubmit={handleExecuteGrant} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 {/* XP Input & Presets */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <Zap size={14} color="#a855f7" />
+                <div className="cmd-form-group">
+                  <div className="cmd-form-label-row">
+                    <label htmlFor="grant-xp-input" className="cmd-form-label">
+                      <Zap size={14} color="#c084fc" />
                       <span>Experience Points (XP)</span>
                     </label>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current: {selectedUser.character?.totalXp ?? (selectedUser as any).totalXp ?? 0}</span>
+                    <span className="cmd-form-current">
+                      Current: {(selectedUser.character?.totalXp ?? (selectedUser as any).totalXp ?? 0).toLocaleString()}
+                    </span>
                   </div>
+
                   <input
+                    id="grant-xp-input"
                     type="number"
                     value={grantXp}
                     onChange={(e) => setGrantXp(Number(e.target.value))}
                     min={0}
                     max={100000}
-                    style={{
-                      width: '100%',
-                      padding: '0.65rem 0.85rem',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      color: '#f8fafc',
-                      fontSize: '0.9rem',
-                      boxSizing: 'border-box',
-                    }}
+                    className="cmd-form-input"
+                    required
                   />
-                  <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
+
+                  <div className="cmd-presets-row">
                     {[100, 500, 1000, 2500].map(val => (
                       <button
                         key={val}
                         type="button"
                         onClick={() => setGrantXp(val)}
-                        style={{
-                          flex: 1,
-                          padding: '0.25rem',
-                          borderRadius: '4px',
-                          background: grantXp === val ? 'rgba(168, 85, 247, 0.3)' : 'rgba(255, 255, 255, 0.05)',
-                          border: grantXp === val ? '1px solid rgba(168, 85, 247, 0.6)' : '1px solid rgba(255, 255, 255, 0.08)',
-                          color: '#e2e8f0',
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                        }}
+                        className={`cmd-preset-btn ${grantXp === val ? 'active xp' : ''}`}
                       >
-                        +{val}
+                        +{val} XP
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Gold Input & Presets */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <div className="cmd-form-group">
+                  <div className="cmd-form-label-row">
+                    <label htmlFor="grant-gold-input" className="cmd-form-label">
                       <Coins size={14} color="#fbbf24" />
                       <span>Gold Coins</span>
                     </label>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Current: {selectedUser.character?.gold ?? (selectedUser as any).coins ?? (selectedUser as any).gold ?? 0}</span>
+                    <span className="cmd-form-current">
+                      Current: {(selectedUser.character?.gold ?? (selectedUser as any).coins ?? (selectedUser as any).gold ?? 0).toLocaleString()}
+                    </span>
                   </div>
+
                   <input
+                    id="grant-gold-input"
                     type="number"
                     value={grantGold}
                     onChange={(e) => setGrantGold(Number(e.target.value))}
                     min={0}
                     max={100000}
-                    style={{
-                      width: '100%',
-                      padding: '0.65rem 0.85rem',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      color: '#f8fafc',
-                      fontSize: '0.9rem',
-                      boxSizing: 'border-box',
-                    }}
+                    className="cmd-form-input"
+                    required
                   />
-                  <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
+
+                  <div className="cmd-presets-row">
                     {[50, 100, 250, 1000].map(val => (
                       <button
                         key={val}
                         type="button"
                         onClick={() => setGrantGold(val)}
-                        style={{
-                          flex: 1,
-                          padding: '0.25rem',
-                          borderRadius: '4px',
-                          background: grantGold === val ? 'rgba(251, 191, 36, 0.3)' : 'rgba(255, 255, 255, 0.05)',
-                          border: grantGold === val ? '1px solid rgba(251, 191, 36, 0.6)' : '1px solid rgba(255, 255, 255, 0.08)',
-                          color: '#e2e8f0',
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                        }}
+                        className={`cmd-preset-btn ${grantGold === val ? 'active gold' : ''}`}
                       >
-                        +{val}
+                        +{val} G
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Optional Custom Title */}
-                <div>
-                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                {/* Custom Title Input */}
+                <div className="cmd-form-group">
+                  <div className="cmd-form-label-row">
+                    <label htmlFor="grant-title-input" className="cmd-form-label">
                       <Award size={14} color="#38bdf8" />
                       <span>Bestow Hero Title / Honor</span>
-                    </span>
+                    </label>
                     {(selectedUser.title || selectedUser.character?.title) && (
-                      <span style={{ fontSize: '0.75rem', color: '#fbbf24' }}>
-                        Current: {selectedUser.title || selectedUser.character?.title}
+                      <span className="cmd-form-current" style={{ color: '#fbbf24' }}>
+                        Active: {selectedUser.title || selectedUser.character?.title}
                       </span>
                     )}
-                  </label>
+                  </div>
+
                   <input
+                    id="grant-title-input"
                     type="text"
-                    placeholder="e.g. Citadel Vanguard, Community MVP"
+                    placeholder="e.g. Citadel Vanguard, Community Champion"
                     value={grantTitle}
                     onChange={(e) => setGrantTitle(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.65rem 0.85rem',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
-                      color: '#f8fafc',
-                      fontSize: '0.85rem',
-                      boxSizing: 'border-box',
-                    }}
+                    className="cmd-form-input"
                   />
                 </div>
 
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                {/* Modal Form Actions */}
+                <div className="cmd-modal-actions">
                   <button
                     type="button"
                     onClick={handleCloseGrantModal}
-                    style={{
-                      flex: 1,
-                      padding: '0.75rem',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: '#94a3b8',
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                    }}
+                    className="cmd-btn-cancel"
                   >
                     Cancel
                   </button>
+
                   <button
                     type="submit"
                     disabled={isSubmittingGrant}
-                    style={{
-                      flex: 2,
-                      padding: '0.75rem',
-                      borderRadius: '8px',
-                      background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                      border: 'none',
-                      color: '#ffffff',
-                      fontWeight: 700,
-                      fontSize: '0.88rem',
-                      cursor: isSubmittingGrant ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.45rem',
-                      boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
-                    }}
+                    className="cmd-btn-submit"
                   >
                     {isSubmittingGrant ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        <span>Granting...</span>
+                        <span>Dispatching...</span>
                       </>
                     ) : (
                       <>
