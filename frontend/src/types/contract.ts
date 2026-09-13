@@ -440,5 +440,28 @@ export interface LeaderboardResponse {
   updatedAt: string;
 }
 
+/* ==========================================================================
+   COMMUNITY CHAT TYPES
+   ========================================================================== */
 
+export interface ChatUser {
+  id: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  role?: string;
+  level: number;
+}
 
+export interface ChatMessage {
+  id: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  user: ChatUser;
+}
+
+export interface ChatMessagesResponse {
+  messages: ChatMessage[];
+  count: number;
+  retentionDays: number;
+}

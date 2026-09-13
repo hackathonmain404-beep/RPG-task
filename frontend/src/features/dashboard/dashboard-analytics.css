@@ -157,6 +157,110 @@
   margin-top: 0.2rem;
 }
 
+/* Donut Segments & Interactive Hover */
+.donut-segment-slice {
+  cursor: pointer;
+  transform-origin: center;
+}
+
+.donut-segment-slice.is-hovered {
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+/* Floating Segment Popup Message matching Photo 1 */
+.donut-segment-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 60;
+  background: #0d1222;
+  background: rgba(13, 18, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.8),
+              0 4px 14px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 146px;
+  opacity: 0;
+  visibility: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+              left 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              top 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.26s;
+  white-space: nowrap;
+}
+
+.donut-segment-tooltip.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.donut-segment-tooltip.align-right {
+  transform: translate(0px, -50%) scale(0.88);
+}
+
+.donut-segment-tooltip.align-right.is-visible {
+  transform: translate(14px, -50%) scale(1);
+}
+
+.donut-segment-tooltip.align-left {
+  transform: translate(calc(-100% + 12px), -50%) scale(0.88);
+}
+
+.donut-segment-tooltip.align-left.is-visible {
+  transform: translate(calc(-100% - 14px), -50%) scale(1);
+}
+
+.donut-tooltip-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.donut-tooltip-sphere {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  display: inline-block;
+}
+
+.donut-tooltip-title {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.donut-tooltip-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.donut-tooltip-sparkle {
+  font-size: 0.85rem;
+  line-height: 1;
+  display: inline-block;
+  transform-origin: center;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5));
+}
+
+.donut-tooltip-count {
+  font-size: 0.81rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  letter-spacing: 0.01em;
+}
+
 .category-legend-list {
   display: flex;
   flex-direction: column;

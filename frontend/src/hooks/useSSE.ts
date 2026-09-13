@@ -8,7 +8,8 @@ export type SSEEventType =
   | 'broadcast:dismiss'
   | 'surge:update'
   | 'feedback:reply'
-  | 'shop:update';
+  | 'shop:update'
+  | 'chat:message';
 
 export type SSEHandlers = Partial<Record<SSEEventType, (data: any) => void>>;
 
@@ -58,6 +59,7 @@ export function useSSE(handlers: SSEHandlers, enabled: boolean = true): void {
       'surge:update',
       'feedback:reply',
       'shop:update',
+      'chat:message',
     ];
 
     eventTypes.forEach((eventType) => {

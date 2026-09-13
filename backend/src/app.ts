@@ -17,6 +17,7 @@ import { platformRouter } from './routes/platform.routes.js';
 import { sseRouter } from './routes/sse.routes.js';
 import { avatarRouter } from './routes/avatar.routes.js';
 import { leaderboardRouter } from './routes/leaderboard.routes.js';
+import { chatRouter } from './routes/chat.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 
 export const app = express();
@@ -72,6 +73,7 @@ apiRouter.use('/surge', platformRouter);
 apiRouter.use('/sse', sseRouter);
 apiRouter.use('/avatars', avatarRouter);
 apiRouter.use('/leaderboard', leaderboardRouter);
+apiRouter.use('/chat', chatRouter);
 
 // Mount router under both prefixes
 app.use('/api', apiRouter);

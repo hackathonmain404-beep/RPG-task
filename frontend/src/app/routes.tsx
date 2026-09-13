@@ -28,6 +28,7 @@ const TermsPage = lazy(() => import('../features/legal/TermsPage').then(m => ({ 
 const AccessibilityPage = lazy(() => import('../features/legal/AccessibilityPage').then(m => ({ default: m.AccessibilityPage })));
 const QuestsInfoPage = lazy(() => import('../features/legal/QuestsPage').then(m => ({ default: m.QuestsPage })));
 const RewardsInfoPage = lazy(() => import('../features/legal/RewardsPage').then(m => ({ default: m.RewardsPage })));
+const CommunityChatPage = lazy(() => import('../features/chat/CommunityChatPage').then(m => ({ default: m.CommunityChatPage })));
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -73,6 +74,8 @@ export const AppRoutes: React.FC = () => {
         <Route path="/inventory" element={<Navigate to="/app/inventory" replace />} />
         <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
         <Route path="/feedback" element={<Navigate to="/app/feedback" replace />} />
+        <Route path="/community-chat" element={<Navigate to="/app/community-chat" replace />} />
+        <Route path="/chat" element={<Navigate to="/app/community-chat" replace />} />
 
         {/* Protected Authenticated Routes for Players */}
         <Route element={<ProtectedRoute />}>
@@ -89,6 +92,7 @@ export const AppRoutes: React.FC = () => {
             <Route path="history" element={<HistoryPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="feedback" element={<FeedbackPage />} />
+            <Route path="community-chat" element={<CommunityChatPage />} />
           </Route>
         </Route>
 

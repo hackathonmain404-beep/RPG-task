@@ -10,6 +10,7 @@ import {
   Palette,
   Sparkles,
   MessageSquarePlus,
+  MessageCircle,
   X,
   ExternalLink,
   AlertTriangle,
@@ -54,6 +55,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/app/character', label: 'Character', icon: UserCircle, iconClass: 'icon-character' },
   { to: '/app/shop', label: 'Shop', icon: Store, iconClass: 'icon-shop' },
   { to: '/app/themes', label: 'Themes', icon: Palette, iconClass: 'icon-themes' },
+  { to: '/app/community-chat', label: 'Community Chat', icon: MessageCircle, iconClass: 'icon-chat', badge: 'LIVE' },
   { to: '/app/settings', label: 'Settings', icon: Settings, iconClass: 'icon-settings' },
 ];
 
@@ -74,6 +76,7 @@ const routePreloaders: Record<string, () => Promise<unknown>> = {
   '/app/inventory': () => import('../../features/inventory/InventoryPage'),
   '/app/settings': () => import('../../features/settings/SettingsPage'),
   '/app/feedback': () => import('../../features/feedback/FeedbackPage'),
+  '/app/community-chat': () => import('../../features/chat/CommunityChatPage'),
 };
 const prefetchedRoutes = new Set<string>();
 
@@ -429,14 +432,29 @@ const AppShellInner: React.FC = () => {
                 {item.badge && (
                   <span
                     style={{
-                      fontSize: '0.65rem',
+                      fontSize: '0.6rem',
                       fontWeight: 700,
-                      padding: '0.15rem 0.4rem',
+                      padding: '0.15rem 0.45rem',
                       borderRadius: '4px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      color: 'var(--text-tertiary)',
+                      backgroundColor: item.badge === 'LIVE' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                      color: item.badge === 'LIVE' ? '#10b981' : 'var(--text-tertiary)',
+                      border: item.badge === 'LIVE' ? '1px solid rgba(16, 185, 129, 0.3)' : 'none',
+                      letterSpacing: '0.05em',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
                   >
+                    {item.badge === 'LIVE' && (
+                      <span style={{
+                        width: '5px',
+                        height: '5px',
+                        borderRadius: '50%',
+                        background: '#10b981',
+                        display: 'inline-block',
+                        animation: 'chatPulse 1.8s ease-in-out infinite',
+                      }} />
+                    )}
                     {item.badge}
                   </span>
                 )}
