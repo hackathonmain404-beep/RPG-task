@@ -1278,6 +1278,7 @@ export const LandingPage: React.FC = () => {
 
         {/* ATMOSPHERIC CYBER HORIZON CONNECTOR */}
         <div
+          className="hero-horizon-connector"
           style={{
             position: 'relative',
             width: '100%',

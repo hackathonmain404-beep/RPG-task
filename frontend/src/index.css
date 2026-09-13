@@ -1995,8 +1995,8 @@ textarea:focus-visible,
 @media (max-width: 768px) {
   /* Hero Fullscreen Container adjustments on Mobile */
   .hero-fullscreen {
-    min-height: 100dvh !important;
-    padding-top: calc(76px + clamp(1.25rem, 3.5vh, 2rem)) !important;
+    min-height: clamp(540px, 86vh, 690px) !important;
+    padding-top: calc(76px + clamp(1rem, 3vh, 1.5rem)) !important;
     padding-bottom: 1.25rem !important;
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
@@ -2221,6 +2221,167 @@ textarea:focus-visible,
   .hud-scroll-top-btn:active {
     transform: scale(0.97) !important;
     transition: transform 0.12s ease-out !important;
+  }
+
+  /* ========================================================================
+     MOBILE COMPACT SECTIONS — Minimalist Spacing & Cohesive Visual Flow
+     ======================================================================== */
+  .hero-horizon-connector {
+    margin: 0.25rem 0 !important;
+  }
+
+  .hero-horizon-connector > div:first-child {
+    height: 36px !important;
+    top: -18px !important;
+  }
+
+  /* 1. The Gameplay Loop Section */
+  #how-it-works {
+    padding: 2rem 1rem 2.5rem !important;
+    scroll-margin-top: 70px !important;
+  }
+
+  #how-it-works .gameplay-header-reveal {
+    margin-bottom: 1.25rem !important;
+  }
+
+  #how-it-works h2 {
+    font-size: clamp(1.4rem, 5.2vw, 1.75rem) !important;
+    line-height: 1.22 !important;
+    margin-top: 0.35rem !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  #how-it-works .cinematic-depth-container {
+    gap: 0.85rem !important;
+  }
+
+  .gameplay-card {
+    padding: 1.15rem 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  .gameplay-card h3 {
+    font-size: 1.05rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .gameplay-card p {
+    font-size: 0.84rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* 2. Character Disciplines Section */
+  #disciplines {
+    padding: 2.25rem 1rem 2.5rem !important;
+  }
+
+  #disciplines > div:first-child {
+    margin-bottom: 1.25rem !important;
+  }
+
+  #disciplines h2 {
+    font-size: clamp(1.4rem, 5.2vw, 1.75rem) !important;
+    line-height: 1.22 !important;
+    margin-top: 0.35rem !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  #disciplines p.discipline-desc-reveal {
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+    margin-top: 0.35rem !important;
+    max-width: 100% !important;
+  }
+
+  #disciplines .cinematic-depth-container {
+    gap: 0.85rem !important;
+  }
+
+  .discipline-card {
+    padding: 1.15rem 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* 3. Database Persistence Section */
+  #persistence {
+    padding: 2.25rem 1rem 2.5rem !important;
+  }
+
+  #persistence .persistence-glow-card {
+    padding: 1.75rem 1.15rem !important;
+    border-radius: 16px !important;
+  }
+
+  #persistence h2.persistence-heading-reveal {
+    font-size: clamp(1.3rem, 4.8vw, 1.65rem) !important;
+    line-height: 1.22 !important;
+    margin-bottom: 0.65rem !important;
+  }
+
+  #persistence p.persistence-heading-reveal {
+    font-size: 0.85rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  #persistence .persistence-badge-icon {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  #persistence .persistence-status-check {
+    font-size: 0.82rem !important;
+  }
+
+  /* 4. FAQ Section */
+  #faq {
+    padding: 2.25rem 1rem 2.75rem !important;
+  }
+
+  #faq .faq-header-reveal {
+    margin-bottom: 1.25rem !important;
+  }
+
+  #faq h2 {
+    font-size: clamp(1.4rem, 5.2vw, 1.75rem) !important;
+    line-height: 1.22 !important;
+    margin-top: 0.35rem !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  /* 5. Final CTA Section */
+  #final-cta-section {
+    padding: 2rem 1rem 2.75rem !important;
+  }
+
+  #final-cta-section .cta-box-reveal {
+    padding: 1.85rem 1.15rem !important;
+    border-radius: 16px !important;
+  }
+
+  #final-cta-section h2.cta-headline-reveal {
+    font-size: clamp(1.3rem, 4.8vw, 1.65rem) !important;
+    line-height: 1.22 !important;
+    margin-bottom: 0.6rem !important;
+  }
+
+  #final-cta-section p.cta-desc-reveal {
+    font-size: 0.86rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* 6. Footer */
+  #command-center-footer {
+    padding: 2.25rem 1rem 1.5rem !important;
+  }
+
+  #command-center-footer > div:first-of-type {
+    margin-bottom: 1.75rem !important;
+    gap: 1.5rem 1rem !important;
   }
 }
 
