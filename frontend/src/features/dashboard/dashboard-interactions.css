@@ -204,7 +204,8 @@
   background-color: #38bdf8;
   border-radius: 0 3px 3px 0;
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
 }
 
 .sidebar-nav-item.active {
@@ -216,12 +217,18 @@
 
 .sidebar-nav-item.active::before {
   transform: translateY(-50%) scaleY(1);
+  opacity: 1;
 }
 
 .sidebar-nav-item:hover {
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.05);
   border-color: rgba(56, 189, 248, 0.2);
+}
+
+.sidebar-nav-item:hover:not(.active)::before {
+  transform: translateY(-50%) scaleY(0.45);
+  opacity: 0.6;
 }
 
 .sidebar-nav-item:hover .nav-label-text {
