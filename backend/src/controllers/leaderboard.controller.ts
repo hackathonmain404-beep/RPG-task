@@ -8,11 +8,13 @@ export async function getLeaderboard(req: Request, res: Response, next: NextFunc
     const limit = Math.min(100, Math.max(1, parseInt((req.query.limit as string) || '50', 10)));
     const currentUserId = req.user?.id;
 
-    // Fetch all real registered users with their characters
-    // Strictly filter out any test or dummy accounts
+    // Fetch all real registered players with their characters
+    // Strictly filter out any admin, test, or dummy accounts
     const users = await prisma.user.findMany({
       where: {
         AND: [
+          { role: { not: 'ADMIN' } },
+          { email: { not: 'Achiever_admin_4.com' } },
           { email: { not: { endsWith: '@security.com' } } },
           { email: { not: { endsWith: '@example.com' } } },
         ],

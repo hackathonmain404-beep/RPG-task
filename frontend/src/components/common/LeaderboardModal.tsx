@@ -11,7 +11,7 @@ interface LeaderboardModalProps {
 }
 
 export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ isOpen, onClose }) => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [sortBy, setSortBy] = useState<LeaderboardSortBy>('level');
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -311,7 +311,11 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ isOpen, onCl
         {/* Bottom Sticky Footer */}
         <div className="leaderboard-footer">
           <p className="leaderboard-footer-text">
-            {data?.currentUserRank ? (
+            {isAdmin ? (
+              <span style={{ color: '#c084fc', fontWeight: 600 }}>
+                Viewing rankings in Overseer mode (Admins excluded)
+              </span>
+            ) : data?.currentUserRank ? (
               <>
                 You are ranked{' '}
                 <span className="leaderboard-footer-highlight">
@@ -320,10 +324,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ isOpen, onCl
                 globally by {sortBy}
               </>
             ) : user ? (
-              <>
-                You are ranked{' '}
-                <span className="leaderboard-footer-highlight">#1</span> globally by {sortBy}
-              </>
+              'Adventurer unranked'
             ) : (
               'Sign in to claim your place on the global leaderboard'
             )}
