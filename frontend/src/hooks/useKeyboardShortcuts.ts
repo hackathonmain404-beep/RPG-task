@@ -73,11 +73,6 @@ export function useKeyboardShortcuts({
       }
       if (key === '6') {
         e.preventDefault();
-        navigate('/app/inventory');
-        return;
-      }
-      if (key === '7') {
-        e.preventDefault();
         navigate('/app/settings');
         return;
       }

@@ -7,7 +7,6 @@ import {
   UserCircle, 
   Store, 
   Palette, 
-  Package, 
   Settings, 
   MessageSquarePlus, 
   PlusCircle, 
@@ -33,8 +32,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { keys: ['3'], description: 'Character & Stats', icon: UserCircle },
       { keys: ['4'], description: 'Shop / Citadel Market', icon: Store },
       { keys: ['5'], description: 'Themes Marketplace', icon: Palette },
-      { keys: ['6'], description: 'Vault Inventory', icon: Package },
-      { keys: ['7'], description: 'Settings & Identity', icon: Settings },
+      { keys: ['6'], description: 'Settings & Identity', icon: Settings },
     ],
   },
   {
