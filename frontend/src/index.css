@@ -2001,7 +2001,7 @@ textarea:focus-visible,
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
     justify-content: flex-start !important;
-    overflow-y: visible !important;
+    overflow: hidden !important;
   }
 
   .hero-headline-group {
@@ -2185,6 +2185,42 @@ textarea:focus-visible,
   .hero-scroll-indicator {
     margin-top: 0.4rem !important;
     transform: scale(0.85) !important;
+  }
+
+  /* Prevent sticky hover states on touch / mobile devices */
+  .gameplay-card:hover,
+  .discipline-card:hover,
+  .hero-progression-hud-card:hover,
+  .rpg-card-hover:hover,
+  .persistence-glow-card:hover,
+  .hud-scroll-top-btn:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+    border-color: inherit !important;
+  }
+
+  .gameplay-card:hover .gameplay-card-step,
+  .gameplay-card:hover .gameplay-card-icon,
+  .discipline-card:hover .discipline-card-icon,
+  .discipline-card:hover .discipline-card-badge,
+  .discipline-card:hover .discipline-progress-bar {
+    transform: none !important;
+  }
+
+  /* Smooth tactile tap responses without sticking */
+  .gameplay-card,
+  .discipline-card,
+  .hero-progression-hud-card,
+  .hud-scroll-top-btn {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .gameplay-card:active,
+  .discipline-card:active,
+  .hero-progression-hud-card:active,
+  .hud-scroll-top-btn:active {
+    transform: scale(0.97) !important;
+    transition: transform 0.12s ease-out !important;
   }
 }
 

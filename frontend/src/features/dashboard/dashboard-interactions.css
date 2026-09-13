@@ -1759,4 +1759,14 @@ a.hud-dropdown-character:visited {
   .floating-system-control {
     padding: 0.4rem 0.3rem;
   }
+
+  .btn-welcome-leaderboard:hover,
+  .btn-character-sheet:hover {
+    transform: none !important;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.2) !important;
+    filter: none !important;
+  }
+  .btn-welcome-leaderboard:hover::after {
+    opacity: 0 !important;
+  }
 }
