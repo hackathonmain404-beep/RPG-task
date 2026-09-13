@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { useShop } from '../../context/useShop';
 import { useFeedback } from '../../context/FeedbackContext';
 import { useLeaderboard } from '../../context/LeaderboardContext';
 import { LogOut, User, Menu, X, MessageSquarePlus, Crown, ChevronDown, Award, Zap, Coins, Settings, Trophy } from 'lucide-react';
@@ -12,12 +13,61 @@ interface HeaderHUDProps {
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebarOpen }) => {
   const { user, character, logout, isAdmin } = useAuth();
+  const { inventory } = useShop();
   const { openFeedback } = useFeedback();
   const { openLeaderboard } = useLeaderboard();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const [equippedBadgeOverride, setEquippedBadgeOverride] = useState<{ id: string; name: string; icon: string; sku?: string } | null>(() => {
+    try {
+      const cached = localStorage.getItem('liferpg_active_badge');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const onBadgeEquipped = (e: Event) => {
+      const detail = (e as CustomEvent<{ badge: any }>).detail;
+      if (detail?.badge) {
+        setEquippedBadgeOverride(detail.badge);
+      }
+    };
+    window.addEventListener('liferpg-badge-equipped', onBadgeEquipped);
+    return () => window.removeEventListener('liferpg-badge-equipped', onBadgeEquipped);
+  }, []);
+
+  // Active badge: override, user.badge from backend, or any owned badge from shop inventory
+  const ownedBadgeItem = inventory?.find(
+    (i) =>
+      i.shopItem?.itemType?.toUpperCase() === 'BADGE' ||
+      i.shopItem?.sku?.startsWith('badge_') ||
+      (i.itemId || i.shopItemId)?.startsWith('badge_') ||
+      i.shopItem?.name?.toLowerCase().includes('badge')
+  );
+  const activeBadge =
+    equippedBadgeOverride ||
+    user?.badge ||
+    (ownedBadgeItem
+      ? {
+          id: ownedBadgeItem.id,
+          name: ownedBadgeItem.shopItem?.name || 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: ownedBadgeItem.shopItem?.sku || 'badge_shadow',
+        }
+      : null) ||
+    (user
+      ? {
+          id: 'cmtyht21y0004il606x8ty6ph',
+          name: 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: 'badge_shadow',
+        }
+      : null);
 
   // Close dropdown on click outside or Escape key
   useEffect(() => {
@@ -52,7 +102,9 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
   return (
     <header
       style={{
-        backgroundColor: 'var(--bg-surface)',
+        backgroundColor: 'rgba(15, 20, 28, 0.92)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid var(--border-subtle)',
         position: 'sticky',
         top: 0,
@@ -113,31 +165,6 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
 
         {/* Right: Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
         <div className="hud-right-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {/* Leaderboard Trigger */}
-          <button
-            type="button"
-            onClick={openLeaderboard}
-            className="rpg-btn hud-leaderboard-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.4rem 0.75rem',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              borderRadius: '8px',
-              backgroundColor: 'rgba(245, 158, 11, 0.12)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
-              color: '#fbbf24',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            aria-label="View Global Leaderboard"
-            title="Global Rankings Leaderboard"
-          >
-            <Trophy size={16} color="#fbbf24" />
-            <span className="desktop-only">Leaderboard</span>
-          </button>
           {/* Feedback Trigger — immediately to the left of player profile */}
           <button
             type="button"
@@ -198,8 +225,23 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1.2 }}>
-                <span className="hud-user-name">
-                  {user?.displayName || 'Adventurer'}
+                <span className="hud-user-name" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>{user?.displayName || 'Adventurer'}</span>
+                  {activeBadge && (
+                    <img
+                      src={activeBadge.icon || '/assets/items/badge_shadow.svg'}
+                      alt={activeBadge.name}
+                      title={`${activeBadge.name} (Badge)`}
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        objectFit: 'contain',
+                        filter: 'drop-shadow(0 0 4px rgba(168, 85, 247, 0.7))',
+                        verticalAlign: 'middle',
+                      }}
+                      onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                    />
+                  )}
                 </span>
                 {(user?.title || character?.title) && (
                   <span style={{ fontSize: '0.68rem', color: '#fbbf24', fontWeight: 600, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
@@ -243,27 +285,85 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                       )}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
-                        Adventurer Profile
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                        <span>Adventurer Profile</span>
+                        {activeBadge && (
+                          <span
+                            className="hud-profile-badge-pill"
+                            title={`${activeBadge.name} (Equipped Badge)`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 7px',
+                              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(88, 28, 135, 0.6))',
+                              border: '1px solid rgba(168, 85, 247, 0.6)',
+                              borderRadius: '10px',
+                              fontSize: '0.68rem',
+                              color: '#e9d5ff',
+                              fontWeight: 700,
+                              boxShadow: '0 0 8px rgba(168, 85, 247, 0.4)',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            <img
+                              src={activeBadge.icon || '/assets/items/badge_shadow.svg'}
+                              alt={activeBadge.name}
+                              style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                              onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                            />
+                            <span>{activeBadge.name}</span>
+                          </span>
+                        )}
                       </div>
                       {user?.email && (
                         <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>
                       )}
                     </div>
                   </div>
-                  {isAdmin && (
-                    <span style={{
-                      fontSize: '0.65rem',
-                      fontWeight: 700,
-                      color: '#c084fc',
-                      backgroundColor: 'rgba(168, 85, 247, 0.2)',
-                      border: '1px solid rgba(168, 85, 247, 0.4)',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: '9999px',
-                    }}>
-                      ADMIN
-                    </span>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    {activeBadge && (
+                      <div
+                        className="hud-profile-badge-emblem"
+                        title={`${activeBadge.name} — Dedication Badge`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          padding: '3px 8px',
+                          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(88, 28, 135, 0.45))',
+                          border: '1px solid rgba(168, 85, 247, 0.5)',
+                          borderRadius: '12px',
+                          boxShadow: '0 0 10px rgba(168, 85, 247, 0.3)',
+                        }}
+                      >
+                        <img
+                          src={activeBadge.icon || '/assets/items/badge_shadow.svg'}
+                          alt={activeBadge.name}
+                          style={{ width: '15px', height: '15px', objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                        />
+                        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#e9d5ff', letterSpacing: '0.02em' }}>
+                          {activeBadge.name}
+                        </span>
+                      </div>
+                    )}
+                    {isAdmin && (
+                      <span style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        color: '#c084fc',
+                        backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                        border: '1px solid rgba(168, 85, 247, 0.4)',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                      }}>
+                        Admin
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Bestowed Hero Title */}
@@ -359,10 +459,10 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                   setIsMenuOpen(false);
                   openLeaderboard();
                 }}
-                className="hud-dropdown-item"
+                className="hud-dropdown-item hud-dropdown-leaderboard"
                 aria-label="Global Leaderboard"
               >
-                <Trophy size={16} color="#fbbf24" className="hud-item-icon" />
+                <Trophy size={16} className="hud-item-icon hud-leaderboard-trophy" />
                 <span>Leaderboard</span>
               </button>
 

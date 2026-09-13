@@ -201,27 +201,11 @@ export const DashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={openLeaderboard}
-            className="rpg-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.55rem 1.15rem',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              borderRadius: '10px',
-              backgroundColor: 'rgba(245, 158, 11, 0.15)',
-              border: '1px solid rgba(245, 158, 11, 0.45)',
-              color: '#fbbf24',
-              boxShadow: '0 4px 14px rgba(245, 158, 11, 0.2)',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              minHeight: '42px',
-            }}
+            className="rpg-btn btn-welcome-leaderboard"
             id="dashboard-leaderboard-btn"
             title="Open Global Leaderboard"
           >
-            <Trophy size={16} color="#fbbf24" />
+            <Trophy size={16} className="leaderboard-trophy-icon" />
             <span>Leaderboard</span>
           </button>
 

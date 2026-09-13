@@ -40,13 +40,19 @@ class SSEHub {
     // Set SSE headers
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
       'X-Accel-Buffering': 'no', // Disable nginx buffering
     });
+    if (typeof (res as any).flushHeaders === 'function') {
+      res.flushHeaders();
+    }
 
     // Send initial connection confirmation
     res.write(`event: connected\ndata: ${JSON.stringify({ clientId, timestamp: Date.now() })}\n\n`);
+    if (typeof (res as any).flush === 'function') {
+      (res as any).flush();
+    }
 
     const client: SSEClient = { id: clientId, res, userId };
     this.clients.set(clientId, client);
@@ -82,6 +88,9 @@ class SSEHub {
     this.clients.forEach((client) => {
       try {
         client.res.write(payload);
+        if (typeof (client.res as any).flush === 'function') {
+          (client.res as any).flush();
+        }
         sent++;
       } catch {
         this.removeClient(client.id);
@@ -100,6 +109,9 @@ class SSEHub {
       if (client.userId === userId) {
         try {
           client.res.write(payload);
+          if (typeof (client.res as any).flush === 'function') {
+            (client.res as any).flush();
+          }
           sent++;
         } catch {
           this.removeClient(client.id);

@@ -374,6 +374,106 @@ h1, h2, h3, h4, h5, h6 {
   transform: none !important;
 }
 
+/* ==========================================================================
+   CHARACTER SHEET — SYNC BUTTON (AUTHORITATIVE SESSION BAR)
+   ========================================================================== */
+.btn-sync-sheet {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.65rem 1.45rem;
+  min-height: 44px;
+  border-radius: 14px;
+  background: #26a464;
+  background: linear-gradient(135deg, #28af6c 0%, #22995b 100%);
+  color: #ffffff;
+  font-family: var(--font-display, 'Space Grotesk', -apple-system, sans-serif);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(38, 164, 100, 0.35);
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 250ms ease,
+              border-color 250ms ease,
+              filter 250ms ease,
+              opacity 200ms ease;
+}
+
+.btn-sync-sheet::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: rotate(25deg);
+  opacity: 0;
+  transition: transform 550ms ease, opacity 300ms ease;
+}
+
+.btn-sync-sheet:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #2dc479 0%, #25a864 100%);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 20px rgba(38, 164, 100, 0.5), 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn-sync-sheet:hover:not(:disabled)::after {
+  opacity: 1;
+  transform: translateX(380%) rotate(25deg);
+}
+
+.btn-sync-sheet:hover:not(:disabled) .sync-sheet-icon:not(.animate-spin) {
+  transform: rotate(-30deg);
+}
+
+.btn-sync-sheet:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  filter: brightness(0.96);
+  box-shadow: 0 2px 8px rgba(38, 164, 100, 0.3);
+}
+
+.btn-sync-sheet:disabled {
+  opacity: 0.82;
+  cursor: not-allowed;
+  filter: grayscale(12%);
+  transform: none !important;
+}
+
+.btn-sync-sheet:focus-visible {
+  outline: 2px solid #28af6c;
+  outline-offset: 3px;
+}
+
+.sync-sheet-icon {
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 640px) {
+  .btn-sync-sheet {
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-sync-sheet:hover:not(:disabled) {
+    transform: none !important;
+  }
+}
+
+
 /* Universal Card / Panel Styles */
 .rpg-card {
   background-color: var(--bg-surface);
@@ -918,19 +1018,37 @@ div[role="radiogroup"] button:hover {
 }
 
 /* 4. Tablet Portrait & Mobile (<768px) */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .desktop-sidebar {
     display: none !important;
   }
   .mobile-bottom-nav {
     display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 100 !important;
+    background: rgba(11, 17, 29, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(56, 189, 248, 0.16) !important;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.6) !important;
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
   }
   .app-main-content {
-    padding: 1.25rem clamp(0.75rem, 3.5vw, 1.25rem) calc(5.25rem + env(safe-area-inset-bottom, 0px)) clamp(0.75rem, 3.5vw, 1.25rem) !important;
+    padding: 1rem clamp(0.75rem, 3vw, 1rem) calc(70px + env(safe-area-inset-bottom, 0px) + 1.25rem) clamp(0.75rem, 3vw, 1rem) !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   .floating-system-control {
     display: none !important;
+  }
+  .rpg-card {
+    border-radius: 16px !important;
+    border: 1px solid rgba(56, 189, 248, 0.18) !important;
+    background: rgba(13, 20, 32, 0.95) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
   }
 }
 
@@ -1877,13 +1995,13 @@ textarea:focus-visible,
 @media (max-width: 768px) {
   /* Hero Fullscreen Container adjustments on Mobile */
   .hero-fullscreen {
-    min-height: 100dvh !important;
-    padding-top: calc(60px + 0.6rem) !important;
+    min-height: clamp(540px, 86vh, 690px) !important;
+    padding-top: calc(76px + clamp(1rem, 3vh, 1.5rem)) !important;
     padding-bottom: 1.25rem !important;
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
     justify-content: flex-start !important;
-    overflow-y: visible !important;
+    overflow: hidden !important;
   }
 
   .hero-headline-group {
@@ -2067,6 +2185,203 @@ textarea:focus-visible,
   .hero-scroll-indicator {
     margin-top: 0.4rem !important;
     transform: scale(0.85) !important;
+  }
+
+  /* Prevent sticky hover states on touch / mobile devices */
+  .gameplay-card:hover,
+  .discipline-card:hover,
+  .hero-progression-hud-card:hover,
+  .rpg-card-hover:hover,
+  .persistence-glow-card:hover,
+  .hud-scroll-top-btn:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+    border-color: inherit !important;
+  }
+
+  .gameplay-card:hover .gameplay-card-step,
+  .gameplay-card:hover .gameplay-card-icon,
+  .discipline-card:hover .discipline-card-icon,
+  .discipline-card:hover .discipline-card-badge,
+  .discipline-card:hover .discipline-progress-bar {
+    transform: none !important;
+  }
+
+  /* Smooth tactile tap responses without sticking */
+  .gameplay-card,
+  .discipline-card,
+  .hero-progression-hud-card,
+  .hud-scroll-top-btn {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .gameplay-card:active,
+  .discipline-card:active,
+  .hero-progression-hud-card:active,
+  .hud-scroll-top-btn:active {
+    transform: scale(0.97) !important;
+    transition: transform 0.12s ease-out !important;
+  }
+
+  /* ========================================================================
+     MOBILE COMPACT SECTIONS — Minimalist Spacing & Cohesive Visual Flow
+     ======================================================================== */
+  .hero-horizon-connector {
+    margin: 0.25rem 0 !important;
+  }
+
+  .hero-horizon-connector > div:first-child {
+    height: 36px !important;
+    top: -18px !important;
+  }
+
+  /* 1. The Gameplay Loop Section */
+  #how-it-works {
+    padding: 2rem 1rem 2.5rem !important;
+    scroll-margin-top: 70px !important;
+  }
+
+  #how-it-works .gameplay-header-reveal {
+    margin-bottom: 1.25rem !important;
+  }
+
+  #how-it-works h2 {
+    font-size: clamp(1.4rem, 5.2vw, 1.75rem) !important;
+    line-height: 1.22 !important;
+    margin-top: 0.35rem !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  #how-it-works .cinematic-depth-container {
+    gap: 0.85rem !important;
+  }
+
+  .gameplay-card {
+    padding: 1.15rem 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  .gameplay-card h3 {
+    font-size: 1.05rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .gameplay-card p {
+    font-size: 0.84rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* 2. Character Disciplines Section */
+  #disciplines {
+    padding: 2.25rem 1rem 2.5rem !important;
+  }
+
+  #disciplines > div:first-child {
+    margin-bottom: 1.25rem !important;
+  }
+
+  #disciplines h2 {
+    font-size: clamp(1.4rem, 5.2vw, 1.75rem) !important;
+    line-height: 1.22 !important;
+    margin-top: 0.35rem !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  #disciplines p.discipline-desc-reveal {
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+    margin-top: 0.35rem !important;
+    max-width: 100% !important;
+  }
+
+  #disciplines .cinematic-depth-container {
+    gap: 0.85rem !important;
+  }
+
+  .discipline-card {
+    padding: 1.15rem 1rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* 3. Database Persistence Section */
+  #persistence {
+    padding: 2.25rem 1rem 2.5rem !important;
+  }
+
+  #persistence .persistence-glow-card {
+    padding: 1.75rem 1.15rem !important;
+    border-radius: 16px !important;
+  }
+
+  #persistence h2.persistence-heading-reveal {
+    font-size: clamp(1.3rem, 4.8vw, 1.65rem) !important;
+    line-height: 1.22 !important;
+    margin-bottom: 0.65rem !important;
+  }
+
+  #persistence p.persistence-heading-reveal {
+    font-size: 0.85rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  #persistence .persistence-badge-icon {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  #persistence .persistence-status-check {
+    font-size: 0.82rem !important;
+  }
+
+  /* 4. FAQ Section */
+  #faq {
+    padding: 2.25rem 1rem 2.75rem !important;
+  }
+
+  #faq .faq-header-reveal {
+    margin-bottom: 1.25rem !important;
+  }
+
+  #faq h2 {
+    font-size: clamp(1.4rem, 5.2vw, 1.75rem) !important;
+    line-height: 1.22 !important;
+    margin-top: 0.35rem !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  /* 5. Final CTA Section */
+  #final-cta-section {
+    padding: 2rem 1rem 2.75rem !important;
+  }
+
+  #final-cta-section .cta-box-reveal {
+    padding: 1.85rem 1.15rem !important;
+    border-radius: 16px !important;
+  }
+
+  #final-cta-section h2.cta-headline-reveal {
+    font-size: clamp(1.3rem, 4.8vw, 1.65rem) !important;
+    line-height: 1.22 !important;
+    margin-bottom: 0.6rem !important;
+  }
+
+  #final-cta-section p.cta-desc-reveal {
+    font-size: 0.86rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* 6. Footer */
+  #command-center-footer {
+    padding: 2.25rem 1rem 1.5rem !important;
+  }
+
+  #command-center-footer > div:first-of-type {
+    margin-bottom: 1.75rem !important;
+    gap: 1.5rem 1rem !important;
   }
 }
 

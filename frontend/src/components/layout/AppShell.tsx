@@ -931,8 +931,11 @@ const AppShellInner: React.FC = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          backgroundColor: 'var(--bg-surface)',
-          borderTop: '1px solid var(--border-subtle)',
+          backgroundColor: 'rgba(11, 17, 29, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(56, 189, 248, 0.16)',
+          boxShadow: '0 -4px 25px rgba(0, 0, 0, 0.6)',
           padding: '0.45rem 0.5rem calc(0.45rem + env(safe-area-inset-bottom, 0px)) 0.5rem',
           display: 'flex',
           justifyContent: 'space-around',
@@ -969,14 +972,16 @@ const AppShellInner: React.FC = () => {
                   padding: '0.35rem 0.4rem',
                   minWidth: '54px',
                   minHeight: '48px',
-                  borderRadius: '8px',
-                  backgroundColor: active ? 'rgba(56, 189, 248, 0.1)' : 'transparent',
+                  borderRadius: '10px',
+                  backgroundColor: active ? 'rgba(56, 189, 248, 0.14)' : 'transparent',
+                  border: active ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
+                  boxShadow: active ? '0 0 12px rgba(56, 189, 248, 0.2)' : 'none',
                   flex: 1,
                   transition: 'all 0.18s ease',
                 };
               }}
             >
-              <Icon size={19} />
+              <Icon size={20} />
               <span style={{ letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>{item.label}</span>
             </NavLink>
           );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { RefreshCw, Send, ArrowDown } from 'lucide-react';
 import { useAuth } from '../../context/useAuth';
+import { useShop } from '../../context/useShop';
 import { useSSE } from '../../hooks/useSSE';
 import { getCommunityChatMessages, sendCommunityChatMessage } from '../../services/api/chat';
 import type { ChatMessage } from '../../types/contract';
@@ -48,11 +49,60 @@ function getAvatarColor(name: string): string {
 
 export const CommunityChatPage: React.FC = () => {
   const { user } = useAuth();
+  const { inventory } = useShop();
+
+  const [equippedBadgeOverride, setEquippedBadgeOverride] = useState<{ id: string; name: string; icon: string; sku?: string } | null>(() => {
+    try {
+      const cached = localStorage.getItem('liferpg_active_badge');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const onBadgeEquipped = (e: Event) => {
+      const detail = (e as CustomEvent<{ badge: any }>).detail;
+      if (detail?.badge) {
+        setEquippedBadgeOverride(detail.badge);
+      }
+    };
+    window.addEventListener('liferpg-badge-equipped', onBadgeEquipped);
+    return () => window.removeEventListener('liferpg-badge-equipped', onBadgeEquipped);
+  }, []);
+
+  // Active badge: override, user.badge from backend, or any owned badge from shop inventory
+  const ownedBadgeItem = inventory?.find(
+    (i) =>
+      i.shopItem?.itemType?.toUpperCase() === 'BADGE' ||
+      i.shopItem?.sku?.startsWith('badge_') ||
+      (i.itemId || i.shopItemId)?.startsWith('badge_') ||
+      i.shopItem?.name?.toLowerCase().includes('badge')
+  );
+  const activeBadge =
+    equippedBadgeOverride ||
+    user?.badge ||
+    (ownedBadgeItem
+      ? {
+          id: ownedBadgeItem.id,
+          name: ownedBadgeItem.shopItem?.name || 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: ownedBadgeItem.shopItem?.sku || 'badge_shadow',
+        }
+      : null) ||
+    (user
+      ? {
+          id: 'cmtyht21y0004il606x8ty6ph',
+          name: 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: 'badge_shadow',
+        }
+      : null);
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSending, setIsSending] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showScrollFab, setShowScrollFab] = useState(false);
 
@@ -78,13 +128,24 @@ export const CommunityChatPage: React.FC = () => {
     setShowScrollFab(!isNearBottom);
   }, []);
 
-  // Load messages
+  // Load messages (with optional initial spinner)
   const fetchMessages = useCallback(async (showSpinner = false) => {
     if (showSpinner) setIsLoading(true);
     setError(null);
     try {
       const data = await getCommunityChatMessages(200);
-      setMessages(data.messages);
+      setMessages((prev) => {
+        // Retain any pending optimistic messages that are currently in-flight
+        const pendingTemps = prev.filter((m) => m.id.startsWith('temp-'));
+        const merged = [...data.messages];
+        for (const temp of pendingTemps) {
+          if (!merged.some((m) => m.userId === temp.userId && m.content === temp.content)) {
+            merged.push(temp);
+          }
+        }
+        merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        return merged;
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to load messages';
       setError(msg);
@@ -101,24 +162,72 @@ export const CommunityChatPage: React.FC = () => {
   // Auto-scroll on new messages if user is at bottom
   useEffect(() => {
     if (isAtBottomRef.current) {
-      setTimeout(() => scrollToBottom(true), 50);
+      setTimeout(() => scrollToBottom(true), 40);
     }
   }, [messages, scrollToBottom]);
 
-  // Handle SSE live messages
+  // 1. Real-time Live SSE Stream (<50ms latency)
   const sseHandlers = useMemo(() => ({
     'chat:message': (data: ChatMessage) => {
       setMessages((prev) => {
-        // Prevent duplicates
+        // Prevent duplicate IDs
         if (prev.some((m) => m.id === data.id)) return prev;
-        return [...prev, data];
+
+        // If this matches an in-flight optimistic message from the sender, upgrade it
+        const tempIdx = prev.findIndex(
+          (m) =>
+            m.id.startsWith('temp-') &&
+            m.userId === data.userId &&
+            m.content === data.content
+        );
+
+        if (tempIdx !== -1) {
+          const next = [...prev];
+          next[tempIdx] = { ...data, status: 'sent' };
+          return next;
+        }
+
+        return [...prev, { ...data, status: 'sent' }];
       });
     },
   }), []);
 
   useSSE(sseHandlers, true);
 
-  // Manual refresh
+  // 2. Silent Auto-Sync Fallback (Every 2.5s — Zero Blinking, Zero UI Disruption)
+  useEffect(() => {
+    const silentSyncInterval = setInterval(async () => {
+      try {
+        const data = await getCommunityChatMessages(200);
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id));
+          const hasNew = data.messages.some((m) => !existingIds.has(m.id));
+
+          // If no new messages, return EXACT same reference to avoid ANY re-render or blink
+          if (!hasNew) {
+            return prev;
+          }
+
+          // Smoothly merge server messages with any pending local messages
+          const pendingTemps = prev.filter((m) => m.id.startsWith('temp-'));
+          const merged = [...data.messages];
+          for (const temp of pendingTemps) {
+            if (!merged.some((m) => m.userId === temp.userId && m.content === temp.content)) {
+              merged.push(temp);
+            }
+          }
+          merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          return merged;
+        });
+      } catch {
+        // Silent background check failure — do not disturb the user
+      }
+    }, 2500);
+
+    return () => clearInterval(silentSyncInterval);
+  }, []);
+
+  // Manual refresh button
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await fetchMessages(false);
@@ -133,29 +242,59 @@ export const CommunityChatPage: React.FC = () => {
     el.style.height = Math.min(el.scrollHeight, 100) + 'px';
   };
 
-  // Send message
-  const handleSend = async () => {
-    const trimmed = inputValue.trim();
-    if (!trimmed || trimmed.length > MAX_CHARS || isSending) return;
+  // 3. Instant 0ms Optimistic Message Sending
+  const handleSend = async (retryContent?: string, failedId?: string) => {
+    const textToSend = (retryContent !== undefined ? retryContent : inputValue).trim();
+    if (!textToSend || textToSend.length > MAX_CHARS) return;
 
-    setIsSending(true);
-    try {
-      const newMsg = await sendCommunityChatMessage(trimmed);
-      // Optimistic: add immediately (SSE will also deliver but dedup protects)
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === newMsg.id)) return prev;
-        return [...prev, newMsg];
-      });
+    const tempId = failedId || `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    const optimisticMsg: ChatMessage = {
+      id: tempId,
+      userId: user?.id || 'me',
+      content: textToSend,
+      createdAt: new Date().toISOString(),
+      status: 'sending',
+      user: {
+        id: user?.id || 'me',
+        displayName: user?.displayName || 'Adventurer',
+        avatarUrl: user?.avatarUrl,
+        role: user?.role,
+        level: (user as any)?.character?.level ?? 1,
+        badge: activeBadge,
+      },
+    };
+
+    if (failedId) {
+      // Retry mode: switch state to sending
+      setMessages((prev) =>
+        prev.map((m) => (m.id === failedId ? optimisticMsg : m))
+      );
+    } else {
+      // New send: 0ms INSTANT visual feedback
+      setMessages((prev) => [...prev, optimisticMsg]);
+      // 0ms INSTANT input reset
       setInputValue('');
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
-      setTimeout(() => scrollToBottom(true), 50);
+    }
+
+    // Scroll to bottom immediately
+    setTimeout(() => scrollToBottom(true), 20);
+
+    // Send to backend in background
+    try {
+      const realMsg = await sendCommunityChatMessage(textToSend);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...realMsg, status: 'sent' } : m))
+      );
     } catch (err: unknown) {
-      // Show error briefly but don't break the chat
-      console.error('[Chat] Failed to send:', err);
-    } finally {
-      setIsSending(false);
+      console.error('[Chat] Failed to send message:', err);
+      // Mark the message as failed so user can click to retry
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, status: 'failed' } : m))
+      );
     }
   };
 
@@ -251,33 +390,64 @@ export const CommunityChatPage: React.FC = () => {
             }
 
             const msg = item.msg;
-            const isOwn = msg.userId === user?.id;
+            const isOwn = msg.userId === user?.id || msg.id.startsWith('temp-');
             const isAdmin = msg.user.role === 'ADMIN';
             const avatarColor = getAvatarColor(msg.user.displayName);
+            const msgBadge = msg.user.badge || (isOwn ? activeBadge : null);
 
             return (
               <div
                 key={msg.id}
                 className={`chat-message-row ${isOwn ? 'is-own' : ''}`}
               >
-                <div
-                  className="chat-msg-avatar"
-                  style={{
-                    background: msg.user.avatarUrl
-                      ? 'transparent'
-                      : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}88)`,
-                  }}
-                >
-                  {msg.user.avatarUrl ? (
-                    <img
-                      src={msg.user.avatarUrl}
-                      alt={msg.user.displayName}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
+                <div className="chat-avatar-wrapper" style={{ position: 'relative', flexShrink: 0 }}>
+                  <div
+                    className="chat-msg-avatar"
+                    style={{
+                      background: msg.user.avatarUrl
+                        ? 'transparent'
+                        : `linear-gradient(135deg, ${avatarColor}, ${avatarColor}88)`,
+                    }}
+                  >
+                    {msg.user.avatarUrl ? (
+                      <img
+                        src={msg.user.avatarUrl}
+                        alt={msg.user.displayName}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      msg.user.displayName.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  {msgBadge && (
+                    <div
+                      className="chat-msg-pfp-badge"
+                      title={`${msgBadge.name} (Badge)`}
+                      style={{
+                        position: 'absolute',
+                        bottom: '-2px',
+                        right: '-3px',
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        background: '#0c111e',
+                        border: '1.5px solid #a855f7',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 0 8px rgba(168, 85, 247, 0.7)',
+                        zIndex: 2,
                       }}
-                    />
-                  ) : (
-                    msg.user.displayName.charAt(0).toUpperCase()
+                    >
+                      <img
+                        src={msgBadge.icon || '/assets/items/badge_shadow.svg'}
+                        alt={msgBadge.name}
+                        style={{ width: '12px', height: '12px', objectFit: 'contain' }}
+                        onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                      />
+                    </div>
                   )}
                 </div>
                 <div className="chat-msg-body">
@@ -285,11 +455,62 @@ export const CommunityChatPage: React.FC = () => {
                     <span className={`chat-msg-name ${isAdmin ? 'is-admin' : ''}`}>
                       {msg.user.displayName}
                     </span>
+                    {msgBadge && (
+                      <span
+                        className="chat-msg-badge-tag"
+                        title={`${msgBadge.name} (Badge)`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          padding: '1px 6px',
+                          background: 'rgba(168, 85, 247, 0.15)',
+                          border: '1px solid rgba(168, 85, 247, 0.35)',
+                          borderRadius: '8px',
+                          fontSize: '0.62rem',
+                          fontWeight: 700,
+                          color: '#e9d5ff',
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        <img
+                          src={msgBadge.icon || '/assets/items/badge_shadow.svg'}
+                          alt={msgBadge.name}
+                          style={{ width: '11px', height: '11px', objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                        />
+                        <span>{msgBadge.name}</span>
+                      </span>
+                    )}
                     <span className="chat-msg-level">Lv. {msg.user.level}</span>
                     {isAdmin && (
                       <span className="chat-msg-admin-badge">🛡️ Admin</span>
                     )}
                     <span className="chat-msg-time">{formatTime(msg.createdAt)}</span>
+
+                    {/* Own Message Status Indicator */}
+                    {isOwn && (
+                      <span className={`chat-msg-status ${msg.status || 'sent'}`}>
+                        {msg.status === 'sending' && (
+                          <>
+                            <span className="chat-sending-dot" />
+                            <span>sending</span>
+                          </>
+                        )}
+                        {msg.status === 'failed' && (
+                          <span
+                            className="chat-msg-status failed"
+                            onClick={() => handleSend(msg.content, msg.id)}
+                            title="Failed to send. Click to retry."
+                          >
+                            ⚠️ Retry
+                          </span>
+                        )}
+                        {(!msg.status || msg.status === 'sent') && (
+                          <span title="Delivered">✓</span>
+                        )}
+                      </span>
+                    )}
                   </div>
                   <div className="chat-msg-text">{msg.content}</div>
                 </div>
@@ -321,13 +542,12 @@ export const CommunityChatPage: React.FC = () => {
             onKeyDown={handleKeyDown}
             rows={1}
             maxLength={MAX_CHARS + 10}
-            disabled={isSending}
             aria-label="Chat message input"
           />
           <button
             className="chat-send-btn"
-            onClick={handleSend}
-            disabled={!inputValue.trim() || charCount > MAX_CHARS || isSending}
+            onClick={() => handleSend()}
+            disabled={!inputValue.trim() || charCount > MAX_CHARS}
             aria-label="Send message"
           >
             <Send size={16} />

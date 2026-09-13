@@ -174,8 +174,8 @@ export const LandingPage: React.FC = () => {
         scrollTrigger: {
           trigger: '#hero',
           start: 'top top',
-          end: 'bottom top',
-          scrub: 0.3,
+          end: isMobile ? 'bottom 70%' : 'bottom top',
+          scrub: isMobile ? 0.15 : 0.3,
         },
       });
 
@@ -196,19 +196,19 @@ export const LandingPage: React.FC = () => {
           ease: 'none',
         }, 0)
         .to('.hero-headline-group', {
-          y: isMobile ? -25 : -55,
-          opacity: isMobile ? 0.15 : 0,
-          ease: 'none',
-        }, isMobile ? 0.2 : 0.05)
-        .to('.hero-progression-hud-wrapper', {
-          y: isMobile ? -18 : -38,
+          y: isMobile ? -35 : -55,
           opacity: 0,
           ease: 'none',
-        }, isMobile ? 0.35 : 0.08)
+        }, isMobile ? 0.03 : 0.05)
+        .to('.hero-progression-hud-wrapper', {
+          y: isMobile ? -25 : -38,
+          opacity: 0,
+          ease: 'none',
+        }, isMobile ? 0.06 : 0.08)
         .to('.hero-content-layer', {
           opacity: 0,
           ease: 'none',
-        }, 0.45);
+        }, isMobile ? 0.16 : 0.45);
 
       // ======================================================================
       // 2. GAMEPLAY LOOP SECTION — BIDIRECTIONAL SCRUB TIMELINE
@@ -218,24 +218,24 @@ export const LandingPage: React.FC = () => {
       const loopTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#how-it-works',
-          start: 'top 85%',
-          end: 'top 25%',
-          scrub: 0.3,
+          start: isMobile ? 'top 90%' : 'top 85%',
+          end: isMobile ? 'top 40%' : 'top 25%',
+          scrub: isMobile ? 0.15 : 0.3,
         },
       });
 
       loopTl
         .fromTo('.gameplay-header-reveal',
-          { opacity: 0, y: 35 },
+          { opacity: 0, y: isMobile ? 20 : 35 },
           { opacity: 1, y: 0, ease: 'none' }
         )
         .fromTo('.gameplay-card-wrapper',
-          { opacity: 0, y: 50, scale: 0.96 },
+          { opacity: 0, y: isMobile ? 25 : 50, scale: isMobile ? 0.98 : 0.96 },
           {
             opacity: 1,
             y: 0,
             scale: 1,
-            stagger: 0.08,
+            stagger: isMobile ? 0.05 : 0.08,
             ease: 'none',
           },
           '-=0.15'
@@ -1278,6 +1278,7 @@ export const LandingPage: React.FC = () => {
 
         {/* ATMOSPHERIC CYBER HORIZON CONNECTOR */}
         <div
+          className="hero-horizon-connector"
           style={{
             position: 'relative',
             width: '100%',
@@ -1982,10 +1983,10 @@ export const LandingPage: React.FC = () => {
               Company
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: 0, margin: 0, fontSize: '0.85rem' }}>
-              <li><a href="#how-it-works" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>About <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><a href="#community" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Community <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><a href="#contact" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Contact <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
-              <li><a href="#citadel" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Citadel HQ <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></a></li>
+              <li><Link to="/citadel-hq" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>About <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><Link to="/community" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Community <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><Link to="/contact" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Contact <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
+              <li><Link to="/citadel-hq" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Citadel HQ <span style={{ color: '#38bdf8', fontSize: '0.7rem' }}>→</span></Link></li>
             </ul>
           </div>
 
@@ -2079,6 +2080,7 @@ export const LandingPage: React.FC = () => {
           type="button"
           onClick={scrollToTop}
           aria-label="Scroll back to top of page"
+          className="hud-scroll-top-btn"
           style={{
             width: '54px',
             height: '54px',
@@ -2097,12 +2099,16 @@ export const LandingPage: React.FC = () => {
             transition: 'all 0.2s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.08)';
-            e.currentTarget.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.55)';
+            if (!isMobile) {
+              e.currentTarget.style.transform = 'scale(1.08)';
+              e.currentTarget.style.boxShadow = '0 0 25px rgba(56, 189, 248, 0.55)';
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.25), 0 10px 25px rgba(0, 0, 0, 0.8)';
+            if (!isMobile) {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.25), 0 10px 25px rgba(0, 0, 0, 0.8)';
+            }
           }}
         >
           {/* Circular SVG Scroll Progress Ring */}

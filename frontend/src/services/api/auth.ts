@@ -44,4 +44,14 @@ export const authApi = {
       data,
     });
   },
+
+  /**
+   * Permanently deletes the user's account and all associated data.
+   * Dispatches DELETE /api/auth/account
+   */
+  async deleteAccount(): Promise<{ success: boolean; message: string }> {
+    return request<{ success: boolean; message: string }>('/auth/account', {
+      method: 'DELETE',
+    });
+  },
 };

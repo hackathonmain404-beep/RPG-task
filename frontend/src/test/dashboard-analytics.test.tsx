@@ -40,7 +40,7 @@ describe('Productivity Analytics Dashboard Components (100% Real User Data)', ()
     expect(screen.getByText('Completed Categories')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('TOTAL')).toBeInTheDocument();
-    expect(screen.getByText(/Personal/)).toBeInTheDocument();
+    expect(screen.getByText(/Health & Vitality/)).toBeInTheDocument();
     expect(screen.getByText('100%')).toBeInTheDocument();
   });
 

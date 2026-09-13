@@ -14,3 +14,4 @@ authRouter.post('/sync', requireAuth, authController.sync);
 authRouter.post('/logout', authController.logout);
 authRouter.get('/me', requireAuth, authController.getMe);
 authRouter.patch('/profile', requireAuth, authController.updateProfile);
+authRouter.delete('/account', requireAuth, authController.deleteAccount);

@@ -28,6 +28,9 @@ const TermsPage = lazy(() => import('../features/legal/TermsPage').then(m => ({ 
 const AccessibilityPage = lazy(() => import('../features/legal/AccessibilityPage').then(m => ({ default: m.AccessibilityPage })));
 const QuestsInfoPage = lazy(() => import('../features/legal/QuestsPage').then(m => ({ default: m.QuestsPage })));
 const RewardsInfoPage = lazy(() => import('../features/legal/RewardsPage').then(m => ({ default: m.RewardsPage })));
+const CommunityDocsPage = lazy(() => import('../features/legal/CommunityDocsPage').then(m => ({ default: m.CommunityDocsPage })));
+const ContactDocsPage = lazy(() => import('../features/legal/ContactDocsPage').then(m => ({ default: m.ContactDocsPage })));
+const CitadelHQDocsPage = lazy(() => import('../features/legal/CitadelHQDocsPage').then(m => ({ default: m.CitadelHQDocsPage })));
 const CommunityChatPage = lazy(() => import('../features/chat/CommunityChatPage').then(m => ({ default: m.CommunityChatPage })));
 
 export const AppRoutes: React.FC = () => {
@@ -46,6 +49,10 @@ export const AppRoutes: React.FC = () => {
         <Route path="/accessibility" element={<AccessibilityPage />} />
         <Route path="/quests" element={<QuestsInfoPage />} />
         <Route path="/rewards" element={<RewardsInfoPage />} />
+        <Route path="/community" element={<CommunityDocsPage />} />
+        <Route path="/contact" element={<ContactDocsPage />} />
+        <Route path="/citadel-hq" element={<CitadelHQDocsPage />} />
+        <Route path="/citadel" element={<Navigate to="/citadel-hq" replace />} />
 
         {/* Magic Link Verification endpoint */}
         <Route path="/auth/verify" element={<VerifyMagicLinkPage />} />
