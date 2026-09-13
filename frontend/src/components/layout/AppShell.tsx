@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { HeaderHUD } from './HeaderHUD';
 import { 
   LayoutDashboard, 
@@ -11,7 +11,6 @@ import {
   Palette,
   Sparkles,
   MessageSquarePlus,
-  Sliders,
   X,
   ExternalLink,
   AlertTriangle,
@@ -76,7 +75,6 @@ const AppShellInner: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const { isFeedbackOpen, openFeedback, closeFeedback } = useFeedback();
-  const navigate = useNavigate();
   const location = useLocation();
   const [pendingPath, setPendingPath] = useState<string | null>(null);
 
@@ -281,17 +279,6 @@ const AppShellInner: React.FC = () => {
 
       {/* Top HUD Bar */}
       <HeaderHUD onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-
-      {/* Floating System / Accessibility Control on Right Edge */}
-      <button
-        type="button"
-        className="floating-system-control"
-        aria-label="System & Accessibility Controls"
-        title="Citadel System & Accessibility"
-        onClick={() => navigate('/app/settings')}
-      >
-        <Sliders size={16} />
-      </button>
 
       {/* Main Content Area with Sidebar */}
       <div
