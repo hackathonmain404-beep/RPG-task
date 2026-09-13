@@ -159,7 +159,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
-                      {user?.displayName || 'Adventurer'}
+                      Account Overview
                     </div>
                     {user?.email && (
                       <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>

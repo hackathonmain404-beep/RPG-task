@@ -84,11 +84,19 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({
         {/* Footer: Price & Action */}
         <div className="theme-card-footer">
           {/* Price */}
-          <div className="theme-card-price-group">
-            <Coins size={16} className="theme-gold-icon" />
-            <span className="theme-gold-val">{theme.price}</span>
-            <span className="theme-gold-lbl">GOLD</span>
-          </div>
+          {theme.price === 0 ? (
+            <div className="theme-card-price-group" style={{ color: 'var(--status-success, #10b981)' }}>
+              <Sparkles size={16} className="theme-gold-icon" />
+              <span className="theme-gold-val" style={{ fontSize: '0.85rem', letterSpacing: '0.04em' }}>FREE</span>
+              <span className="theme-gold-lbl" style={{ color: '#34d399' }}>STARTER</span>
+            </div>
+          ) : (
+            <div className="theme-card-price-group">
+              <Coins size={16} className="theme-gold-icon" />
+              <span className="theme-gold-val">{theme.price}</span>
+              <span className="theme-gold-lbl">GOLD</span>
+            </div>
+          )}
 
           {/* Action Button */}
           <div className="theme-card-action">
@@ -120,9 +128,9 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({
             ) : (
               <button
                 type="button"
-                className={`theme-btn theme-btn-acquire ${!hasEnoughGold && isAuthenticated ? 'insufficient-gold' : ''}`}
+                className={`theme-btn theme-btn-acquire ${!hasEnoughGold ? 'insufficient-gold' : ''}`}
                 onClick={handleAction}
-                disabled={isProcessing || (isAuthenticated && !hasEnoughGold)}
+                disabled={isProcessing || !hasEnoughGold}
                 title={!isAuthenticated ? 'Log in to acquire' : !hasEnoughGold ? 'Not enough Gold' : undefined}
               >
                 {isProcessing ? (

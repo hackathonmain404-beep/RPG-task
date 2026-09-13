@@ -1,5 +1,5 @@
 import type { Theme } from './types';
-import { INITIAL_THEMES, DEFAULT_THEME } from './types';
+import { ALL_THEMES, DEFAULT_THEME } from './types';
 
 /**
  * Applies theme CSS variables to document.documentElement (:root) and body.
@@ -15,18 +15,26 @@ export function applyThemeColors(themeOrSlug: Theme | string) {
     const clean = raw.replace(/^theme_/, '').replace(/_/g, '-').trim();
 
     if (clean.includes('cyberpunk-neon') || clean.includes('cyberpunk_neon')) {
-      theme = INITIAL_THEMES.find(t => t.slug === 'cyberpunk-neon');
+      theme = ALL_THEMES.find(t => t.slug === 'cyberpunk-neon');
     } else if (clean.includes('cyberpunk')) {
-      theme = INITIAL_THEMES.find(t => t.slug === 'cyberpunk') || INITIAL_THEMES.find(t => t.slug === 'cyberpunk-neon');
-    } else if (clean.includes('matrix') || clean.includes('dark-matrix') || clean.includes('dark_matrix')) {
-      theme = INITIAL_THEMES.find(t => t.slug === 'dark-matrix');
+      theme = ALL_THEMES.find(t => t.slug === 'cyberpunk') || ALL_THEMES.find(t => t.slug === 'cyberpunk-neon');
+    } else if (clean.includes('matrix')) {
+      theme = ALL_THEMES.find(t => t.slug === 'dark-matrix');
+    } else if (clean.includes('citadel') || clean === 'default') {
+      theme = ALL_THEMES.find(t => t.slug === 'dark-citadel');
+    } else if (clean.includes('neon-outpost') || clean.includes('neon_outpost') || clean === 'neon') {
+      theme = ALL_THEMES.find(t => t.slug === 'neon-outpost');
+    } else if (clean.includes('mystic')) {
+      theme = ALL_THEMES.find(t => t.slug === 'mystic-forest');
+    } else if (clean.includes('solaris')) {
+      theme = ALL_THEMES.find(t => t.slug === 'solaris-gold');
     } else if (clean.includes('retro')) {
-      theme = INITIAL_THEMES.find(t => t.slug === 'retro');
+      theme = ALL_THEMES.find(t => t.slug === 'retro');
     } else if (clean.includes('lofi') || clean.includes('lo-fi')) {
-      theme = INITIAL_THEMES.find(t => t.slug === 'lofi');
+      theme = ALL_THEMES.find(t => t.slug === 'lofi');
     } else {
-      theme = INITIAL_THEMES.find(t => t.slug === clean || t.id === clean) ||
-              INITIAL_THEMES.find(t => t.name.toLowerCase() === raw) ||
+      theme = ALL_THEMES.find(t => t.slug === clean || t.id === clean) ||
+              ALL_THEMES.find(t => t.name.toLowerCase() === raw) ||
               DEFAULT_THEME;
     }
   } else {

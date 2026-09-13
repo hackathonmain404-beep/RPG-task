@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Theme } from '../features/themes/types';
-import { DEFAULT_THEME, INITIAL_THEMES } from '../features/themes/types';
+import { DEFAULT_THEME, ALL_THEMES, PREGIVEN_THEME_SLUGS } from '../features/themes/types';
 import { themeService } from '../services/themeService';
 import { applyThemeColors } from '../features/themes/applyTheme';
 import { ThemeContext } from './themeContextDef';
@@ -14,7 +14,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem('liferpg_active_theme_id');
       if (saved) {
         const clean = saved.toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
-        const found = INITIAL_THEMES.find(t => t.slug === clean || t.id === clean);
+        const found = ALL_THEMES.find(t => t.slug === clean || t.id === clean);
         if (found) {
           applyThemeColors(found);
           return found;
@@ -26,7 +26,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     applyThemeColors(DEFAULT_THEME);
     return DEFAULT_THEME;
   });
-  const [themes, setThemes] = useState<Theme[]>(INITIAL_THEMES);
+  const [themes, setThemes] = useState<Theme[]>(ALL_THEMES);
   const [ownedThemeIds, setOwnedThemeIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -166,6 +166,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isOwned = useCallback((themeId: string): boolean => {
     const clean = (themeId || '').toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
+    if ((PREGIVEN_THEME_SLUGS as readonly string[]).includes(clean) || (PREGIVEN_THEME_SLUGS as readonly string[]).includes(themeId)) {
+      return true;
+    }
     if (ownedThemeIds.has(clean) || ownedThemeIds.has(themeId)) return true;
     if ((clean === 'cyberpunk' || clean === 'cyberpunk-neon') && (ownedThemeIds.has('cyberpunk') || ownedThemeIds.has('cyberpunk-neon') || ownedThemeIds.has('theme_cyberpunk'))) {
       return true;
@@ -176,6 +179,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const isEquipped = useCallback((themeId: string): boolean => {
     const clean = (themeId || '').toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
     if (activeTheme.slug === clean || activeTheme.id === clean || activeTheme.slug === themeId || activeTheme.id === themeId) {
+      return true;
+    }
+    if ((clean === 'dark-citadel' || clean === 'default') && (activeTheme.slug === 'dark-citadel' || activeTheme.slug === 'default')) {
+      return true;
+    }
+    if ((clean === 'neon-outpost' || clean === 'neon_outpost') && (activeTheme.slug === 'neon-outpost' || activeTheme.slug === 'neon_outpost')) {
+      return true;
+    }
+    if ((clean === 'mystic-forest' || clean === 'mystic_forest') && (activeTheme.slug === 'mystic-forest' || activeTheme.slug === 'mystic_forest')) {
+      return true;
+    }
+    if ((clean === 'solaris-gold' || clean === 'solaris_gold') && (activeTheme.slug === 'solaris-gold' || activeTheme.slug === 'solaris_gold')) {
       return true;
     }
     if ((clean === 'cyberpunk' || clean === 'cyberpunk-neon') && (activeTheme.slug === 'cyberpunk' || activeTheme.slug === 'cyberpunk-neon')) {

@@ -8,17 +8,20 @@ import { applyThemeColors } from '../features/themes/applyTheme';
 import { themeService } from '../services/themeService';
 import { supabase } from '../lib/supabase';
 
+import { PREGIVEN_THEME_SLUGS } from '../features/themes/types';
+
 export function mapItemIdToThemeKey(itemId?: string): string {
   const lower = (itemId || '').toLowerCase();
   if (lower.includes('cyberpunk_neon') || lower.includes('cyberpunk-neon')) return 'cyberpunk-neon';
   if (lower.includes('cyberpunk')) return 'cyberpunk';
   if (lower.includes('matrix') || lower.includes('dark_matrix') || lower.includes('dark-matrix')) return 'dark-matrix';
+  if (lower.includes('citadel') || lower === 'default' || lower.includes('dark-citadel')) return 'dark-citadel';
+  if (lower.includes('neon-outpost') || lower.includes('neon_outpost') || lower === 'neon') return 'neon-outpost';
+  if (lower.includes('mystic')) return 'mystic-forest';
+  if (lower.includes('solaris')) return 'solaris-gold';
   if (lower.includes('retro')) return 'retro';
   if (lower.includes('lofi') || lower.includes('lo-fi')) return 'lofi';
-  if (lower.includes('neon')) return 'neon_outpost';
-  if (lower.includes('mystic')) return 'mystic_forest';
-  if (lower.includes('solaris')) return 'solaris_gold';
-  return 'default';
+  return 'dark-citadel';
 }
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -311,6 +314,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isOwned = useCallback(
     (itemId: string): boolean => {
+      const clean = (itemId || '').toLowerCase().replace(/^theme_/, '').replace(/_/g, '-');
+      if ((PREGIVEN_THEME_SLUGS as readonly string[]).includes(clean) || (PREGIVEN_THEME_SLUGS as readonly string[]).includes(itemId)) {
+        return true;
+      }
+
       const matchingShop = shopItems.find(s => s.id === itemId || s.sku === itemId || s.name.toLowerCase() === itemId.toLowerCase());
       const hasInInv = inventory.some(i => 
         i.id === itemId || 
@@ -359,7 +367,19 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const sku = matchingShop?.sku || invItem?.shopItem?.sku || itemId;
       const itemThemeKey = mapItemIdToThemeKey(sku);
-      if (itemThemeKey && itemThemeKey !== 'default' && itemThemeKey === equippedTheme) {
+      if (itemThemeKey && itemThemeKey === equippedTheme) {
+        return true;
+      }
+      if ((itemThemeKey === 'dark-citadel' || itemThemeKey === 'default') && (equippedTheme === 'dark-citadel' || equippedTheme === 'default')) {
+        return true;
+      }
+      if ((itemThemeKey === 'neon-outpost' || itemThemeKey === 'neon_outpost') && (equippedTheme === 'neon-outpost' || equippedTheme === 'neon_outpost')) {
+        return true;
+      }
+      if ((itemThemeKey === 'mystic-forest' || itemThemeKey === 'mystic_forest') && (equippedTheme === 'mystic-forest' || equippedTheme === 'mystic_forest')) {
+        return true;
+      }
+      if ((itemThemeKey === 'solaris-gold' || itemThemeKey === 'solaris_gold') && (equippedTheme === 'solaris-gold' || equippedTheme === 'solaris_gold')) {
         return true;
       }
       if ((itemThemeKey === 'cyberpunk' || itemThemeKey === 'cyberpunk-neon') && (equippedTheme === 'cyberpunk' || equippedTheme === 'cyberpunk-neon')) {

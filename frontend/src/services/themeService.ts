@@ -6,7 +6,7 @@
  * and localStorage for immediate, zero-flash UI updates.
  */
 import type { Theme } from '../features/themes/types';
-import { INITIAL_THEMES, DEFAULT_THEME } from '../features/themes/types';
+import { ALL_THEMES, DEFAULT_THEME, PREGIVEN_THEME_SLUGS } from '../features/themes/types';
 import { supabase } from '../lib/supabase';
 import { shopApi } from './api/shop';
 
@@ -33,8 +33,8 @@ class ThemeService {
         .order('price', { ascending: true });
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        // Merge with initial specs to ensure color fidelity and sort orders
-        const parsed: Theme[] = INITIAL_THEMES.map(initTheme => {
+        // Merge with full catalog to ensure color fidelity and sort orders
+        const parsed: Theme[] = ALL_THEMES.map(initTheme => {
           const dbMatch = data.find(row => 
             row.key === initTheme.slug || 
             row.key === initTheme.slug.replace(/-/g, '_') ||
@@ -60,11 +60,11 @@ class ThemeService {
         return parsed;
       }
     } catch {
-      // Fall through to INITIAL_THEMES
+      // Fall through to ALL_THEMES
     }
 
-    this.memoryThemes = INITIAL_THEMES;
-    return INITIAL_THEMES;
+    this.memoryThemes = ALL_THEMES;
+    return ALL_THEMES;
   }
 
   /**
@@ -76,6 +76,9 @@ class ThemeService {
    */
   async getOwnedThemeIds(userId: string): Promise<Set<string>> {
     const owned = new Set<string>();
+
+    // Pre-given free starter themes are unlocked for all players by default
+    PREGIVEN_THEME_SLUGS.forEach(slug => owned.add(slug));
 
     // 0. Load cached owned themes from localStorage for instant display
     try {
@@ -110,6 +113,22 @@ class ThemeService {
       }
       if (lowerSku.includes('matrix') || lowerName.includes('matrix') || lowerSku.includes('dark_matrix') || lowerSku.includes('dark-matrix')) {
         owned.add('dark-matrix');
+      }
+      if (lowerSku.includes('citadel') || lowerName.includes('citadel') || lowerSku === 'default') {
+        owned.add('dark-citadel');
+        owned.add('default');
+      }
+      if (lowerSku.includes('neon-outpost') || lowerSku.includes('neon_outpost') || lowerName.includes('neon outpost')) {
+        owned.add('neon-outpost');
+        owned.add('neon_outpost');
+      }
+      if (lowerSku.includes('mystic') || lowerName.includes('mystic')) {
+        owned.add('mystic-forest');
+        owned.add('mystic_forest');
+      }
+      if (lowerSku.includes('solaris') || lowerName.includes('solaris')) {
+        owned.add('solaris-gold');
+        owned.add('solaris_gold');
       }
       if (lowerSku.includes('retro') || lowerName.includes('retro')) {
         owned.add('retro');
