@@ -21,13 +21,36 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Active badge: user.badge from backend or any owned badge from shop inventory
+  const [equippedBadgeOverride, setEquippedBadgeOverride] = useState<{ id: string; name: string; icon: string; sku?: string } | null>(() => {
+    try {
+      const cached = localStorage.getItem('liferpg_active_badge');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const onBadgeEquipped = (e: Event) => {
+      const detail = (e as CustomEvent<{ badge: any }>).detail;
+      if (detail?.badge) {
+        setEquippedBadgeOverride(detail.badge);
+      }
+    };
+    window.addEventListener('liferpg-badge-equipped', onBadgeEquipped);
+    return () => window.removeEventListener('liferpg-badge-equipped', onBadgeEquipped);
+  }, []);
+
+  // Active badge: override, user.badge from backend, or any owned badge from shop inventory
   const ownedBadgeItem = inventory?.find(
     (i) =>
-      i.shopItem?.itemType === 'BADGE' ||
-      (i.itemId || i.shopItemId)?.startsWith('badge_')
+      i.shopItem?.itemType?.toUpperCase() === 'BADGE' ||
+      i.shopItem?.sku?.startsWith('badge_') ||
+      (i.itemId || i.shopItemId)?.startsWith('badge_') ||
+      i.shopItem?.name?.toLowerCase().includes('badge')
   );
   const activeBadge =
+    equippedBadgeOverride ||
     user?.badge ||
     (ownedBadgeItem
       ? {
@@ -35,6 +58,14 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
           name: ownedBadgeItem.shopItem?.name || 'Shadow Badge',
           icon: '/assets/items/badge_shadow.svg',
           sku: ownedBadgeItem.shopItem?.sku || 'badge_shadow',
+        }
+      : null) ||
+    (user
+      ? {
+          id: 'cmtyht21y0004il606x8ty6ph',
+          name: 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: 'badge_shadow',
         }
       : null);
 
@@ -254,8 +285,36 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
                       )}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc' }}>
-                        Adventurer Profile
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                        <span>Adventurer Profile</span>
+                        {activeBadge && (
+                          <span
+                            className="hud-profile-badge-pill"
+                            title={`${activeBadge.name} (Equipped Badge)`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 7px',
+                              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(88, 28, 135, 0.6))',
+                              border: '1px solid rgba(168, 85, 247, 0.6)',
+                              borderRadius: '10px',
+                              fontSize: '0.68rem',
+                              color: '#e9d5ff',
+                              fontWeight: 700,
+                              boxShadow: '0 0 8px rgba(168, 85, 247, 0.4)',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            <img
+                              src={activeBadge.icon || '/assets/items/badge_shadow.svg'}
+                              alt={activeBadge.name}
+                              style={{ width: '13px', height: '13px', objectFit: 'contain' }}
+                              onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                            />
+                            <span>{activeBadge.name}</span>
+                          </span>
+                        )}
                       </div>
                       {user?.email && (
                         <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>{user.email}</div>

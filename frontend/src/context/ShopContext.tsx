@@ -348,6 +348,32 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
+        // If it's a badge, update local badge state and notify subscribers
+        const isBadge =
+          rawType === 'badge' ||
+          rawCat === 'badge' ||
+          itemId.startsWith('badge_') ||
+          matchingShop?.itemType?.toUpperCase() === 'BADGE' ||
+          targetInv?.shopItem?.itemType?.toUpperCase() === 'BADGE' ||
+          matchingShop?.sku?.startsWith('badge_') ||
+          Boolean(matchingShop?.name?.toLowerCase().includes('badge'));
+
+        if (isBadge) {
+          const badgeObj = {
+            id: matchingShop?.id || targetInv?.id || itemId,
+            name: matchingShop?.name || targetInv?.shopItem?.name || 'Shadow Badge',
+            icon: matchingShop?.icon || targetInv?.shopItem?.icon || '/assets/items/badge_shadow.svg',
+            sku: matchingShop?.sku || targetInv?.shopItem?.sku || 'badge_shadow',
+          };
+          try {
+            localStorage.setItem('liferpg_active_badge', JSON.stringify(badgeObj));
+            localStorage.setItem('liferpg_active_badge_id', itemId);
+          } catch {
+            // Non-critical
+          }
+          window.dispatchEvent(new CustomEvent('liferpg-badge-equipped', { detail: { badge: badgeObj } }));
+        }
+
         return res;
       } finally {
         setPendingEquipItemIds(prev => {
@@ -415,6 +441,23 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (invItem?.equipped) return true;
 
       const sku = matchingShop?.sku || invItem?.shopItem?.sku || itemId;
+
+      const isBadge =
+        itemId.startsWith('badge_') ||
+        matchingShop?.itemType?.toUpperCase() === 'BADGE' ||
+        invItem?.shopItem?.itemType?.toUpperCase() === 'BADGE' ||
+        matchingShop?.sku?.startsWith('badge_') ||
+        invItem?.shopItem?.sku?.startsWith('badge_') ||
+        Boolean(matchingShop?.name?.toLowerCase().includes('badge'));
+
+      if (isBadge) {
+        const activeBadgeId = localStorage.getItem('liferpg_active_badge_id');
+        if (activeBadgeId && (activeBadgeId === itemId || activeBadgeId === matchingShop?.id || activeBadgeId === matchingShop?.sku)) {
+          return true;
+        }
+        return isOwned(itemId);
+      }
+
       const itemThemeKey = mapItemIdToThemeKey(sku);
       if (itemThemeKey && itemThemeKey === equippedTheme) {
         return true;

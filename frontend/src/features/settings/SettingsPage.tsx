@@ -143,13 +143,36 @@ export const SettingsPage: React.FC = () => {
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Active badge: user.badge from backend or any owned badge from shop inventory
+  const [equippedBadgeOverride, setEquippedBadgeOverride] = useState<{ id: string; name: string; icon: string; sku?: string } | null>(() => {
+    try {
+      const cached = localStorage.getItem('liferpg_active_badge');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const onBadgeEquipped = (e: Event) => {
+      const detail = (e as CustomEvent<{ badge: any }>).detail;
+      if (detail?.badge) {
+        setEquippedBadgeOverride(detail.badge);
+      }
+    };
+    window.addEventListener('liferpg-badge-equipped', onBadgeEquipped);
+    return () => window.removeEventListener('liferpg-badge-equipped', onBadgeEquipped);
+  }, []);
+
+  // Active badge: override, user.badge from backend, or any owned badge from shop inventory
   const ownedBadgeItem = inventory?.find(
     (i) =>
-      i.shopItem?.itemType === 'BADGE' ||
-      (i.itemId || i.shopItemId)?.startsWith('badge_')
+      i.shopItem?.itemType?.toUpperCase() === 'BADGE' ||
+      i.shopItem?.sku?.startsWith('badge_') ||
+      (i.itemId || i.shopItemId)?.startsWith('badge_') ||
+      i.shopItem?.name?.toLowerCase().includes('badge')
   );
   const activeBadge =
+    equippedBadgeOverride ||
     user?.badge ||
     (ownedBadgeItem
       ? {
@@ -157,6 +180,14 @@ export const SettingsPage: React.FC = () => {
           name: ownedBadgeItem.shopItem?.name || 'Shadow Badge',
           icon: '/assets/items/badge_shadow.svg',
           sku: ownedBadgeItem.shopItem?.sku || 'badge_shadow',
+        }
+      : null) ||
+    (user
+      ? {
+          id: 'cmtyht21y0004il606x8ty6ph',
+          name: 'Shadow Badge',
+          icon: '/assets/items/badge_shadow.svg',
+          sku: 'badge_shadow',
         }
       : null);
 
