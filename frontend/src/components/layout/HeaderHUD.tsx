@@ -61,6 +61,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
       }}
     >
       <div
+        className="hud-header-inner"
         style={{
           width: '100%',
           padding: '0.75rem clamp(0.75rem, 2.5vw, 1.5rem)',
@@ -71,7 +72,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
         }}
       >
         {/* Left: Brand Logo & Mobile Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="hud-left-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {onToggleSidebar && (
             <button
               type="button"
@@ -111,7 +112,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
         </div>
 
         {/* Right: Feedback Button, Admin Quick Link & Interactive Profile Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="hud-right-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {/* Leaderboard Trigger */}
           <button
             type="button"
@@ -137,7 +138,6 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({ onToggleSidebar, isSidebar
             <Trophy size={16} color="#fbbf24" />
             <span className="desktop-only">Leaderboard</span>
           </button>
-
           {/* Feedback Trigger — immediately to the left of player profile */}
           <button
             type="button"

@@ -58,13 +58,23 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
     });
   }, [completedTasks, totalCompleted]);
 
-  // SVG Donut settings
+  // SVG Donut geometry settings
   const size = 150;
-  const strokeWidth = 20;
+  const strokeWidth = 18;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  let cumulativePercent = 0;
+  // Slices have a clean 5px gap when there are multiple categories to prevent any visual overlap/intersection
+  const numCategories = categories.length;
+  const gap = numCategories > 1 ? 5 : 0;
+  const totalGap = numCategories * gap;
+  const availableCircumference = Math.max(0, circumference - totalGap);
+
+  let accumulatedOffset = 0;
+
+  const activeCategory = useMemo(() => {
+    return categories.find(c => c.id === hoveredCategory) || null;
+  }, [categories, hoveredCategory]);
 
   return (
     <div className="analytics-card card-analytics-categories anim-entrance-6">
@@ -82,16 +92,18 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
               cy={size / 2}
               r={radius}
               fill="transparent"
-              stroke="rgba(255, 255, 255, 0.05)"
+              stroke="rgba(255, 255, 255, 0.06)"
               strokeWidth={strokeWidth}
               className="donut-track-circle"
             />
 
-            {/* Render Segments based 100% on real completed tasks with entrance animation */}
+            {/* Render Segments based 100% on real completed tasks with zero-overlap precision */}
             {categories.map((cat) => {
-              const strokeDasharray = `${(cat.percentage / 100) * circumference} ${circumference}`;
-              const strokeDashoffset = -((cumulativePercent / 100) * circumference);
-              cumulativePercent += cat.percentage;
+              const fraction = totalCompleted > 0 ? cat.count / totalCompleted : 0;
+              const arcLength = Math.max(2, fraction * availableCircumference);
+              const strokeDasharray = `${arcLength} ${circumference - arcLength}`;
+              const strokeDashoffset = -accumulatedOffset;
+              accumulatedOffset += arcLength + gap;
 
               const isHovered = hoveredCategory === cat.id;
 
@@ -106,12 +118,13 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                   strokeWidth={isHovered ? strokeWidth + 3 : strokeWidth}
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
+                  strokeLinecap="butt"
                   transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                  className={`donut-segment-animated donut-segment-slice ${isHovered ? 'is-hovered' : ''}`}
+                  className={`donut-segment-slice ${isHovered ? 'is-hovered' : ''}`}
                   style={{
                     color: cat.color,
-                    opacity: hoveredCategory && !isHovered ? 0.45 : 1,
+                    opacity: hoveredCategory && !isHovered ? 0.35 : 1,
+                    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                   onMouseEnter={() => setHoveredCategory(cat.id)}
                   onMouseLeave={() => setHoveredCategory(null)}
@@ -120,14 +133,26 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
             })}
           </svg>
 
-          {/* Center Text with entrance fade */}
+          {/* Center Text with dynamic focus */}
           <div className="donut-center-text donut-center-fade">
             <span
               className={`donut-total-number ${hoveredCategory ? 'is-highlighted' : ''}`}
+              style={{
+                color: activeCategory ? activeCategory.color : '#38bdf8',
+                transition: 'color 0.2s ease',
+              }}
             >
-              {totalCompleted}
+              {activeCategory ? activeCategory.count : totalCompleted}
             </span>
-            <span className="donut-total-label">TOTAL</span>
+            <span
+              className="donut-total-label"
+              style={{
+                color: activeCategory ? activeCategory.color : '#64748b',
+                transition: 'color 0.2s ease',
+              }}
+            >
+              {activeCategory ? activeCategory.name.toUpperCase() : 'TOTAL'}
+            </span>
           </div>
         </div>
 
@@ -144,6 +169,10 @@ export const CompletedCategoriesCard: React.FC<CompletedCategoriesCardProps> = (
                 <div
                   key={cat.id}
                   className={`category-legend-row ${isHovered ? 'is-hovered' : ''}`}
+                  style={{
+                    backgroundColor: isHovered ? `${cat.color}18` : 'transparent',
+                    border: isHovered ? `1px solid ${cat.color}45` : '1px solid transparent',
+                  }}
                   onMouseEnter={() => setHoveredCategory(cat.id)}
                   onMouseLeave={() => setHoveredCategory(null)}
                 >
