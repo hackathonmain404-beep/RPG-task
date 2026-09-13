@@ -150,7 +150,8 @@
 }
 
 @media (max-width: 767px) {
-  .btn-character-sheet {
+  .btn-character-sheet,
+  .btn-welcome-leaderboard {
     width: 100%;
     justify-content: center;
     padding: 0.75rem 1.25rem;
@@ -213,7 +214,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* 4. CHARACTER SHEET BUTTON */
+/* 4. WELCOME BANNER ACTION BUTTONS (CHARACTER SHEET & LEADERBOARD) */
 .btn-character-sheet {
   position: relative;
   display: inline-flex;
@@ -280,6 +281,83 @@
 
 .btn-cta-arrow {
   transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Citadel Leaderboard Action Button & Micro-Interactions */
+.btn-welcome-leaderboard {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
+  cursor: pointer;
+  overflow: hidden;
+  min-height: 42px;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 320ms ease,
+              background-color 320ms ease,
+              color 320ms ease,
+              filter 320ms ease;
+}
+
+.btn-welcome-leaderboard::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.35), transparent);
+  transform: rotate(25deg);
+  opacity: 0;
+  transition: transform 550ms ease, opacity 300ms ease;
+}
+
+.btn-welcome-leaderboard:hover {
+  transform: translate3d(0, -2px, 0);
+  background: rgba(245, 158, 11, 0.24);
+  border-color: rgba(251, 191, 36, 0.85);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.45), 0 4px 14px rgba(0, 0, 0, 0.35);
+  color: #fffbeb;
+  filter: brightness(1.1);
+}
+
+.btn-welcome-leaderboard:hover::after {
+  opacity: 1;
+  transform: translateX(380%) rotate(25deg);
+}
+
+.btn-welcome-leaderboard:hover .leaderboard-trophy-icon {
+  transform: scale(1.18) rotate(-6deg);
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.85));
+  color: #fef08a;
+}
+
+.btn-welcome-leaderboard:active {
+  transform: translate3d(0, 0, 0) scale(0.98);
+  filter: brightness(0.95);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+.btn-welcome-leaderboard:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+.leaderboard-trophy-icon {
+  color: #fbbf24;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 320ms ease,
+              color 320ms ease;
 }
 
 /* 5. SIDEBAR NAVIGATION HOVER & MICRO-ANIMATIONS */
@@ -509,6 +587,13 @@
 .mobile-drawer-panel {
   animation: mobileDrawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.mobile-drawer-panel::-webkit-scrollbar {
+  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -516,6 +601,35 @@
   .mobile-drawer-panel {
     animation: none !important;
     transform: none !important;
+  }
+}
+
+/* Native Mobile Tap States */
+@media (hover: none) and (pointer: coarse) {
+  .rpg-btn:active,
+  .rpg-button:active,
+  .btn-character-sheet:active,
+  .interactive-stat-card:active,
+  .mobile-bottom-nav a:active,
+  .armory-cat-tab:active,
+  .hud-hamburger-btn:active {
+    transform: scale(0.96) !important;
+    transition: transform 0.1s ease !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .welcome-action-group {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+  .welcome-action-group .rpg-btn,
+  .welcome-action-group .btn-character-sheet {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 42px !important;
   }
 }
 
@@ -1626,7 +1740,8 @@ a.hud-dropdown-character:visited {
     transform: none !important;
   }
 
-  .btn-character-sheet:hover {
+  .btn-character-sheet:hover,
+  .btn-welcome-leaderboard:hover {
     transform: none !important;
   }
 }

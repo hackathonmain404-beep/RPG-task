@@ -93,7 +93,7 @@ export const CharacterPage: React.FC = () => {
             style={{
               width: '76px',
               height: '76px',
-              borderRadius: '16px',
+              borderRadius: '50%',
               backgroundColor: 'rgba(56, 189, 248, 0.12)',
               border: '2px solid var(--border-focus)',
               display: 'flex',
