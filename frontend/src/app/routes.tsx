@@ -21,6 +21,7 @@ const ThemeMarketplacePage = lazy(() => import('../features/themes/ThemeMarketpl
 const ThemeCollectionPage = lazy(() => import('../features/themes/ThemeCollectionPage').then(m => ({ default: m.ThemeCollectionPage })));
 const InventoryPage = lazy(() => import('../features/inventory/InventoryPage').then(m => ({ default: m.InventoryPage })));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const FeedbackPage = lazy(() => import('../features/feedback/FeedbackPage').then(m => ({ default: m.FeedbackPage })));
 const HistoryPage = lazy(() => import('../features/history/HistoryPage').then(m => ({ default: m.HistoryPage })));
 const PrivacyPage = lazy(() => import('../features/legal/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import('../features/legal/TermsPage').then(m => ({ default: m.TermsPage })));
@@ -64,6 +65,15 @@ export const AppRoutes: React.FC = () => {
           }
         />
 
+        {/* Direct Route Aliases for Convenient Navigation */}
+        <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+        <Route path="/character" element={<Navigate to="/app/character" replace />} />
+        <Route path="/shop" element={<Navigate to="/app/shop" replace />} />
+        <Route path="/armory" element={<Navigate to="/app/shop" replace />} />
+        <Route path="/inventory" element={<Navigate to="/app/inventory" replace />} />
+        <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+        <Route path="/feedback" element={<Navigate to="/app/feedback" replace />} />
+
         {/* Protected Authenticated Routes for Players */}
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<AppShell />}>
@@ -78,6 +88,7 @@ export const AppRoutes: React.FC = () => {
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="feedback" element={<FeedbackPage />} />
           </Route>
         </Route>
 

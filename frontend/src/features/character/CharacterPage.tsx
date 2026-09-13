@@ -3,6 +3,7 @@ import { useAuth } from '../../context/useAuth';
 import { useDocumentMetadata } from '../../hooks/useDocumentMetadata';
 import { AttributeCard } from './AttributeCard';
 import { RecentActivityFeed } from './RecentActivityFeed';
+import { CharacterSkeleton } from '../../components/skeletons/CharacterSkeleton';
 import { 
   User, 
   Sparkles, 
@@ -55,6 +56,14 @@ export const CharacterPage: React.FC = () => {
   // Streak milestone indicator based on authoritative numbers
   const nextMilestone = streakCurrent < 7 ? 7 : streakCurrent < 14 ? 14 : streakCurrent < 30 ? 30 : 60;
   const daysToMilestone = Math.max(0, nextMilestone - streakCurrent);
+
+  if (authLoading && !character) {
+    return (
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <CharacterSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
