@@ -15,6 +15,7 @@ import {
   Check, 
   Crown
 } from 'lucide-react';
+import { WindowPopModal } from '../../components/common/WindowPopModal';
 
 export const FeedbackDeskTab: React.FC = () => {
   const [feedbackList, setFeedbackList] = useState<AdminFeedbackItem[]>([]);
@@ -28,6 +29,11 @@ export const FeedbackDeskTab: React.FC = () => {
   const [newStatus, setNewStatus] = useState<string>('REVIEWED');
   const [isSubmittingReply, setIsSubmittingReply] = useState<boolean>(false);
   const [replySuccessMsg, setReplySuccessMsg] = useState<string | null>(null);
+
+  // Pop Modal State (replaces native window.confirm & alert)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeletingFeedback, setIsDeletingFeedback] = useState<boolean>(false);
+  const [popAlert, setPopAlert] = useState<{ title: string; message: string; type?: 'danger' | 'warning' | 'info' | 'success' } | null>(null);
 
   const fetchFeedback = useCallback(async () => {
     setIsLoading(true);
@@ -99,16 +105,26 @@ export const FeedbackDeskTab: React.FC = () => {
     }
   };
 
-  const handleDeleteFeedback = async (id: string) => {
-    if (!window.confirm('Are you sure you want to permanently delete this feedback submission?')) {
-      return;
-    }
+  const handleDeleteFeedback = (id: string) => {
+    setDeleteTargetId(id);
+  };
 
+  const confirmDeleteFeedback = async () => {
+    if (!deleteTargetId) return;
+
+    setIsDeletingFeedback(true);
     try {
-      await deleteAdminFeedback(id);
-      setFeedbackList(prev => prev.filter(f => f.id !== id));
+      await deleteAdminFeedback(deleteTargetId);
+      setFeedbackList(prev => prev.filter(f => f.id !== deleteTargetId));
+      setDeleteTargetId(null);
     } catch (err: any) {
-      alert(`Error deleting feedback: ${err?.message || 'Unknown error'}`);
+      setPopAlert({
+        title: 'Delete Failed',
+        message: err?.message || 'Failed to delete feedback record.',
+        type: 'danger',
+      });
+    } finally {
+      setIsDeletingFeedback(false);
     }
   };
 
@@ -594,6 +610,30 @@ export const FeedbackDeskTab: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Window Pop Modal for Deletion Confirmation */}
+      <WindowPopModal
+        isOpen={Boolean(deleteTargetId)}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={confirmDeleteFeedback}
+        isLoading={isDeletingFeedback}
+        title="Delete Feedback Record?"
+        message="Are you sure you want to permanently delete this feedback submission? This will purge the entry from the database."
+        type="danger"
+        confirmText="Permanently Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Window Pop Modal for Notifications/Errors */}
+      {popAlert && (
+        <WindowPopModal
+          isOpen={Boolean(popAlert)}
+          onClose={() => setPopAlert(null)}
+          title={popAlert.title}
+          message={popAlert.message}
+          type={popAlert.type || 'info'}
+        />
       )}
     </div>
   );

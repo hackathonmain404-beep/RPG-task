@@ -19,6 +19,7 @@ import {
   EyeOff,
   PackageCheck
 } from 'lucide-react';
+import { WindowPopModal } from '../../components/common/WindowPopModal';
 
 export const MarketStudioTab: React.FC = () => {
   const [items, setItems] = useState<MarketItem[]>([]);
@@ -40,6 +41,11 @@ export const MarketStudioTab: React.FC = () => {
   const [editingItem, setEditingItem] = useState<MarketItem | null>(null);
   const [editPrice, setEditPrice] = useState<number>(0);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
+
+  // Pop Modal State (replaces native window.confirm & alert)
+  const [deleteTargetItem, setDeleteTargetItem] = useState<{ id: string; name: string } | null>(null);
+  const [isDeletingItem, setIsDeletingItem] = useState<boolean>(false);
+  const [popAlert, setPopAlert] = useState<{ title: string; message: string; type?: 'danger' | 'warning' | 'info' | 'success' } | null>(null);
 
   const fetchItems = useCallback(async () => {
     setIsLoading(true);
@@ -94,7 +100,11 @@ export const MarketStudioTab: React.FC = () => {
       const updated = await updateMarketItem(item.id, { active: !item.active });
       setItems(prev => prev.map(i => (i.id === item.id ? updated.item : i)));
     } catch (err: any) {
-      alert(`Failed to toggle item status: ${err?.message}`);
+      setPopAlert({
+        title: 'Status Update Failed',
+        message: err?.message || 'Failed to toggle item active status.',
+        type: 'danger',
+      });
     }
   };
 
@@ -113,19 +123,36 @@ export const MarketStudioTab: React.FC = () => {
       setItems(prev => prev.map(i => (i.id === editingItem.id ? res.item : i)));
       setEditingItem(null);
     } catch (err: any) {
-      alert(`Failed to update item: ${err?.message}`);
+      setPopAlert({
+        title: 'Price Update Failed',
+        message: err?.message || 'Failed to update item price.',
+        type: 'danger',
+      });
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!window.confirm('Delete this item from the market catalog?')) return;
+  const handleDeleteItem = (item: MarketItem) => {
+    setDeleteTargetItem({ id: item.id, name: item.name });
+  };
+
+  const confirmDeleteItem = async () => {
+    if (!deleteTargetItem) return;
+
+    setIsDeletingItem(true);
     try {
-      await deleteMarketItem(id);
-      setItems(prev => prev.filter(i => i.id !== id));
+      await deleteMarketItem(deleteTargetItem.id);
+      setItems(prev => prev.filter(i => i.id !== deleteTargetItem.id));
+      setDeleteTargetItem(null);
     } catch (err: any) {
-      alert(`Failed to delete item: ${err?.message}`);
+      setPopAlert({
+        title: 'Delete Failed',
+        message: err?.message || 'Failed to delete market item.',
+        type: 'danger',
+      });
+    } finally {
+      setIsDeletingItem(false);
     }
   };
 
@@ -568,7 +595,7 @@ export const MarketStudioTab: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => handleDeleteItem(item.id)}
+                    onClick={() => handleDeleteItem(item)}
                     style={{
                       padding: '0.35rem 0.65rem',
                       borderRadius: '6px',
@@ -683,6 +710,35 @@ export const MarketStudioTab: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+      {/* Window Pop Modal for Market Item Deletion Confirmation */}
+      <WindowPopModal
+        isOpen={Boolean(deleteTargetItem)}
+        onClose={() => setDeleteTargetItem(null)}
+        onConfirm={confirmDeleteItem}
+        isLoading={isDeletingItem}
+        title="Delete Market Item?"
+        message={
+          deleteTargetItem ? (
+            <span>
+              Are you sure you want to delete <strong style={{ color: '#f8fafc' }}>{deleteTargetItem.name}</strong> from the Citadel market catalog?
+            </span>
+          ) : ''
+        }
+        type="danger"
+        confirmText="Delete Item"
+        cancelText="Cancel"
+      />
+
+      {/* Window Pop Modal for Errors & Notifications */}
+      {popAlert && (
+        <WindowPopModal
+          isOpen={Boolean(popAlert)}
+          onClose={() => setPopAlert(null)}
+          title={popAlert.title}
+          message={popAlert.message}
+          type={popAlert.type || 'info'}
+        />
       )}
     </div>
   );

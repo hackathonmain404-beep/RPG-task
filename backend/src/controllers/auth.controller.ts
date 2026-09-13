@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { createClient } from '@supabase/supabase-js';
-import { syncSchema, registerSchema, loginSchema } from '../schemas/auth.schema.js';
+import { syncSchema, registerSchema, loginSchema, updateProfileSchema } from '../schemas/auth.schema.js';
 import * as authService from '../services/auth.service.js';
 import { AppError } from '../utils/errors.js';
 import { tokenBlocklist } from '../utils/tokenBlocklist.js';
@@ -146,6 +146,25 @@ export async function getMe(req: Request, res: Response, next: NextFunction): Pr
     }
 
     const result = await authService.getAuthMe(req.user.id);
+
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PATCH /api/auth/profile
+ * Updates the user's displayName and/or avatarUrl in Prisma database.
+ */
+export async function updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (!req.user || !req.user.id) {
+      throw new AppError(401, 'UNAUTHORIZED', 'Authentication required.');
+    }
+
+    const input = updateProfileSchema.parse(req.body);
+    const result = await authService.updateUserProfile(req.user.id, input);
 
     res.status(200).json(result);
   } catch (err) {

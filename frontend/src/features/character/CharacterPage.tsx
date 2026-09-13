@@ -86,9 +86,18 @@ export const CharacterPage: React.FC = () => {
               justifyContent: 'center',
               boxShadow: '0 0 24px rgba(56, 189, 248, 0.25)',
               flexShrink: 0,
+              overflow: 'hidden',
             }}
           >
-            <User size={40} color="#38bdf8" />
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.displayName || 'Avatar'}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <User size={40} color="#38bdf8" />
+            )}
           </div>
 
           <div>

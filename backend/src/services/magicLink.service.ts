@@ -73,7 +73,7 @@ export async function sendMagicLink(inputIdentifier: string): Promise<SendMagicL
     // Server-side verify admin authorization:
     let adminUser = await (prisma as any).user.findUnique({
       where: { email: 'Achiever_admin_4.com' },
-      select: { id: true, email: true, role: true, displayName: true },
+      select: { id: true, email: true, role: true, displayName: true, avatarUrl: true },
     });
 
     if (!adminUser) {
@@ -126,6 +126,7 @@ export async function sendMagicLink(inputIdentifier: string): Promise<SendMagicL
         id: adminUser.id,
         email: adminUser.email,
         displayName: adminUser.displayName,
+        avatarUrl: adminUser.avatarUrl || null,
         role: 'ADMIN',
       },
       redirectTo: '/admin',
@@ -353,6 +354,7 @@ export async function verifyMagicLink(rawToken: string): Promise<VerifyMagicLink
       id: user.id,
       email: user.email,
       displayName: user.displayName,
+      avatarUrl: user.avatarUrl || null,
       role: user.role,
     },
     character: user.character

@@ -13,3 +13,4 @@ authRouter.post('/login', authRateLimiter, authController.login);
 authRouter.post('/sync', requireAuth, authController.sync);
 authRouter.post('/logout', authController.logout);
 authRouter.get('/me', requireAuth, authController.getMe);
+authRouter.patch('/profile', requireAuth, authController.updateProfile);

@@ -486,6 +486,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLastAttributeChange(null);
   }, [isGuest]);
 
+  // Update profile identity (displayName, avatarUrl)
+  const updateProfile = useCallback(async (data: { displayName?: string; avatarUrl?: string | null }) => {
+    if (isGuest) {
+      setUser(prev => prev ? {
+        ...prev,
+        ...(data.displayName ? { displayName: data.displayName } : {}),
+        ...(data.avatarUrl !== undefined ? { avatarUrl: data.avatarUrl } : {}),
+      } : null);
+      return;
+    }
+
+    const res = await authApi.updateProfile(data);
+    if (res?.user) {
+      setUser(prev => ({
+        ...(prev || {}),
+        ...res.user,
+      } as User));
+    }
+    if (res?.character) {
+      setCharacter(prev => ({
+        ...(prev || {}),
+        ...res.character,
+        attributes: normalizeAttributes(res.character.attributes || prev?.attributes),
+      } as Character));
+    }
+  }, [isGuest]);
+
   const isAdmin = Boolean(user && user.role === 'ADMIN');
 
   return (
@@ -512,6 +539,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reconcileCompletion,
         reconcilePurchase,
         clearAttributeChangeNotice,
+        updateProfile,
       }}
     >
       {children}

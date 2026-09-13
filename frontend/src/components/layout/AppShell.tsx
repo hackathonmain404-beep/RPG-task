@@ -354,26 +354,6 @@ const AppShellInner: React.FC = () => {
             <MessageSquarePlus size={18} />
             <span>Feedback</span>
           </button>
-
-          <div
-            style={{
-              marginTop: 'auto',
-              padding: '1rem',
-              borderRadius: '8px',
-              backgroundColor: 'var(--bg-surface-elevated)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-              <Sparkles size={16} color="#f59e0b" />
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                Phase 3 Active
-              </span>
-            </div>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              RPG progression with server-authoritative XP, level-up celebrations, and reward feedback.
-            </p>
-          </div>
         </aside>
 
         {/* Mobile Drawer Overlay */}
