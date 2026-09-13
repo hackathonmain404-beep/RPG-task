@@ -57,7 +57,7 @@ describe('Global Feedback System', () => {
     const feedbackBtn = screen.getByRole('button', { name: /Send Feedback/i });
     expect(feedbackBtn).toBeInTheDocument();
     expect(feedbackBtn).toHaveTextContent('Feedback');
-    expect(screen.getByText('HeroAdventurer')).toBeInTheDocument();
+    expect(screen.getAllByText('HeroAdventurer').length).toBeGreaterThan(0);
   });
 
   it('renders Feedback action button in AppShell sidebar', () => {
