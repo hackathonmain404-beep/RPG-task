@@ -88,17 +88,9 @@ export const QuestCard: React.FC<QuestCardProps> = ({
 
   return (
     <div
-      className="rpg-card"
+      className={`rpg-card quest-item-card ${task.completed ? 'quest-item-completed' : ''}`}
       style={{
-        padding: '1.25rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.85rem',
-        backgroundColor: task.completed ? 'rgba(15, 20, 28, 0.6)' : 'var(--bg-surface)',
-        border: task.completed ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid var(--border-subtle)',
         position: 'relative',
-        transition: 'all 0.25s ease',
-        opacity: task.completed ? 0.75 : 1,
       }}
     >
       {/* Floating Reward Pill */}
@@ -139,26 +131,9 @@ export const QuestCard: React.FC<QuestCardProps> = ({
             aria-label={`Mark quest "${task.title}" as ${task.completed ? 'completed' : 'complete'}`}
             onClick={handleCheckboxClick}
             disabled={task.completed || isPending}
+            className={`quest-checkbox ${task.completed ? 'completed' : ''}`}
             style={{
-              width: '26px',
-              height: '26px',
-              borderRadius: '6px',
-              backgroundColor: task.completed
-                ? '#10b981'
-                : isPending
-                ? 'var(--bg-surface-sunken)'
-                : 'var(--bg-surface-sunken)',
-              border: task.completed
-                ? '1px solid #10b981'
-                : '2px solid var(--border-strong)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               cursor: task.completed ? 'default' : isPending ? 'wait' : 'pointer',
-              flexShrink: 0,
-              marginTop: '2px',
-              transition: 'all 0.15s ease',
-              boxShadow: task.completed ? '0 0 10px rgba(16, 185, 129, 0.35)' : 'none',
             }}
           >
             {isPending ? (
@@ -205,21 +180,19 @@ export const QuestCard: React.FC<QuestCardProps> = ({
             type="button"
             onClick={() => onEdit(task)}
             disabled={isPending}
-            className="rpg-btn rpg-btn-secondary"
-            style={{ padding: '0.35rem', borderRadius: '6px', border: 'none' }}
+            className="quest-action-btn quest-action-edit"
             aria-label={`Edit quest ${task.title}`}
           >
-            <Edit3 size={15} color="var(--text-secondary)" />
+            <Edit3 size={15} />
           </button>
           <button
             type="button"
             onClick={() => onDelete(task)}
             disabled={isPending}
-            className="rpg-btn rpg-btn-danger"
-            style={{ padding: '0.35rem', borderRadius: '6px', border: 'none' }}
+            className="quest-action-btn quest-action-delete"
             aria-label={`Abandon quest ${task.title}`}
           >
-            <Trash2 size={15} color="#fca5a5" />
+            <Trash2 size={15} />
           </button>
         </div>
       </div>
